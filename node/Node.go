@@ -14,7 +14,9 @@ import (
 type (
 	// Node represents a single gansoi node.
 	Node struct {
+		db     *database.Database
 		raft   *raft.Raft
+		leader bool
 		stream *HTTPStream
 	}
 )
@@ -22,7 +24,9 @@ type (
 // NewNode will initialize a new node.
 func NewNode(db *database.Database, peerStore *PeerStore) (*Node, error) {
 	var err error
-	n := &Node{}
+	n := &Node{
+		db: db,
+	}
 
 	// Raft config.
 	conf := raft.DefaultConfig()
@@ -53,10 +57,36 @@ func NewNode(db *database.Database, peerStore *PeerStore) (*Node, error) {
 		return nil, err
 	}
 
+	lch := n.raft.LeaderCh()
+	go func() {
+		select {
+		case leader := <-lch:
+			n.leader = leader
+		}
+	}()
+
 	return n, nil
 }
 
 // ServeHTTP implements the http.Handler interface.
 func (n *Node) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	n.stream.ServeHTTP(w, r)
+}
+
+// Set will set a key in the generic Raft-backed key/value store.
+func (n *Node) Set(key string, value []byte) error {
+	if !n.leader {
+		/* FIXME: Relay to leader somehow */
+		return raft.ErrNotLeader
+	}
+
+	entry := database.NewLogEntry(database.CommandSet, key, value)
+	n.raft.Apply(entry.Byte(), time.Minute)
+
+	return nil
+}
+
+// Get will retrieve a key from the generic Raft-backed K/V store.
+func (n *Node) Get(key string) ([]byte, error) {
+	return n.db.Get(key)
 }
