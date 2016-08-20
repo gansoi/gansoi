@@ -43,6 +43,12 @@ func NewDatabase(filepath string) (*Database, error) {
 		path.Join(filepath, "gansoi.db"),
 		0600,
 		&bolt.Options{Timeout: 1 * time.Second})
+
+	db.Update(func(tx *bolt.Tx) error {
+		tx.CreateBucketIfNotExists([]byte("keyvalue"))
+		return nil
+	})
+
 	if err != nil {
 		return nil, err
 	}
@@ -127,6 +133,10 @@ func (d *Database) Get(key string) ([]byte, error) {
 
 	err := d.db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("keyvalue"))
+		if bucket == nil {
+			panic("bucket == nil")
+		}
+
 		value = bucket.Get([]byte(key))
 		return nil
 	})
