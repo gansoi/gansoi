@@ -13,6 +13,7 @@ type HTTPStream struct {
 	closed   bool
 	addr     net.Addr
 	accepted chan net.Conn
+	dial     net.Dialer
 }
 
 // NewHTTPStream will instantiate a new HTTPStream.
@@ -22,9 +23,27 @@ func NewHTTPStream(addr string) (*HTTPStream, error) {
 		return nil, err
 	}
 
+	// We try to derive the local address too. This doesn't make much sense
+	// in the real world, but it makes debugging networking issues with
+	// multiple nodes on the same host much easier.
+	// This should never fail as long as the last call to ResolveTCPAddr()
+	// with the same input went well.
+	local, _ := net.ResolveTCPAddr("tcp", addr)
+	local.Port = 0
+
+	// Set up our own dialer.
+	dial := net.Dialer{
+		LocalAddr: local,
+
+		// Some crappy NAT devices will close a connection after 30 seconds of
+		// inactivity. We try to keep alive every 25th second to counter this.
+		KeepAlive: time.Second * 25,
+	}
+
 	h := &HTTPStream{
 		addr:     a,
 		accepted: make(chan net.Conn),
+		dial:     dial,
 	}
 
 	return h, nil
@@ -32,7 +51,11 @@ func NewHTTPStream(addr string) (*HTTPStream, error) {
 
 // Dial will dial a remote http endpoint (and implement raft.StreamLayer).
 func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, error) {
-	conn, err := net.DialTimeout("tcp", address, timeout)
+	// Make a copy of our dialer to allow custom timeout.
+	dial := h.dial
+	dial.Timeout = timeout
+
+	conn, err := dial.Dial("tcp", address)
 	if err != nil {
 		return nil, err
 	}
