@@ -28,7 +28,10 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	mux.Handle("/raft", node)
+	mux.HandleFunc("/raft", node.ServeHTTP)
+	mux.HandleFunc("/raft/stats", node.Stats)
+	mux.HandleFunc("/raft/apply", node.Apply)
+	mux.HandleFunc("/raft/nodes", node.Nodes)
 
 	s := &http.Server{
 		Addr:           self,
