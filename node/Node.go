@@ -59,14 +59,21 @@ func NewNode(db *database.Database, peerStore *PeerStore) (*Node, error) {
 	logger := log.New(os.Stdout, " TRANSPORT ", log.Ldate|log.Lmicroseconds|log.Lshortfile)
 	transport := raft.NewNetworkTransportWithLogger(n.stream, 1, 0, logger)
 
+	logger = log.New(os.Stdout, " SNAPSTORE ", log.Ldate|log.Lmicroseconds|log.Lshortfile)
+	ss, err := raft.NewFileSnapshotStoreWithLogger("/tmp/"+peerStore.Self(), 5, logger)
+	if err != nil {
+		panic(err)
+	}
+
 	n.raft, err = raft.NewRaft(
-		conf,
-		n.db,
-		raft.NewInmemStore(),
-		raft.NewInmemStore(),
-		raft.NewDiscardSnapshotStore(),
-		n.peers,
-		transport)
+		conf,                 // raft.Config
+		n.db,                 // raft.FSM
+		raft.NewInmemStore(), // raft.LogStore
+		raft.NewInmemStore(), // raft.StableStore
+		ss,                   // raft.SnapshotStore
+		n.peers,              // raft.PeerStore
+		transport,            // raft.Transport
+	)
 	if err != nil {
 		return nil, err
 	}
