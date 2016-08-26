@@ -2,9 +2,10 @@ package database
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
+	"os"
 	"path"
+	"sync"
 	"time"
 
 	"github.com/boltdb/bolt"
@@ -14,7 +15,8 @@ import (
 type (
 	// Database is the lowest level of the gansoi database.
 	Database struct {
-		db *bolt.DB
+		dbMutex sync.RWMutex
+		db      *bolt.DB
 	}
 
 	// Command is used to denote which operation should be carried out as a
@@ -39,23 +41,36 @@ const (
 
 // NewDatabase will instantiate a new database placed in filepath.
 func NewDatabase(filepath string) (*Database, error) {
-	db, err := bolt.Open(
-		path.Join(filepath, "gansoi.db"),
-		0600,
-		&bolt.Options{Timeout: 1 * time.Second})
+	d := &Database{}
 
-	db.Update(func(tx *bolt.Tx) error {
-		tx.CreateBucketIfNotExists([]byte("keyvalue"))
-		return nil
-	})
-
+	err := d.open(path.Join(filepath, "gansoi.db"))
 	if err != nil {
 		return nil, err
 	}
 
-	return &Database{
-		db: db,
-	}, nil
+	return d, nil
+}
+
+func (d *Database) open(filepath string) error {
+	db, err := bolt.Open(
+		filepath,
+		0600,
+		&bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		return err
+	}
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		tx.CreateBucketIfNotExists([]byte("keyvalue"))
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	d.db = db
+
+	return nil
 }
 
 // NewLogEntry will return a new LogEntry ready for committing to the Raft log.
@@ -74,11 +89,20 @@ func (e *LogEntry) Byte() []byte {
 	return b
 }
 
+// Db will return the underlying Bolt database.
+func (d *Database) Db() *bolt.DB {
+	d.dbMutex.RLock()
+	defer d.dbMutex.RUnlock()
+
+	return d.db
+}
+
 // ProcessLogEntry will process the log entry and apply whatever needs doing.
 func (d *Database) ProcessLogEntry(entry *LogEntry) error {
+	db := d.Db()
 	switch entry.Command {
 	case CommandSet:
-		tx, err := d.db.Begin(true)
+		tx, err := db.Begin(true)
 		if err != nil {
 			return err
 		}
@@ -101,7 +125,7 @@ func (d *Database) ProcessLogEntry(entry *LogEntry) error {
 		}
 
 	case CommandDelete:
-		tx, err := d.db.Begin(true)
+		tx, err := db.Begin(true)
 		if err != nil {
 			return err
 		}
@@ -131,7 +155,7 @@ func (d *Database) ProcessLogEntry(entry *LogEntry) error {
 func (d *Database) Get(key string) ([]byte, error) {
 	var value []byte
 
-	err := d.db.View(func(tx *bolt.Tx) error {
+	err := d.Db().View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("keyvalue"))
 		if bucket == nil {
 			panic("bucket == nil")
@@ -158,13 +182,49 @@ func (d *Database) Apply(l *raft.Log) interface{} {
 
 // Snapshot implements raft.FSM.
 func (d *Database) Snapshot() (raft.FSMSnapshot, error) {
-	fmt.Printf("Snapshot()\n")
-
-	return &Snapshot{}, nil
+	return &Snapshot{db: d}, nil
 }
 
 // Restore implements raft.FSM.
-func (d *Database) Restore(io.ReadCloser) error {
-	fmt.Printf("Restore()\n")
+func (d *Database) Restore(source io.ReadCloser) error {
+	db := d.Db()
+	d.dbMutex.Lock()
+	defer d.dbMutex.Unlock()
+	defer source.Close()
+
+	path := db.Path()
+	restorePath := path + ".restoretmp"
+
+	file, err := os.Create(restorePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = io.Copy(file, source)
+	if err != nil {
+		return err
+	}
+
+	err = db.Close()
+	if err != nil {
+		return err
+	}
+
+	err = os.Remove(path)
+	if err != nil {
+		return err
+	}
+
+	err = os.Rename(restorePath, path)
+	if err != nil {
+		return err
+	}
+
+	err = d.open(path)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
