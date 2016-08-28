@@ -1,34 +1,38 @@
 package node
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 )
 
 // HTTPStream implements a raft stream for use with Golang's net/http.
 type HTTPStream struct {
 	closed   bool
-	addr     net.Addr
+	addr     string
 	accepted chan net.Conn
 	dial     net.Dialer
 }
 
 // NewHTTPStream will instantiate a new HTTPStream.
 func NewHTTPStream(addr string) (*HTTPStream, error) {
-	a, err := net.ResolveTCPAddr("tcp", addr)
+	localAddress := addr
+	if strings.Index(localAddress, ":") < 0 {
+		localAddress += ":0"
+	}
+
+	// We try to derive the local address. This doesn't make much sense
+	// in the real world, but it makes debugging networking issues with
+	// multiple nodes on the same host much easier.
+	local, err := net.ResolveTCPAddr("tcp", localAddress)
 	if err != nil {
 		return nil, err
 	}
 
-	// We try to derive the local address too. This doesn't make much sense
-	// in the real world, but it makes debugging networking issues with
-	// multiple nodes on the same host much easier.
-	// This should never fail as long as the last call to ResolveTCPAddr()
-	// with the same input went well.
-	local, _ := net.ResolveTCPAddr("tcp", addr)
 	local.Port = 0
 
 	// Set up our own dialer.
@@ -41,7 +45,7 @@ func NewHTTPStream(addr string) (*HTTPStream, error) {
 	}
 
 	h := &HTTPStream{
-		addr:     a,
+		addr:     addr,
 		accepted: make(chan net.Conn),
 		dial:     dial,
 	}
@@ -55,12 +59,17 @@ func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, erro
 	dial := h.dial
 	dial.Timeout = timeout
 
-	conn, err := dial.Dial("tcp", address)
+	if strings.Index(address, ":") < 0 {
+		address += ":443"
+	}
+
+	conf := &tls.Config{}
+	conn, err := tls.DialWithDialer(&dial, "tcp", address, conf)
 	if err != nil {
 		return nil, err
 	}
 
-	open := fmt.Sprintf("GET /raft HTTP/1.1\nHost: %s\nUpgrade: raft-0\n\n", h.addr.String())
+	open := fmt.Sprintf("GET /raft HTTP/1.1\nHost: %s\nUpgrade: raft-0\n\n", address)
 
 	_, err = conn.Write([]byte(open))
 	if err != nil {
@@ -91,7 +100,17 @@ func (h *HTTPStream) Close() error {
 
 // Addr returns the listener's network address.
 func (h *HTTPStream) Addr() net.Addr {
+	return h
+}
+
+// String implements net.Addr.
+func (h *HTTPStream) String() string {
 	return h.addr
+}
+
+// Network implements net.Addr.
+func (h *HTTPStream) Network() string {
+	return "tcp"
 }
 
 // ServeHTTP implements the http.Handler interface.
