@@ -33,7 +33,7 @@ type (
 )
 
 // NewNode will initialize a new node.
-func NewNode(db *database.Database, peerStore *PeerStore) (*Node, error) {
+func NewNode(secret string, db *database.Database, peerStore *PeerStore) (*Node, error) {
 	started := time.Now()
 
 	var err error
@@ -51,7 +51,7 @@ func NewNode(db *database.Database, peerStore *PeerStore) (*Node, error) {
 	conf.Logger = log.New(os.Stdout, "      RAFT ", log.Lmicroseconds|log.Lshortfile)
 
 	// Set up nice HTTP based transport.
-	n.stream, err = NewHTTPStream(peerStore.Self())
+	n.stream, err = NewHTTPStream(peerStore.Self(), secret)
 	if err != nil {
 		panic(err)
 	}

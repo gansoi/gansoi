@@ -1,6 +1,7 @@
 package node
 
 import (
+	"crypto/subtle"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -16,10 +17,11 @@ type HTTPStream struct {
 	addr     string
 	accepted chan net.Conn
 	dial     net.Dialer
+	secret   string
 }
 
 // NewHTTPStream will instantiate a new HTTPStream.
-func NewHTTPStream(addr string) (*HTTPStream, error) {
+func NewHTTPStream(addr string, secret string) (*HTTPStream, error) {
 	localAddress := addr
 	if strings.Index(localAddress, ":") < 0 {
 		localAddress += ":0"
@@ -48,6 +50,7 @@ func NewHTTPStream(addr string) (*HTTPStream, error) {
 		addr:     addr,
 		accepted: make(chan net.Conn),
 		dial:     dial,
+		secret:   secret,
 	}
 
 	return h, nil
@@ -69,7 +72,7 @@ func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, erro
 		return nil, err
 	}
 
-	open := fmt.Sprintf("GET /raft HTTP/1.1\nHost: %s\nUpgrade: raft-0\n\n", address)
+	open := fmt.Sprintf("GET /raft HTTP/1.1\nHost: %s\nUpgrade: raft-0\nSecret: %s\n\n", address, h.secret)
 
 	_, err = conn.Write([]byte(open))
 	if err != nil {
@@ -123,6 +126,12 @@ func (h *HTTPStream) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	upgrade := r.Header.Get("Upgrade")
 	if upgrade != "raft-0" {
 		http.Error(w, "This endpoint is for streaming raft", http.StatusBadRequest)
+		return
+	}
+
+	secret := r.Header.Get("Secret")
+	if subtle.ConstantTimeCompare([]byte(h.secret), []byte(secret)) != 1 {
+		http.Error(w, "Wrong secret", http.StatusForbidden)
 		return
 	}
 

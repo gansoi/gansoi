@@ -18,6 +18,7 @@ type (
 		Key     string   `toml:"key"`
 		DbPath  string   `toml:"db"`
 		Cluster []string `toml:"cluster"`
+		Secret  string   `toml:"secret"`
 	}
 )
 
@@ -30,6 +31,7 @@ cert = "/etc/gansoi/me-cert.pem"
 key = "/etc/gansoi/me-key.pem"
 db = "/var/lib/gansoi"
 cluster = ["london.example.com", "copenhagen.example.com", "berlin.example.com"]
+secret = "This is unsecure. Pick a good alphanumeric secret."
 `
 )
 
@@ -57,7 +59,7 @@ func main() {
 		panic(err.Error())
 	}
 
-	node, err := node.NewNode(db, peerstore)
+	node, err := node.NewNode(config.Secret, db, peerstore)
 	if err != nil {
 		panic(err.Error())
 	}

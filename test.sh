@@ -6,6 +6,7 @@ cert = "/etc/gansoi/cert.pem"
 key = "/etc/gansoi/key.pem"
 db = "/tmp/gansoi-1"
 cluster = ["local1.gansoi.com", "local2.gansoi.com", "local3.gansoi.com"]
+secret = "Qhzw5UTm66dWbHNyBdxazf6LfB7iaqcaRXzoot77gwMLErm1vb3VEDTBTupm8KxH"
 EOF
 
 cat >/tmp/2.conf <<EOF
@@ -14,6 +15,7 @@ cert = "/etc/gansoi/cert.pem"
 key = "/etc/gansoi/key.pem"
 db = "/tmp/gansoi-2"
 cluster = ["local1.gansoi.com", "local2.gansoi.com", "local3.gansoi.com"]
+secret = "Qhzw5UTm66dWbHNyBdxazf6LfB7iaqcaRXzoot77gwMLErm1vb3VEDTBTupm8KxH"
 EOF
 
 cat >/tmp/3.conf <<EOF
@@ -22,6 +24,7 @@ cert = "/etc/gansoi/cert.pem"
 key = "/etc/gansoi/key.pem"
 db = "/tmp/gansoi-3"
 cluster = ["local1.gansoi.com", "local2.gansoi.com", "local3.gansoi.com"]
+secret = "Qhzw5UTm66dWbHNyBdxazf6LfB7iaqcaRXzoot77gwMLErm1vb3VEDTBTupm8KxH"
 EOF
 
 mkdir -p /tmp/gansoi-1
