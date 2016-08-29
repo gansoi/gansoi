@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"github.com/gin-gonic/gin"
+
 	_ "github.com/abrander/gansoi/agents/tcpport"
 	"github.com/abrander/gansoi/database"
 	"github.com/abrander/gansoi/node"
@@ -70,11 +72,9 @@ func main() {
 		panic(err.Error())
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/raft", node.ServeHTTP)
-	mux.HandleFunc("/raft/stats", node.Stats)
-	mux.HandleFunc("/raft/apply", node.Apply)
-	mux.HandleFunc("/raft/nodes", node.Nodes)
+	engine := gin.New()
+
+	node.Router(engine.Group("/raft"))
 
 	// By default we bind to port 443 (HTTPS) on all interfaecs on both IPv4
 	// and IPv6.
@@ -92,7 +92,7 @@ func main() {
 
 	s := &http.Server{
 		Addr:           bind,
-		Handler:        mux,
+		Handler:        engine,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,

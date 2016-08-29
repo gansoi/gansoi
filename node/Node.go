@@ -2,13 +2,13 @@ package node
 
 import (
 	"bytes"
-	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/hashicorp/raft"
 
 	"github.com/abrander/gansoi/database"
@@ -17,11 +17,12 @@ import (
 type (
 	// Node represents a single gansoi node.
 	Node struct {
-		db     *database.Database
-		peers  *PeerStore
-		raft   *raft.Raft
-		leader bool
-		stream *HTTPStream
+		db       *database.Database
+		peers    *PeerStore
+		raft     *raft.Raft
+		leader   bool
+		stream   *HTTPStream
+		basePath string
 	}
 
 	nodeInfo struct {
@@ -99,9 +100,13 @@ func NewNode(secret string, db *database.Database, peerStore *PeerStore) (*Node,
 				ni.Name = peerStore.Self()
 				ni.Raft = n.raft.Stats()
 
-				err := n.Save(&ni)
-				if err != nil {
-					panic(err.Error())
+				// Only attempt this if the cluster is stable with a leader.
+				// FIXME: This check should probably be moved to Save().
+				if n.raft.Leader() != "" {
+					err := n.Save(&ni)
+					if err != nil {
+						panic(err.Error())
+					}
 				}
 			}
 		}
@@ -110,50 +115,45 @@ func NewNode(secret string, db *database.Database, peerStore *PeerStore) (*Node,
 	return n, nil
 }
 
-// ServeHTTP implements the http.Handler interface.
-func (n *Node) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	n.stream.ServeHTTP(w, r)
+// raftHandler is a handler for the other nodes.
+func (n *Node) raftHandler(c *gin.Context) {
+	n.stream.ServeHTTP(c.Writer, c.Request)
 }
 
-// Stats will reply with a few raft statistics.
-func (n *Node) Stats(w http.ResponseWriter, r *http.Request) {
-	e := json.NewEncoder(w)
-	s := n.raft.Stats()
-	e.Encode(s)
+// statsHandler will reply with a few raft statistics.
+func (n *Node) statsHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, n.raft.Stats())
 }
 
-// Apply can be used by other nodes to apply a log entry to the leader. The
-// POST body should consists of the complete output from LogEntry.Byte().
-func (n *Node) Apply(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	}
-
+// applyHandler can be used by other nodes to apply a log entry to the leader.
+// The POST body should consists of the complete output from LogEntry.Byte().
+func (n *Node) applyHandler(c *gin.Context) {
 	if !n.leader {
-		w.WriteHeader(http.StatusGone)
+		c.AbortWithStatus(http.StatusGone)
+		return
 	}
 
-	b, err := ioutil.ReadAll(r.Body)
+	defer c.Request.Body.Close()
+	b, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
 	n.raft.Apply(b, time.Minute)
 }
 
-// Nodes will return stats for all nodes in the cluster.
-func (n *Node) Nodes(w http.ResponseWriter, r *http.Request) {
+// nodesHandler will return stats for all nodes in the cluster.
+func (n *Node) nodesHandler(c *gin.Context) {
 	var all []nodeInfo
 
 	err := n.db.All(&all, -1, 0, false)
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 
-	e := json.NewEncoder(w)
-	e.Encode(all)
+	c.JSON(http.StatusOK, all)
 }
 
 // Save will save an object to the cluster database.
@@ -163,7 +163,9 @@ func (n *Node) Save(data interface{}) error {
 	if !n.leader {
 		r := bytes.NewReader(entry.Byte())
 		l := n.raft.Leader()
-		_, err := http.Post("https://"+l+"/raft/apply", "gansoi/entry", r)
+		u := "https://" + l + n.basePath + "/apply"
+
+		_, err := http.Post(u, "gansoi/entry", r)
 
 		return err
 	}
@@ -181,4 +183,14 @@ func (n *Node) One(fieldName string, value interface{}, to interface{}) error {
 // All lists all kinds of a type.
 func (n *Node) All(to interface{}, limit int, skip int, reverse bool) error {
 	return n.db.All(to, limit, skip, reverse)
+}
+
+// Router can be used to assign a Gin routergroup.
+func (n *Node) Router(router *gin.RouterGroup) {
+	n.basePath = router.BasePath()
+
+	router.GET("", n.raftHandler)
+	router.GET("/stats", n.statsHandler)
+	router.GET("/nodes", n.nodesHandler)
+	router.POST("/apply", n.applyHandler)
 }
