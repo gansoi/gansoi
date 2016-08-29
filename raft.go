@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
+	_ "github.com/abrander/gansoi/agents/tcpport"
 	"github.com/abrander/gansoi/database"
 	"github.com/abrander/gansoi/node"
 )
