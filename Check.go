@@ -1,13 +1,12 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
-	"io"
 	"time"
 
 	"github.com/abrander/gansoi/agents"
+	"github.com/abrander/gansoi/database"
 )
 
 type (
@@ -19,6 +18,14 @@ type (
 		Node      string          `json:"node"`
 		Arguments json.RawMessage `json:"arguments"`
 		Agent     agents.Agent    `json:"-"`
+	}
+
+	checkProxy struct {
+		ID        string          `json:"id"`
+		AgentID   string          `json:"agent"`
+		Interval  time.Duration   `json:"interval"`
+		Node      string          `json:"node"`
+		Arguments json.RawMessage `json:"arguments"`
 	}
 
 	// CheckResult describes the result of one or more checks.
@@ -33,32 +40,36 @@ type (
 	}
 )
 
-// NewCheckFromReader will instantiate a new check based on a JSON stream.
-func NewCheckFromReader(r io.Reader) (*Check, error) {
-	var check Check
-
-	decoder := json.NewDecoder(r)
-	err := decoder.Decode(&check)
-	if err != nil {
-		return nil, err
-	}
-
-	check.Agent = agents.GetAgent(check.AgentID)
-	if check.Agent == nil {
-		return nil, errors.New("Agent not found")
-	}
-
-	err = json.Unmarshal(check.Arguments, &check.Agent)
-	if err != nil {
-		return nil, err
-	}
-
-	return &check, nil
+func init() {
+	database.RegisterType(Check{})
 }
 
-// NewCheckFromBytes will instantiate a new check from a byte array of JSON.
-func NewCheckFromBytes(b []byte) (*Check, error) {
-	return NewCheckFromReader(bytes.NewBuffer(b))
+// UnmarshalJSON implements json.Unmarshaler.
+func (c *Check) UnmarshalJSON(data []byte) error {
+	proxy := checkProxy{}
+
+	err := json.Unmarshal(data, &proxy)
+	if err != nil {
+		return err
+	}
+
+	c.ID = proxy.ID
+	c.AgentID = proxy.AgentID
+	c.Interval = proxy.Interval
+	c.Node = proxy.Node
+	c.Arguments = proxy.Arguments
+
+	c.Agent = agents.GetAgent(c.AgentID)
+	if c.Agent == nil {
+		return errors.New("Agent not found")
+	}
+
+	err = json.Unmarshal(c.Arguments, &c.Agent)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Check implements agents.Agent. Will return true if the result changed.
