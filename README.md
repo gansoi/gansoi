@@ -14,5 +14,6 @@ Design goals
 - Geodistributed - should be deployable across the globe for full redundancy and geographically distributed checks.
 - Multidimensional severity grouping - an alert should be categorized in both severity and urgency.
 - No false positives - the system should never cry wolf.
+- Easy encryption - should support Let’s Encrypt out of the box.
 
-\*gansoi is a working title.
+\* gansoi is a working title.
