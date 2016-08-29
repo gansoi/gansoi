@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -47,13 +48,17 @@ func main() {
 		panic(err.Error())
 	}
 
-	if config.Local == "" {
-		panic("local not defined in confiuration file.")
+	self := config.Local
+
+	// If local is not defined in configuration file, we use the hostname
+	// according to the OS.
+	if self == "" {
+		self, _ = os.Hostname()
 	}
 
 	peerstore := node.NewPeerStore()
 	peerstore.SetPeers(config.Cluster)
-	peerstore.SetSelf(config.Local)
+	peerstore.SetSelf(self)
 
 	db, err := database.NewDatabase(config.DbPath)
 	if err != nil {
@@ -71,9 +76,18 @@ func main() {
 	mux.HandleFunc("/raft/apply", node.Apply)
 	mux.HandleFunc("/raft/nodes", node.Nodes)
 
-	bind := config.Local
-	if strings.Index(bind, ":") < 0 {
-		bind += ":443"
+	// By default we bind to port 443 (HTTPS) on all interfaecs on both IPv4
+	// and IPv6.
+	bind := ":443"
+
+	// If local is defined thou, we use that instead.
+	if config.Local != "" {
+		bind = config.Local
+
+		// ... and add prot 443 if needed.
+		if strings.Index(bind, ":") < 0 {
+			bind += ":443"
+		}
 	}
 
 	s := &http.Server{
