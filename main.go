@@ -67,14 +67,16 @@ func main() {
 		panic(err.Error())
 	}
 
-	node, err := node.NewNode(config.Secret, db, peerstore)
+	n, err := node.NewNode(config.Secret, db, peerstore)
 	if err != nil {
 		panic(err.Error())
 	}
 
 	engine := gin.New()
 
-	node.Router(engine.Group("/raft"))
+	n.Router(engine.Group("/raft"))
+	restChecks := node.NewRestAPI(Check{}, n)
+	restChecks.Router(engine.Group("/checks"))
 
 	// By default we bind to port 443 (HTTPS) on all interfaecs on both IPv4
 	// and IPv6.

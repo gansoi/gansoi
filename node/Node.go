@@ -185,6 +185,25 @@ func (n *Node) All(to interface{}, limit int, skip int, reverse bool) error {
 	return n.db.All(to, limit, skip, reverse)
 }
 
+// Delete deletes one record.
+func (n *Node) Delete(data interface{}) error {
+	entry := database.NewLogEntry(database.CommandDelete, data)
+
+	if !n.leader {
+		r := bytes.NewReader(entry.Byte())
+		l := n.raft.Leader()
+		u := "https://" + l + n.basePath + "/apply"
+
+		_, err := http.Post(u, "gansoi/entry", r)
+
+		return err
+	}
+
+	n.raft.Apply(entry.Byte(), time.Minute)
+
+	return nil
+}
+
 // Router can be used to assign a Gin routergroup.
 func (n *Node) Router(router *gin.RouterGroup) {
 	n.basePath = router.BasePath()
