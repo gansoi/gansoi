@@ -22,25 +22,8 @@ type HTTPStream struct {
 
 // NewHTTPStream will instantiate a new HTTPStream.
 func NewHTTPStream(addr string, secret string) (*HTTPStream, error) {
-	localAddress := addr
-	if strings.Index(localAddress, ":") < 0 {
-		localAddress += ":0"
-	}
-
-	// We try to derive the local address. This doesn't make much sense
-	// in the real world, but it makes debugging networking issues with
-	// multiple nodes on the same host much easier.
-	local, err := net.ResolveTCPAddr("tcp", localAddress)
-	if err != nil {
-		return nil, err
-	}
-
-	local.Port = 0
-
 	// Set up our own dialer.
 	dial := net.Dialer{
-		LocalAddr: local,
-
 		// Some crappy NAT devices will close a connection after 30 seconds of
 		// inactivity. We try to keep alive every 25th second to counter this.
 		KeepAlive: time.Second * 25,
