@@ -17,7 +17,7 @@ type (
 func (s *Snapshot) Persist(sink raft.SnapshotSink) error {
 	fmt.Printf("Persist()\n")
 
-	err := s.db.Db().View(func(tx *bolt.Tx) error {
+	err := s.db.Storm().Bolt.View(func(tx *bolt.Tx) error {
 		_, err := tx.WriteTo(sink)
 
 		return err

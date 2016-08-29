@@ -25,12 +25,16 @@ type (
 	}
 
 	nodeInfo struct {
+		Name    string            `json:"name" storm:"id"`
 		Started time.Time         `json:"started"`
 		Updated time.Time         `json:"updated"`
-		Name    string            `json:"name"`
 		Raft    map[string]string `json:"raft"`
 	}
 )
+
+func init() {
+	database.RegisterType(nodeInfo{})
+}
 
 // NewNode will initialize a new node.
 func NewNode(secret string, db *database.Database, peerStore *PeerStore) (*Node, error) {
@@ -95,12 +99,10 @@ func NewNode(secret string, db *database.Database, peerStore *PeerStore) (*Node,
 				ni.Name = peerStore.Self()
 				ni.Raft = n.raft.Stats()
 
-				b, err := json.Marshal(ni)
+				err := n.Save(&ni)
 				if err != nil {
 					panic(err.Error())
 				}
-
-				n.Set("/node/"+peerStore.Self(), b)
 			}
 		}
 	}()
@@ -127,6 +129,10 @@ func (n *Node) Apply(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 
+	if !n.leader {
+		w.WriteHeader(http.StatusGone)
+	}
+
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(400)
@@ -141,32 +147,23 @@ func (n *Node) Apply(w http.ResponseWriter, r *http.Request) {
 func (n *Node) Nodes(w http.ResponseWriter, r *http.Request) {
 	var all []nodeInfo
 
-	peers, _ := n.peers.Peers()
-
-	for _, peer := range peers {
-		b, err := n.Get("/node/" + peer)
-		if err != nil {
-			break
-		}
-		var n nodeInfo
-		err = json.Unmarshal(b, &n)
-		if err == nil {
-			all = append(all, n)
-		}
+	err := n.db.All(&all, -1, 0, false)
+	if err != nil {
+		w.Write([]byte(err.Error()))
 	}
 
 	e := json.NewEncoder(w)
 	e.Encode(all)
 }
 
-// Set will set a key in the generic Raft-backed key/value store.
-func (n *Node) Set(key string, value []byte) error {
-	entry := database.NewLogEntry(database.CommandSet, key, value)
+// Save will save an object to the cluster database.
+func (n *Node) Save(data interface{}) error {
+	entry := database.NewLogEntry(database.CommandSave, data)
 
 	if !n.leader {
 		r := bytes.NewReader(entry.Byte())
 		l := n.raft.Leader()
-		_, err := http.Post("http://"+l+"/raft/apply", "honkydong", r)
+		_, err := http.Post("https://"+l+"/raft/apply", "gansoi/entry", r)
 
 		return err
 	}
@@ -176,7 +173,12 @@ func (n *Node) Set(key string, value []byte) error {
 	return nil
 }
 
-// Get will retrieve a key from the generic Raft-backed K/V store.
-func (n *Node) Get(key string) ([]byte, error) {
-	return n.db.Get(key)
+// One will retrieve one record from the cluster database.
+func (n *Node) One(fieldName string, value interface{}, to interface{}) error {
+	return n.db.One(fieldName, value, to)
+}
+
+// All lists all kinds of a type.
+func (n *Node) All(to interface{}, limit int, skip int, reverse bool) error {
+	return n.db.All(to, limit, skip, reverse)
 }
