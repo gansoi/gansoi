@@ -15,5 +15,6 @@ Design goals
 - Multidimensional severity grouping - an alert should be categorized in both severity and urgency.
 - No false positives - the system should never cry wolf.
 - Easy encryption - should support Let’s Encrypt out of the box.
+- Future-proof - Everything must support IPv6 out of the box.
 
 \* gansoi is a working title.
