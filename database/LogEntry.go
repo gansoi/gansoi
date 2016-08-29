@@ -53,7 +53,12 @@ func RegisterType(v interface{}) {
 func GetType(name string) interface{} {
 	name = strings.TrimPrefix(name, "*")
 
-	return reflect.New(types[name]).Interface()
+	typ, found := types[name]
+	if !found {
+		panic("Type " + name + " is not registered")
+	}
+
+	return reflect.New(typ).Interface()
 }
 
 // NewLogEntry will return a new LogEntry ready for committing to the Raft log.
