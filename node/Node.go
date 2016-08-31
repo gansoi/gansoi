@@ -102,14 +102,7 @@ func NewNode(secret string, db *database.Database, peerStore *PeerStore) (*Node,
 				ni.Name = peerStore.Self()
 				ni.Raft = n.raft.Stats()
 
-				// Only attempt this if the cluster is stable with a leader.
-				// FIXME: This check should probably be moved to Save().
-				if n.raft.Leader() != "" {
-					err := n.Save(&ni)
-					if err != nil {
-						panic(err.Error())
-					}
-				}
+				n.Save(&ni)
 			}
 		}
 	}()
@@ -161,6 +154,11 @@ func (n *Node) nodesHandler(c *gin.Context) {
 // apply will apply the log entry to the local Raft node if it's leader, will
 // forward to leader otherwise.
 func (n *Node) apply(entry *database.LogEntry) error {
+	// Only attempt this if the cluster is stable with a leader.
+	if n.raft.Leader() == "" {
+		return raft.ErrLeader
+	}
+
 	if !n.leader {
 		r := bytes.NewReader(entry.Byte())
 		l := n.raft.Leader()
