@@ -2,6 +2,8 @@ package node
 
 import (
 	"bytes"
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -198,6 +200,72 @@ func (n *Node) Delete(data interface{}) error {
 	return n.apply(entry)
 }
 
+func (n *Node) resultHandler(c *gin.Context) {
+	checkResult := &database.CheckResult{}
+
+	if !n.leader {
+		c.AbortWithStatus(http.StatusGone)
+		return
+	}
+
+	defer c.Request.Body.Close()
+	b, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	err = json.Unmarshal(b, checkResult)
+	if err == nil {
+		n.processResult(checkResult)
+	}
+}
+
+func (n *Node) processResult(checkResult *database.CheckResult) {
+	if !n.leader {
+		return
+	}
+
+	fmt.Printf("Results are in: %+v\n", checkResult)
+
+	// FIXME: Evaluate these somehow.
+}
+
+// SubmitResult will submit a new result set to the cluster for further processing.
+func (n *Node) SubmitResult(checkID string, err error, result interface{}) error {
+	checkResult := &database.CheckResult{
+		CheckID:   checkID,
+		Node:      n.peers.Self(),
+		TimeStamp: time.Now(),
+		Results:   result,
+	}
+
+	if err != nil {
+		checkResult.Error = err.Error()
+	}
+
+	b, _ := json.Marshal(checkResult)
+
+	if !n.leader {
+		r := bytes.NewReader(b)
+		l := n.raft.Leader()
+		u := "https://" + l + n.basePath + "/result"
+
+		_, e := http.Post(u, "gansoi/result", r)
+
+		return e
+	}
+
+	// We JSON marshal/unmarshall everything to make sure processResult always
+	// see the same data from followers AND leader. We assume this never fails.
+	checkResult2 := &database.CheckResult{}
+	json.Unmarshal(b, checkResult2)
+
+	n.processResult(checkResult2)
+
+	return nil
+}
+
 // Router can be used to assign a Gin routergroup.
 func (n *Node) Router(router *gin.RouterGroup) {
 	n.basePath = router.BasePath()
@@ -206,4 +274,5 @@ func (n *Node) Router(router *gin.RouterGroup) {
 	router.GET("/stats", n.statsHandler)
 	router.GET("/nodes", n.nodesHandler)
 	router.POST("/apply", n.applyHandler)
+	router.POST("/result", n.resultHandler)
 }

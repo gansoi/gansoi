@@ -124,7 +124,7 @@ func (s *Scheduler) loop() {
 					} else {
 						fmt.Printf("%s ran in %s: %+v\n", check.ID, time.Now().Sub(start), result)
 
-						// FIXME: Handle results somehow!
+						s.node.SubmitResult(check.ID, err, result)
 					}
 
 					// Save the check time and schedule next check.
