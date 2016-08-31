@@ -156,10 +156,9 @@ func (n *Node) nodesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, all)
 }
 
-// Save will save an object to the cluster database.
-func (n *Node) Save(data interface{}) error {
-	entry := database.NewLogEntry(database.CommandSave, data)
-
+// apply will apply the log entry to the local Raft node if it's leader, will
+// forward to leader otherwise.
+func (n *Node) apply(entry *database.LogEntry) error {
 	if !n.leader {
 		r := bytes.NewReader(entry.Byte())
 		l := n.raft.Leader()
@@ -173,6 +172,13 @@ func (n *Node) Save(data interface{}) error {
 	n.raft.Apply(entry.Byte(), time.Minute)
 
 	return nil
+}
+
+// Save will save an object to the cluster database.
+func (n *Node) Save(data interface{}) error {
+	entry := database.NewLogEntry(database.CommandSave, data)
+
+	return n.apply(entry)
 }
 
 // One will retrieve one record from the cluster database.
@@ -189,19 +195,7 @@ func (n *Node) All(to interface{}, limit int, skip int, reverse bool) error {
 func (n *Node) Delete(data interface{}) error {
 	entry := database.NewLogEntry(database.CommandDelete, data)
 
-	if !n.leader {
-		r := bytes.NewReader(entry.Byte())
-		l := n.raft.Leader()
-		u := "https://" + l + n.basePath + "/apply"
-
-		_, err := http.Post(u, "gansoi/entry", r)
-
-		return err
-	}
-
-	n.raft.Apply(entry.Byte(), time.Minute)
-
-	return nil
+	return n.apply(entry)
 }
 
 // Router can be used to assign a Gin routergroup.
