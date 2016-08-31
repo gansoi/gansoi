@@ -8,7 +8,7 @@ import (
 
 func TestAgent(t *testing.T) {
 	a := agents.GetAgent("tcpport")
-	_ = a.(interface{}).(*TCPPort)
+	_ = a.(*TCPPort)
 }
 
 var _ agents.Agent = (*TCPPort)(nil)
