@@ -27,17 +27,6 @@ type (
 		Node      string          `json:"node"`
 		Arguments json.RawMessage `json:"arguments"`
 	}
-
-	// CheckResult describes the result of one or more checks.
-	CheckResult struct {
-		ID      int         `json:"id"`
-		CheckID string      `json:"check_id"`
-		Error   string      `json:"error"`
-		First   time.Time   `json:"first"`
-		Last    time.Time   `json:"last"`
-		Streak  int         `json:"streak"`
-		Results interface{} `json:"results"`
-	}
 )
 
 func init() {
@@ -70,36 +59,4 @@ func (c *Check) UnmarshalJSON(data []byte) error {
 	}
 
 	return nil
-}
-
-// Check implements agents.Agent. Will return true if the result changed.
-func (c *Check) Check(result *CheckResult) bool {
-	result.CheckID = c.ID
-
-	var err error
-	var errorString string
-
-	result.Results, err = c.Agent.Check()
-	if err != nil {
-		errorString = err.Error()
-	}
-
-	result.Last = time.Now()
-	if result.First == (time.Time{}) {
-		result.First = result.Last
-	}
-
-	if errorString == result.Error {
-		result.Streak++
-		return false
-	}
-
-	// If we arrive here, we have witnessed a state change. Reset CheckResult
-	// and save new error from check.
-	result.ID = 0
-	result.Streak = 1
-	result.First = result.Last
-	result.Error = errorString
-
-	return true
 }
