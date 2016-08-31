@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"math/rand"
 	"net/http"
 	"os"
 	"strings"
@@ -40,6 +41,9 @@ secret = "This is unsecure. Pick a good alphanumeric secret."
 )
 
 func init() {
+	// This should not be used for crypto, time.Now() is enough.
+	rand.Seed(time.Now().UnixNano())
+
 	flag.Parse()
 }
 
@@ -71,6 +75,8 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
+
+	NewScheduler(n, true)
 
 	engine := gin.New()
 
