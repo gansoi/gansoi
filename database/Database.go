@@ -64,12 +64,10 @@ func (d *Database) ProcessLogEntry(entry *LogEntry) error {
 
 	switch entry.Command {
 	case CommandSave:
-		v := GetType(entry.Type)
-		json.Unmarshal(entry.Value, v)
+		v, _ := entry.Payload()
 		err = d.Save(v)
 	case CommandDelete:
-		v := GetType(entry.Type)
-		json.Unmarshal(entry.Value, v)
+		v, _ := entry.Payload()
 		err = d.db.DeleteStruct(v)
 	default:
 		err = fmt.Errorf("not implemented")
