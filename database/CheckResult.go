@@ -5,6 +5,7 @@ import "time"
 type (
 	// CheckResult describes the result of one or more checks.
 	CheckResult struct {
+		ID        int64       `json:"id"`
 		CheckID   string      `json:"check_id"`
 		Node      string      `json:"node_id"`
 		Error     string      `json:"error"`
