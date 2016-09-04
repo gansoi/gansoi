@@ -66,7 +66,7 @@ func (d *Database) ProcessLogEntry(entry *LogEntry) error {
 	case CommandSave:
 		v := GetType(entry.Type)
 		json.Unmarshal(entry.Value, v)
-		d.Save(v)
+		err = d.Save(v)
 	case CommandDelete:
 		v := GetType(entry.Type)
 		json.Unmarshal(entry.Value, v)
