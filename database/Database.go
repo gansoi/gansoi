@@ -18,8 +18,10 @@ import (
 type (
 	// Database is the lowest level of the gansoi database.
 	Database struct {
-		dbMutex sync.RWMutex
-		db      *storm.DB
+		dbMutex       sync.RWMutex
+		db            *storm.DB
+		listenersLock sync.RWMutex
+		listeners     []Listener
 	}
 )
 
@@ -62,16 +64,28 @@ func (d *Database) Storm() *storm.DB {
 func (d *Database) ProcessLogEntry(entry *LogEntry) error {
 	var err error
 
+	var v interface{}
+
 	switch entry.Command {
 	case CommandSave:
-		v, _ := entry.Payload()
+		v, _ = entry.Payload()
 		err = d.Save(v)
 	case CommandDelete:
-		v, _ := entry.Payload()
+		v, _ = entry.Payload()
 		err = d.db.DeleteStruct(v)
 	default:
 		err = fmt.Errorf("not implemented")
 	}
+
+	go func(command Command, data interface{}, err error) {
+		d.listenersLock.RLock()
+
+		for _, listener := range d.listeners {
+			listener.PostLocalApply(command, data, err)
+		}
+
+		d.listenersLock.RUnlock()
+	}(entry.Command, v, err)
 
 	if err != nil {
 		panic(err.Error())
@@ -166,4 +180,12 @@ func (d *Database) All(to interface{}, limit int, skip int, reverse bool) error 
 		opts.Skip = skip
 		opts.Reverse = reverse
 	})
+}
+
+// RegisterListener will register a listener for new changes to the database.
+func (d *Database) RegisterListener(listener Listener) {
+	d.listenersLock.Lock()
+	defer d.listenersLock.Unlock()
+
+	d.listeners = append(d.listeners, listener)
 }
