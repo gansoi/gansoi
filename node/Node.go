@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -17,12 +18,14 @@ import (
 type (
 	// Node represents a single gansoi node.
 	Node struct {
-		db       *database.Database
-		peers    *PeerStore
-		raft     *raft.Raft
-		leader   bool
-		stream   *HTTPStream
-		basePath string
+		db            *database.Database
+		peers         *PeerStore
+		raft          *raft.Raft
+		leader        bool
+		stream        *HTTPStream
+		basePath      string
+		listenersLock sync.RWMutex
+		listeners     []Listener
 	}
 
 	nodeInfo struct {
@@ -46,6 +49,8 @@ func NewNode(secret string, db *database.Database, peerStore *PeerStore) (*Node,
 		db:    db,
 		peers: peerStore,
 	}
+
+	db.RegisterListener(n)
 
 	// Raft config.
 	conf := raft.DefaultConfig()
@@ -194,6 +199,24 @@ func (n *Node) Delete(data interface{}) error {
 	entry := database.NewLogEntry(database.CommandDelete, data)
 
 	return n.apply(entry)
+}
+
+// RegisterListener will register a listener for new changes to the database.
+func (n *Node) RegisterListener(listener Listener) {
+	n.listenersLock.Lock()
+	defer n.listenersLock.Unlock()
+
+	n.listeners = append(n.listeners, listener)
+}
+
+// PostLocalApply satisfies the database.Listener interface.
+func (n *Node) PostLocalApply(command database.Command, data interface{}, err error) {
+	n.listenersLock.RLock()
+	defer n.listenersLock.RUnlock()
+
+	for _, listener := range n.listeners {
+		go listener.PostClusterApply(n.leader, command, data, err)
+	}
 }
 
 // SubmitResult will submit a new result set to the cluster for further processing.
