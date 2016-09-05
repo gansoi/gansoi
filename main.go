@@ -13,6 +13,7 @@ import (
 
 	_ "github.com/abrander/gansoi/agents/tcpport"
 	"github.com/abrander/gansoi/database"
+	"github.com/abrander/gansoi/eval"
 	"github.com/abrander/gansoi/node"
 )
 
@@ -76,13 +77,19 @@ func main() {
 		panic(err.Error())
 	}
 
+	eval.NewEvaluator(n, peerstore)
+
 	NewScheduler(n, true)
 
 	engine := gin.New()
 
 	n.Router(engine.Group("/raft"))
+
 	restChecks := node.NewRestAPI(Check{}, n)
 	restChecks.Router(engine.Group("/checks"))
+
+	restEvaluations := node.NewRestAPI(eval.Evaluation{}, n)
+	restEvaluations.Router(engine.Group("/evaluations"))
 
 	// By default we bind to port 443 (HTTPS) on all interfaecs on both IPv4
 	// and IPv6.
