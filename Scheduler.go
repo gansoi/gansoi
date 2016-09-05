@@ -113,7 +113,7 @@ func (s *Scheduler) loop() {
 				inFlightLock.Unlock()
 
 				// Execute the check in its own go routine.
-				go func(check *Check) {
+				go func(check Check) {
 					// Run the job.
 					start := time.Now()
 
@@ -135,7 +135,7 @@ func (s *Scheduler) loop() {
 					inFlightLock.Lock()
 					delete(inFlight, check.ID)
 					inFlightLock.Unlock()
-				}(&check)
+				}(check)
 			}
 		}
 	}
