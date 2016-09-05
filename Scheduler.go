@@ -123,9 +123,9 @@ func (s *Scheduler) loop() {
 						fmt.Printf("%s failed in %s: %s\n", check.ID, time.Now().Sub(start), err.Error())
 					} else {
 						fmt.Printf("%s ran in %s: %+v\n", check.ID, time.Now().Sub(start), result)
-
-						s.node.SubmitResult(check.ID, err, result)
 					}
+
+					s.node.SubmitResult(check.ID, err, result)
 
 					// Save the check time and schedule next check.
 					meta.LastCheck = t
