@@ -92,6 +92,20 @@ func main() {
 	restEvaluations := node.NewRestAPI(eval.Evaluation{}, n)
 	restEvaluations.Router(engine.Group("/evaluations"))
 
+	// Endpoint for running a check on the cluster node.
+	engine.POST("/test", func(c *gin.Context) {
+		var check Check
+		e := c.BindJSON(&check)
+		if e != nil {
+			c.AbortWithError(http.StatusBadRequest, e)
+		}
+
+		checkResult := RunCheck(&check)
+		checkResult.Node = peerstore.Self()
+
+		c.JSON(http.StatusOK, checkResult)
+	})
+
 	// By default we bind to port 443 (HTTPS) on all interfaecs on both IPv4
 	// and IPv6.
 	bind := ":443"

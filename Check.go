@@ -60,3 +60,20 @@ func (c *Check) UnmarshalJSON(data []byte) error {
 
 	return nil
 }
+
+// RunCheck will run a check and return a CheckResult.
+func RunCheck(check *Check) *database.CheckResult {
+	result, e := check.Agent.Check()
+
+	checkResult := &database.CheckResult{
+		CheckID:   check.ID,
+		TimeStamp: time.Now(),
+		Results:   result,
+	}
+
+	if e != nil {
+		checkResult.Error = e.Error()
+	}
+
+	return checkResult
+}
