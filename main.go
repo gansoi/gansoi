@@ -11,6 +11,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/gin-gonic/gin"
 
+	_ "github.com/abrander/gansoi/agents/http"
 	_ "github.com/abrander/gansoi/agents/tcpport"
 	"github.com/abrander/gansoi/database"
 	"github.com/abrander/gansoi/eval"
