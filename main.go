@@ -13,6 +13,7 @@ import (
 
 	_ "github.com/abrander/gansoi/agents/http"
 	_ "github.com/abrander/gansoi/agents/tcpport"
+	"github.com/abrander/gansoi/checks"
 	"github.com/abrander/gansoi/database"
 	"github.com/abrander/gansoi/eval"
 	"github.com/abrander/gansoi/node"
@@ -80,13 +81,13 @@ func main() {
 
 	eval.NewEvaluator(n, peerstore)
 
-	NewScheduler(n, true)
+	checks.NewScheduler(n, true)
 
 	engine := gin.New()
 
 	n.Router(engine.Group("/raft"))
 
-	restChecks := node.NewRestAPI(Check{}, n)
+	restChecks := node.NewRestAPI(checks.Check{}, n)
 	restChecks.Router(engine.Group("/checks"))
 
 	restEvaluations := node.NewRestAPI(eval.Evaluation{}, n)
@@ -94,13 +95,13 @@ func main() {
 
 	// Endpoint for running a check on the cluster node.
 	engine.POST("/test", func(c *gin.Context) {
-		var check Check
+		var check checks.Check
 		e := c.BindJSON(&check)
 		if e != nil {
 			c.AbortWithError(http.StatusBadRequest, e)
 		}
 
-		checkResult := RunCheck(&check)
+		checkResult := checks.RunCheck(&check)
 		checkResult.Node = peerstore.Self()
 
 		c.JSON(http.StatusOK, checkResult)
