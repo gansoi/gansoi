@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"github.com/abrander/gingopherjs"
 	"github.com/gin-gonic/gin"
 
 	_ "github.com/abrander/gansoi/agents/http"
@@ -107,6 +108,13 @@ func main() {
 		c.JSON(http.StatusOK, checkResult)
 	})
 
+	// This is extremely slow. Should be replaced by something else in production.
+	g, _ := gingopherjs.New("github.com/abrander/gansoi/web/client")
+	engine.GET("/client.js", g.Handler)
+
+	gopath := os.Getenv("GOPATH")
+
+	engine.StaticFile("/", gopath+"/src/github.com/abrander/gansoi/web/index.html")
 	// By default we bind to port 443 (HTTPS) on all interfaecs on both IPv4
 	// and IPv6.
 	bind := ":443"

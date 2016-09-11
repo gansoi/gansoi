@@ -1,0 +1,71 @@
+<html>
+<head>
+    <title>Gansoi monitoring</title>
+    <script src="/client.js"></script>
+</head>
+<body>
+ <a href="#overview">Overview</a>
+ <a href="#gansoi">Gansoi</a>
+ <a href="#checks">Checks</a>
+ <div id="main"></div>
+</body>
+
+<script type="template" name="error">
+<h1>{{ . }}</h1>
+</script>
+
+<script type="template" name="overview">
+<h2>Overview</h2>
+</script>
+
+<script type="template" name="gansoi">
+<h2>Gansoi</h2>
+<table>
+ <tr>
+  <th>Name</th>
+  <th>Started</th>
+  <th>State</th>
+  <th>Last contact</th>
+  <th>Apply</th>
+  <th>Commit</th>
+  <th>Last</th>
+ </tr>
+{{ range . }}
+{{ template "gansoinode" . }}
+{{ end }}
+</table>
+</script>
+
+<script type="template" name="gansoinode">
+<tr>
+<td>{{ .Name }}</td>
+<td>{{ .Started }}</td>
+<td>{{ .Raft.state }}</td>
+<td>{{ .Raft.last_contact }}</td>
+<td>{{ .Raft.applied_index }}</td>
+<td>{{ .Raft.commit_index }}</td>
+<td>{{ .Raft.last_log_index }}</td>
+</tr>
+</script>
+
+<script type="template" name="checks">
+<h2>Checks</h2>
+<table>
+{{ range .List }}
+{{ template "check" . }}
+{{ end }}
+</table>
+</script>
+
+<script type="template" name="check">
+<tr>
+<td>{{ .ID }}</td>
+<td>{{ .AgentID }}</td>
+<td>{{ .Interval }}</td>
+<td>{{ .Node }}</td>
+<td><button name="EditCheck" value="{{ .ID }}">Edit</button></td>
+<td><button name="DeleteCheck" value="{{ .ID }}">Delete</button></td>
+</tr>
+</script>
+
+</html>
