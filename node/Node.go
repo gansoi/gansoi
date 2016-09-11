@@ -219,22 +219,6 @@ func (n *Node) PostLocalApply(command database.Command, data interface{}, err er
 	}
 }
 
-// SubmitResult will submit a new result set to the cluster for further processing.
-func (n *Node) SubmitResult(checkID string, err error, result interface{}) error {
-	checkResult := &database.CheckResult{
-		CheckID:   checkID,
-		Node:      n.peers.Self(),
-		TimeStamp: time.Now(),
-		Results:   result,
-	}
-
-	if err != nil {
-		checkResult.Error = err.Error()
-	}
-
-	return n.Save(checkResult)
-}
-
 // Router can be used to assign a Gin routergroup.
 func (n *Node) Router(router *gin.RouterGroup) {
 	n.basePath = router.BasePath()

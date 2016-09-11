@@ -81,7 +81,7 @@ func main() {
 
 	eval.NewEvaluator(n, peerstore)
 
-	checks.NewScheduler(n, true)
+	checks.NewScheduler(n, peerstore.Self(), true)
 
 	engine := gin.New()
 

@@ -5,15 +5,14 @@ import (
 	"math/rand"
 	"sync"
 	"time"
-
-	"github.com/abrander/gansoi/node"
 )
 
 type (
 	// Scheduler takes care of scheduling checks.
 	Scheduler struct {
 		run       bool
-		node      *node.Node
+		node      db
+		nodeName  string
 		ticker    *time.Ticker
 		metaStore map[string]*checkMeta
 	}
@@ -22,12 +21,24 @@ type (
 		LastCheck time.Time
 		NextCheck time.Time
 	}
+
+	db interface {
+		// Save will save an object to the database.
+		Save(data interface{}) error
+
+		// One will retrieve one record from the database.
+		One(fieldName string, value interface{}, to interface{}) error
+
+		// All lists all kinds of a type.
+		All(to interface{}, limit int, skip int, reverse bool) error
+	}
 )
 
 // NewScheduler starts a new scheduler.
-func NewScheduler(n *node.Node, run bool) *Scheduler {
+func NewScheduler(n db, nodeName string, run bool) *Scheduler {
 	s := &Scheduler{
 		node:      n,
+		nodeName:  nodeName,
 		ticker:    time.NewTicker(time.Millisecond * 1000),
 		run:       run,
 		metaStore: make(map[string]*checkMeta),
@@ -117,15 +128,16 @@ func (s *Scheduler) loop() {
 					// Run the job.
 					start := time.Now()
 
-					result, err := check.Agent.Check()
+					checkResult := RunCheck(&check)
+					checkResult.Node = s.nodeName
 
-					if err != nil {
-						fmt.Printf("%s failed in %s: %s\n", check.ID, time.Now().Sub(start), err.Error())
+					if checkResult.Error != "" {
+						fmt.Printf("%s failed in %s: %s\n", check.ID, time.Now().Sub(start), checkResult.Error)
 					} else {
-						fmt.Printf("%s ran in %s: %+v\n", check.ID, time.Now().Sub(start), result)
+						fmt.Printf("%s ran in %s: %+v\n", check.ID, time.Now().Sub(start), checkResult.Results)
 					}
 
-					s.node.SubmitResult(check.ID, err, result)
+					s.node.Save(checkResult)
 
 					// Save the check time and schedule next check.
 					meta.LastCheck = t
