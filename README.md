@@ -6,8 +6,7 @@ for a modern world. As of the moment it's at most a non-working proof-of-concept
 
 ### Design goals
 
-- Fully distributed - no single point of failure.
-- Fault tolerant - should tolerate multiple node failures.
+- Fault tolerant and distributed - should tolerate multiple node failures with no single point of failure.
 - Performant - should scale to thousands of checks per second on basic hardware.
 - Zero dependencies - should install and operate without any other software.
 - Geodistributed - should be deployable across the globe for full redundancy and geographically distributed checks.
@@ -16,7 +15,7 @@ for a modern world. As of the moment it's at most a non-working proof-of-concept
 - Easy encryption - should support Let’s Encrypt out of the box.
 - Future-proof - Everything must support IPv6 out of the box.
 
-### Alert integrations
+#### Alert integrations
 
 - Slack - it's what we all use and love.
 - Pagerduty - oldtimers swear by this. Let's support it.
