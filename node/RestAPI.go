@@ -66,9 +66,9 @@ func (r *RestAPI) replace(c *gin.Context) {
 
 func (r *RestAPI) delete(c *gin.Context) {
 	record := r.new()
-	err := c.BindJSON(record)
+	err := r.node.One("ID", c.Param("id"), record)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		c.AbortWithError(http.StatusNotFound, err)
 		return
 	}
 
