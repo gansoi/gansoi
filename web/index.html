@@ -7,6 +7,7 @@
  <a href="#overview">Overview</a>
  <a href="#gansoi">Gansoi</a>
  <a href="#checks">Checks</a>
+ <a href="#agents">Agents</a>
  <div id="main"></div>
 </body>
 
@@ -65,6 +66,21 @@
 <td>{{ .Node }}</td>
 <td><button name="EditCheck" value="{{ .ID }}">Edit</button></td>
 <td><button name="DeleteCheck" value="{{ .ID }}">Delete</button></td>
+</tr>
+</script>
+
+<script type="template" name="agents">
+<h2>Agents</h2>
+<table>
+{{ range . }}
+{{ template "agent-line" . }}
+{{ end }}
+</table>
+</script>
+
+<script type="template" name="agent-line">
+<tr>
+<td><a href="#check/new/{{ .Name }}">{{ .Name }}</a></td>
 </tr>
 </script>
 
