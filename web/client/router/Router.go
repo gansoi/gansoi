@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"strings"
 
 	"honnef.co/go/js/dom"
@@ -73,7 +72,6 @@ func (r *Router) Run() error {
 	for {
 		select {
 		case newHash := <-change.C:
-			fmt.Printf("HASH: %s\n", newHash)
 			r.render(newHash)
 		case <-r.quit:
 			change.Close()
