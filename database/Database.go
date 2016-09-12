@@ -99,7 +99,8 @@ func (d *Database) Apply(l *raft.Log) interface{} {
 	err := json.Unmarshal(l.Data, entry)
 	if err != nil {
 		// This should not happen..?
-		panic(err.Error())
+		fmt.Printf("%s: '%s'\n", err.Error(), string(l.Data))
+		return nil
 	}
 
 	return d.ProcessLogEntry(entry)
