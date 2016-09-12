@@ -12,6 +12,7 @@ import (
 	"github.com/abrander/gingopherjs"
 	"github.com/gin-gonic/gin"
 
+	"github.com/abrander/gansoi/agents"
 	_ "github.com/abrander/gansoi/agents/http"
 	_ "github.com/abrander/gansoi/agents/tcpport"
 	"github.com/abrander/gansoi/checks"
@@ -106,6 +107,12 @@ func main() {
 		checkResult.Node = peerstore.Self()
 
 		c.JSON(http.StatusOK, checkResult)
+	})
+
+	engine.GET("/agents", func(c *gin.Context) {
+		descriptions := agents.ListAgents()
+
+		c.JSON(http.StatusOK, descriptions)
 	})
 
 	// This is extremely slow. Should be replaced by something else in production.
