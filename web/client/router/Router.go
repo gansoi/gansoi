@@ -1,7 +1,7 @@
 package router
 
 import (
-	"strings"
+	"regexp"
 
 	"honnef.co/go/js/dom"
 
@@ -9,11 +9,16 @@ import (
 )
 
 type (
+	routeDescription struct {
+		regex *regexp.Regexp
+		f     RouterFunc
+	}
+
 	Router struct {
 		nowShowing string
 		container  dom.Element
 		quit       chan bool
-		routes     map[string]RouterFunc
+		routes     map[string]routeDescription
 	}
 
 	RouterFunc func(c *Context)
@@ -22,43 +27,42 @@ type (
 func New(container dom.Element) *Router {
 	return &Router{
 		container: container,
-		routes:    make(map[string]RouterFunc),
+		routes:    make(map[string]routeDescription),
 	}
 }
 
 func (r *Router) AddRoute(path string, f RouterFunc) error {
-	r.routes[path] = f
+	regex, err := generateRegex(path)
+	if err != nil {
+		return err
+	}
+
+	r.routes[path] = routeDescription{
+		regex: regexp.MustCompile(regex),
+		f:     f,
+	}
 
 	return nil
 }
 
 func (r *Router) render(hash string) {
-	var f RouterFunc
-	matchLen := 0
-
 	// Iterate over all routes
-	for key, value := range r.routes {
+	for _, description := range r.routes {
+		match := description.regex.FindStringSubmatch(hash)
 
-		// Check if prefix matches
-		if strings.HasPrefix(hash, key) {
-			l := len(key)
+		// If we got more than zero matches, we're good to go.
+		if len(match) > 0 {
+			context := NewContext(r)
 
-			// When several destinations matches, the route with the
-			// longest key is chosen (the most specific one)
-			if l > matchLen {
-				matchLen = l
-				f = value
+			for i, name := range description.regex.SubexpNames() {
+				if name != "" {
+					context.params[name] = match[i]
+				}
 			}
-		}
-	}
 
-	// If f is not nil it means that we found a match
-	if f != nil {
-		context := &Context{
-			router: r,
+			description.f(context)
+			break
 		}
-
-		f(context)
 	}
 }
 

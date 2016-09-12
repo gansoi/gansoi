@@ -2,7 +2,9 @@ package router
 
 import (
 	"encoding/json"
+	"fmt"
 	"html"
+	"regexp"
 
 	"github.com/abrander/gansoi/web/client/browser"
 )
@@ -11,8 +13,63 @@ type (
 	Context struct {
 		router  *Router
 		aborted bool
+		params  map[string]string
 	}
 )
+
+func NewContext(router *Router) *Context {
+	return &Context{
+		router: router,
+		params: make(map[string]string),
+	}
+}
+
+func generateRegex(raw string) (string, error) {
+	regex := "^"
+
+	state := 0
+	token := ""
+
+	for i, r := range raw {
+		if r == '{' {
+			if state != 0 {
+				return "", fmt.Errorf("Encountered illegal { at %d", i)
+			}
+
+			regex += regexp.QuoteMeta(token)
+			state = 1
+			token = ""
+		} else if r == '}' {
+			if state != 1 {
+				return "", fmt.Errorf("Encountered illegal } %d", i)
+			}
+
+			// Save param to regex
+			regex += "(?P<" + token + ">[[:alnum:]]*)"
+
+			state = 0
+			token = ""
+		} else {
+			if state == 0 {
+				token += string(r)
+			} else if state == 1 {
+				token += string(r)
+			}
+		}
+	}
+
+	if state == 1 {
+		return "", fmt.Errorf("Missing }")
+	}
+
+	regex += regexp.QuoteMeta(token) + "$"
+
+	return regex, nil
+}
+
+func (c *Context) Param(name string) string {
+	return c.params[name]
+}
 
 func (c *Context) HTML(rawHtml string) {
 	if c.aborted == true {
