@@ -40,19 +40,7 @@ func main() {
 
 	url := browser.Url()
 
-	c := rest.NewClient(url.RawPath+"/checks/", "")
-
-	var cl checkList
-
-	err := c.List(&cl.List)
-
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	for _, check := range cl.List {
-		fmt.Printf("%s: %+v\n", check.AgentID, check.Arguments)
-	}
+	checks := rest.NewClient(url.RawPath+"/checks/", "")
 
 	templates := template.NewCollection("template")
 
@@ -86,7 +74,20 @@ func main() {
 	})
 
 	r.AddRoute("checks", func(c *router.Context) {
-		c.Render(templates, "checks", cl)
+		var list checkList
+		err := checks.List(&list.List)
+
+		if err != nil {
+			fmt.Println(err.Error())
+			c.Render(templates, "error", err.Error())
+			return
+		}
+
+		err = c.Render(templates, "checks", list)
+		if err != nil {
+			c.Render(templates, "error", err.Error())
+			return
+		}
 	})
 
 	r.Run()
