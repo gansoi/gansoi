@@ -23,12 +23,13 @@ type (
 	}
 
 	checkList struct {
-		List []Check
+		client *rest.Client
+		List   []Check
 	}
 )
 
 func (c checkList) DeleteCheck(id string) {
-	fmt.Printf("Delete %s\n", id)
+	c.client.Delete(id)
 }
 
 func (c checkList) EditCheck(id string) {
@@ -74,7 +75,7 @@ func main() {
 	})
 
 	r.AddRoute("checks", func(c *router.Context) {
-		var list checkList
+		list := checkList{client: checks}
 		err := checks.List(&list.List)
 
 		if err != nil {
