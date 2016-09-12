@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"html"
 
-	"github.com/abrander/agento-io/client/browser"
+	"github.com/abrander/gansoi/web/client/browser"
 )
 
 type (
