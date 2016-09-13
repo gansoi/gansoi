@@ -31,6 +31,8 @@ mkdir -p /tmp/gansoi-1
 mkdir -p /tmp/gansoi-2
 mkdir -p /tmp/gansoi-3
 
+sudo setcap CAP_NET_BIND_SERVICE=+eip ./gansoi
+
 tmux new-session -d './gansoi -config /tmp/1.conf'
 tmux split-window -v './gansoi -config /tmp/2.conf'
 tmux split-window -v './gansoi -config /tmp/3.conf'
