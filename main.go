@@ -30,7 +30,7 @@ type (
 		Local       string   `toml:"local"`
 		Cert        string   `toml:"cert"`
 		Key         string   `toml:"key"`
-		DbPath      string   `toml:"db"`
+		DataDir     string   `toml:"datadir"`
 		Cluster     []string `toml:"cluster"`
 		Secret      string   `toml:"secret"`
 		LetsEncrypt bool     `toml:"letsencrypt"`
@@ -44,7 +44,7 @@ var (
 local = "london.example.com"
 cert = "/etc/gansoi/me-cert.pem"
 key = "/etc/gansoi/me-key.pem"
-db = "/var/lib/gansoi"
+datadir = "/var/lib/gansoi"
 cluster = ["london.example.com", "copenhagen.example.com", "berlin.example.com"]
 secret = "This is unsecure. Pick a good alphanumeric secret."
 
@@ -79,7 +79,7 @@ func main() {
 	peerstore.SetPeers(config.Cluster)
 	peerstore.SetSelf(self)
 
-	db, err := database.NewDatabase(config.DbPath)
+	db, err := database.NewDatabase(config.DataDir)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -150,7 +150,7 @@ func main() {
 	if config.LetsEncrypt {
 		var lManager letsencrypt.Manager
 
-		cacheFile := path.Join(config.DbPath, "letsencrypt.cache")
+		cacheFile := path.Join(config.DataDir, "letsencrypt.cache")
 
 		if err := lManager.CacheFile(cacheFile); err != nil {
 			panic(err.Error())
