@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	htmltemplate "html/template"
 	"net/http"
 	"time"
 
@@ -110,9 +111,33 @@ func main() {
 	})
 
 	r.AddRoute("check/new/{agent}", func(c *router.Context) {
-		agent := c.Param("agent")
-		str := fmt.Sprintf("FIXME: add agent thingie for %s", agent)
-		c.Text(str)
+		agentID := c.Param("agent")
+		var a *agents.AgentDescription
+		for _, agentDescription := range agentDescriptions {
+			if agentDescription.Name == agentID {
+				a = &agentDescription
+				break
+			}
+		}
+
+		if a == nil {
+			c.Render(templates, "error", "AgentID not found")
+		}
+
+		var parts []htmltemplate.HTML
+
+		for _, argument := range a.Arguments {
+			tmpl, err := templates.RenderString("agent-argument-"+argument.Type, argument)
+
+			if err != nil {
+				c.Error(err)
+				return
+			}
+
+			parts = append(parts, htmltemplate.HTML(tmpl))
+		}
+
+		c.Render(templates, "agent-new", parts)
 	})
 
 	r.Run()

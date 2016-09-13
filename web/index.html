@@ -84,4 +84,19 @@
 </tr>
 </script>
 
+<script type="template" name="agent-new">
+<form>
+{{ range . }}
+{{ . }}<br />
+{{ end }}
+<input type="submit" value="Add check" />
+</form>
+</script>
+
+<script type="template" name="agent-argument-string">
+<label>{{ .Name }}</label>
+<input type="string" name="{{ .Name }}"/>
+<label>{{ .Description }}</label>
+</script>
+
 </html>
