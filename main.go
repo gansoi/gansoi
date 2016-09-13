@@ -1,16 +1,20 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"math/rand"
 	"net/http"
 	"os"
+	"path"
 	"strings"
 	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/abrander/gingopherjs"
 	"github.com/gin-gonic/gin"
+
+	"rsc.io/letsencrypt"
 
 	"github.com/abrander/gansoi/agents"
 	_ "github.com/abrander/gansoi/agents/http"
@@ -23,12 +27,13 @@ import (
 
 type (
 	configuration struct {
-		Local   string   `toml:"local"`
-		Cert    string   `toml:"cert"`
-		Key     string   `toml:"key"`
-		DbPath  string   `toml:"db"`
-		Cluster []string `toml:"cluster"`
-		Secret  string   `toml:"secret"`
+		Local       string   `toml:"local"`
+		Cert        string   `toml:"cert"`
+		Key         string   `toml:"key"`
+		DbPath      string   `toml:"db"`
+		Cluster     []string `toml:"cluster"`
+		Secret      string   `toml:"secret"`
+		LetsEncrypt bool     `toml:"letsencrypt"`
 	}
 )
 
@@ -42,6 +47,9 @@ key = "/etc/gansoi/me-key.pem"
 db = "/var/lib/gansoi"
 cluster = ["london.example.com", "copenhagen.example.com", "berlin.example.com"]
 secret = "This is unsecure. Pick a good alphanumeric secret."
+
+# cert and key are ignored if set
+letsencrypt = true
 `
 )
 
@@ -136,14 +144,34 @@ func main() {
 		}
 	}
 
+	var tlsConfig tls.Config
+
+	// if letsencrypt is enabled, put a GetCertificate function into tlsConfig
+	if config.LetsEncrypt {
+		var lManager letsencrypt.Manager
+
+		cacheFile := path.Join(config.DbPath, "letsencrypt.cache")
+
+		if err := lManager.CacheFile(cacheFile); err != nil {
+			panic(err.Error())
+		}
+
+		// ensure we dont ask for random certificates
+		lManager.SetHosts([]string{self}) // .. or config.Local ?
+
+		tlsConfig.GetCertificate = lManager.GetCertificate
+	}
+
 	s := &http.Server{
 		Addr:           bind,
 		Handler:        engine,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
+		TLSConfig:      &tlsConfig,
 	}
 
+	// if GetCertificate was set earlier - ListenAndServeTLS silently ignores cert and key
 	err = s.ListenAndServeTLS(config.Cert, config.Key)
 	if err != nil {
 		panic(err.Error())
