@@ -6,12 +6,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/abrander/gansoi/agents"
 	"github.com/abrander/gansoi/web/client/browser"
 	"github.com/abrander/gansoi/web/client/rest"
 	"github.com/abrander/gansoi/web/client/router"
 	"github.com/abrander/gansoi/web/client/template"
-
-	"github.com/abrander/gansoi/agents"
 )
 
 type (
@@ -30,6 +29,10 @@ type (
 	}
 )
 
+var (
+	agentDescriptions []agents.AgentDescription
+)
+
 func (c checkList) DeleteCheck(id string) {
 	c.client.Delete(id)
 }
@@ -39,6 +42,11 @@ func (c checkList) EditCheck(id string) {
 }
 
 func main() {
+	resp, _ := http.Get("/agents")
+	decoder := json.NewDecoder(resp.Body)
+	decoder.Decode(&agentDescriptions)
+	resp.Body.Close()
+
 	browser.WaitForLoad()
 
 	url := browser.Url()
@@ -94,18 +102,7 @@ func main() {
 	})
 
 	r.AddRoute("agents", func(c *router.Context) {
-		var descriptions []agents.AgentDescription
-		resp, err := http.Get("/agents")
-		if err != nil {
-			c.Render(templates, "error", err.Error())
-			return
-		}
-		defer resp.Body.Close()
-
-		decoder := json.NewDecoder(resp.Body)
-		decoder.Decode(&descriptions)
-
-		err = c.Render(templates, "agents", descriptions)
+		err := c.Render(templates, "agents", agentDescriptions)
 		if err != nil {
 			c.Render(templates, "error", err.Error())
 			return
