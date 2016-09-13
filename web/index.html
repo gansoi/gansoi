@@ -86,7 +86,19 @@
 
 <script type="template" name="agent-new">
 <form>
-{{ range . }}
+
+ <label>
+  Unique Check ID
+  <input type="text" name="ID"/>
+ </label><br />
+
+ <label>
+  Check interval
+  <input type="number" name="Interval" min="5" max="3600" value="60">
+  (seconds)
+ </label><br />
+
+{{ range .Parts }}
 {{ . }}<br />
 {{ end }}
 <input type="submit" value="Add check" />
@@ -94,9 +106,11 @@
 </script>
 
 <script type="template" name="agent-argument-string">
-<label>{{ .Name }}</label>
-<input type="string" name="{{ .Name }}"/>
-<label>{{ .Description }}</label>
+<label>
+ {{ .Name }}
+ <input type="text" name="{{ .Name }}"/>
+ {{ .Description }}
+</label>
 </script>
 
 </html>

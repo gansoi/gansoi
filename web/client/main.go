@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	htmltemplate "html/template"
 	"net/http"
 	"time"
 
@@ -124,20 +123,17 @@ func main() {
 			c.Render(templates, "error", "AgentID not found")
 		}
 
-		var parts []htmltemplate.HTML
-
-		for _, argument := range a.Arguments {
-			tmpl, err := templates.RenderString("agent-argument-"+argument.Type, argument)
-
-			if err != nil {
-				c.Error(err)
-				return
-			}
-
-			parts = append(parts, htmltemplate.HTML(tmpl))
+		controller, err := NewNewAgent(a, templates)
+		if err != nil {
+			c.Render(templates, "error", err.Error())
+			return
 		}
 
-		c.Render(templates, "agent-new", parts)
+		err = c.Render(templates, "agent-new", controller)
+		if err != nil {
+			c.Render(templates, "error", err.Error())
+			return
+		}
 	})
 
 	r.Run()
