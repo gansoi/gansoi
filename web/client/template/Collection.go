@@ -66,28 +66,25 @@ func (c *Collection) RenderString(templateID string, data interface{}) (string, 
 	return buf.String(), err
 }
 
-func formCollect(form dom.Element, v reflect.Value) {
-	mutable := v.Elem()
+// formToMap will collect all input values and return a map.
+func formToMap(form dom.Element) map[string]string {
+	values := make(map[string]string)
 
 	inputs := form.GetElementsByTagName("input")
 	for _, element := range inputs {
-		// Type assertion should be safe here
-		input := element.(*dom.HTMLInputElement)
+		// Type assertion should be safe here - but we check anyway.
+		input, ok := element.(*dom.HTMLInputElement)
+		if !ok {
+			// This should never happen, since we're querying for "input".
+			continue
+		}
 
-		// Get name attribute
-		name := input.GetAttribute("name")
-		val := mutable.FieldByName(name)
-
-		// See if we found a matching field
-		if val.IsValid() {
-			// We only support string for now
-			if val.Kind() != reflect.String {
-				return
-			}
-
-			val.Set(reflect.ValueOf(input.Value))
+		if input.Name != "" {
+			values[input.Name] = input.Value
 		}
 	}
+
+	return values
 }
 
 // RenderElement will render a template to a dom.Element.
@@ -143,30 +140,24 @@ func (c *Collection) RenderElement(target dom.Element, templateID string, data i
 			case "text":
 				// text type should be pre-filled from data
 				val := immutable.Elem().FieldByName(name)
-				if !val.IsValid() {
-					return fmt.Errorf("Did not find field with name '%s' for '%s' input", name, typ)
+				if val.IsValid() {
+
+					input.(*dom.HTMLInputElement).Value = val.String()
 				}
 
-				// We only support string for now
-				if val.Kind() != reflect.String {
-					return errors.New("Only string supported for now")
-				}
-
-				input.(*dom.HTMLInputElement).Value = val.String()
 			case "submit":
-				fun := immutable.MethodByName(name)
-				if !fun.IsValid() {
-					return fmt.Errorf("Did not find submit method with name '%s'", name)
+				submitter, ok := data.(Submitter)
+				if !ok {
+					return fmt.Errorf("%T does not implement Submitter", data)
 				}
 
-				// On submit we should collect all values
 				input.AddEventListener("click", false, func(event dom.Event) {
 					event.PreventDefault()
 
-					formCollect(form, immutable)
-
-					go fun.Call([]reflect.Value{})
+					// Call Submit
+					go submitter.Submit(formToMap(form))
 				})
+
 			default:
 				return fmt.Errorf("Input type '%s' not supported", typ)
 			}
