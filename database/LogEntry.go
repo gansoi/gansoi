@@ -33,6 +33,18 @@ const (
 	CommandDelete
 )
 
+// String implements Stringer.
+func (c Command) String() string {
+	switch c {
+	case CommandSave:
+		return "save"
+	case CommandDelete:
+		return "delete"
+	default:
+		panic("unknown command type")
+	}
+}
+
 // RegisterType will register the type with the log marshaller.
 func RegisterType(v interface{}) {
 	typesLock.Lock()
