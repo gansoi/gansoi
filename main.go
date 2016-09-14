@@ -123,6 +123,14 @@ func main() {
 		c.JSON(http.StatusOK, descriptions)
 	})
 
+	live := NewLive()
+	n.RegisterListener(live)
+
+	// Provide a websocket for clients to keep updated.
+	engine.GET("/live", func(c *gin.Context) {
+		live.ServeHTTP(c.Writer, c.Request)
+	})
+
 	// This is extremely slow. Should be replaced by something else in production.
 	g, _ := gingopherjs.New("github.com/abrander/gansoi/web/client")
 	engine.GET("/client.js", g.Handler)
