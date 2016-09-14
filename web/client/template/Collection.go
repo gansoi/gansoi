@@ -131,6 +131,9 @@ func (c *Collection) RenderElement(target dom.Element, templateID string, data i
 			name := input.GetAttribute("name")
 
 			switch typ {
+			case "number":
+				// number can be treated like string-types for this case.
+				fallthrough
 			case "email":
 				fallthrough
 			case "password":
