@@ -19,7 +19,6 @@ type (
 		ID          string          `json:"id"`
 		AgentID     string          `json:"agent"`
 		Interval    time.Duration   `json:"interval"`
-		Node        string          `json:"node"`
 		Arguments   json.RawMessage `json:"arguments"`
 		Agent       agents.Agent    `json:"-"`
 		Expressions []string        `json:"expressions"`
@@ -51,7 +50,6 @@ func (c *Check) UnmarshalJSON(data []byte) error {
 	c.ID = proxy.ID
 	c.AgentID = proxy.AgentID
 	c.Interval = proxy.Interval
-	c.Node = proxy.Node
 	c.Arguments = proxy.Arguments
 	c.Expressions = proxy.Expressions
 
