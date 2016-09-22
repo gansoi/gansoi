@@ -1,8 +1,6 @@
 package database
 
 import (
-	"fmt"
-
 	"github.com/boltdb/bolt"
 	"github.com/hashicorp/raft"
 )
@@ -15,7 +13,6 @@ type (
 
 // Persist implements raft.FSMSnapshot.
 func (s *Snapshot) Persist(sink raft.SnapshotSink) error {
-	fmt.Printf("Persist()\n")
 
 	err := s.db.Storm().Bolt.View(func(tx *bolt.Tx) error {
 		_, err := tx.WriteTo(sink)
