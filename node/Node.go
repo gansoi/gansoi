@@ -63,8 +63,7 @@ func NewNode(secret string, db *database.Database, peerStore *PeerStore) (*Node,
 	// Set up nice HTTP based transport.
 	n.stream, err = NewHTTPStream(peerStore.Self(), secret)
 	if err != nil {
-		// FIXME: Return error instead of panic.
-		panic(err)
+		return nil, err
 	}
 
 	logger := log.New(os.Stdout, " TRANSPORT ", log.Ldate|log.Lmicroseconds|log.Lshortfile)
@@ -73,8 +72,7 @@ func NewNode(secret string, db *database.Database, peerStore *PeerStore) (*Node,
 	logger = log.New(os.Stdout, " SNAPSTORE ", log.Ldate|log.Lmicroseconds|log.Lshortfile)
 	ss, err := raft.NewFileSnapshotStoreWithLogger("/tmp/"+peerStore.Self(), 5, logger)
 	if err != nil {
-		// FIXME: Return error instead of panic.
-		panic(err)
+		return nil, err
 	}
 
 	n.raft, err = raft.NewRaft(
