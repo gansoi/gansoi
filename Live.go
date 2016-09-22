@@ -37,7 +37,7 @@ func NewLive() *Live {
 
 // PostClusterApply implements node.Listener.
 func (l *Live) PostClusterApply(leader bool, command database.Command, data interface{}, err error) {
-	// Interesting events.
+	// Interesting events for now.
 	m := map[string]string{
 		"*checks.Check":         "check",
 		"*database.CheckResult": "checkresult",
@@ -60,8 +60,10 @@ func (l *Live) PostClusterApply(leader bool, command database.Command, data inte
 
 		l.lock.RLock()
 		for listener := range l.listeners {
+			// FIXME: This will block if a single client is unable to receive fast enough.
 			_, err := listener.Write(b)
 			if err != nil {
+				// FIXME: Handle errors somehow.
 				fmt.Printf("err: %s\n", err.Error())
 			}
 		}
@@ -69,6 +71,7 @@ func (l *Live) PostClusterApply(leader bool, command database.Command, data inte
 	}
 }
 
+// handleWS will handle incoming websocket connections.
 func (l *Live) handleWS(conn *websocket.Conn) {
 	// Undo deadlines set by webserver.
 	conn.SetDeadline(time.Time{})
@@ -81,7 +84,9 @@ func (l *Live) handleWS(conn *websocket.Conn) {
 
 	buf := make([]byte, 1024)
 
-	// If read returns it means that the client is disconnected.
+	// If read returns it means that the client is disconnected (when returning
+	// an error), or that the client sent of something which is a protocol
+	// violation. We end the connection. Goodbye.
 	conn.Read(buf)
 
 	l.lock.Lock()

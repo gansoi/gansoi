@@ -8,7 +8,8 @@ import (
 )
 
 type (
-	// Scheduler takes care of scheduling checks.
+	// Scheduler takes care of scheduling checks on the local node. For now
+	// it will tick every second.
 	Scheduler struct {
 		run       bool
 		node      db
@@ -17,11 +18,15 @@ type (
 		metaStore map[string]*checkMeta
 	}
 
+	// checkMeta is used internally in the scheduler to keep track of check
+	// metadata.
 	checkMeta struct {
 		LastCheck time.Time
 		NextCheck time.Time
 	}
 
+	// db defines the database interface that the scheduler can read checks
+	// from and store results to.
 	db interface {
 		// Save will save an object to the database.
 		Save(data interface{}) error
@@ -139,7 +144,9 @@ func (s *Scheduler) loop() {
 
 					s.node.Save(checkResult)
 
-					// Save the check time and schedule next check.
+					// Save the check time and schedule next check. It should be
+					// safe to update meta from a go routine. We shouldn't
+					// execute the same check more than once at a time.
 					meta.LastCheck = t
 					meta.NextCheck = t.Add(check.Interval)
 

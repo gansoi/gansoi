@@ -3,7 +3,8 @@ package database
 import "time"
 
 type (
-	// CheckResult describes the result of one or more checks.
+	// CheckResult describes the result of one or more checks after a single
+	// node has executed the check.
 	CheckResult struct {
 		ID        int64       `json:"id"`
 		CheckID   string      `json:"check_id"`

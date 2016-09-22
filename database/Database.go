@@ -16,7 +16,8 @@ import (
 )
 
 type (
-	// Database is the lowest level of the gansoi database.
+	// Database is the lowest level of the gansoi database, it represent the
+	// on-disk database. Database implements raft.FSM.
 	Database struct {
 		dbMutex       sync.RWMutex
 		db            *storm.DB
@@ -37,6 +38,7 @@ func NewDatabase(filepath string) (*Database, error) {
 	return d, nil
 }
 
+// open will open the underlying file storage.
 func (d *Database) open(filepath string) error {
 	db, err := storm.Open(
 		filepath,
@@ -88,6 +90,7 @@ func (d *Database) ProcessLogEntry(entry *LogEntry) error {
 	}(entry.Command, v, err)
 
 	if err != nil {
+		// FIXME: Do not panic here!
 		panic(err.Error())
 	}
 	return err
@@ -163,7 +166,7 @@ func (d *Database) Save(data interface{}) error {
 	return d.db.Save(data)
 }
 
-// One will retrieve one record from the database.
+// One will retrieve one (or zero) record from the database.
 func (d *Database) One(fieldName string, value interface{}, to interface{}) error {
 	d.dbMutex.RLock()
 	defer d.dbMutex.RUnlock()

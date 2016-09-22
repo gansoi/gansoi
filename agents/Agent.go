@@ -6,7 +6,8 @@ import (
 )
 
 type (
-	// Agent should be implemented by all agents.
+	// Agent should be implemented by all agents. An agent is the entity
+	// responsible for carrying out all checks.
 	Agent interface {
 		// Check should run the agents check.
 		Check() (interface{}, error)
@@ -36,6 +37,7 @@ var (
 func RegisterAgent(name string, agent interface{}) {
 	_, found := agents[name]
 	if found {
+		// This should only happen at init time. panic() is okay for now.
 		panic("An agent with that name already exists")
 	}
 

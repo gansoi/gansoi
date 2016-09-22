@@ -64,6 +64,7 @@ func main() {
 	var config configuration
 	_, err := toml.DecodeFile(*configFile, &config)
 	if err != nil {
+		// FIXME: Fail in a more helpful manner than panic().
 		panic(err.Error())
 	}
 
@@ -81,11 +82,13 @@ func main() {
 
 	db, err := database.NewDatabase(config.DataDir)
 	if err != nil {
+		// FIXME: Fail in a more helpful manner than panic().
 		panic(err.Error())
 	}
 
 	n, err := node.NewNode(config.Secret, db, peerstore)
 	if err != nil {
+		// FIXME: Fail in a more helpful manner than panic().
 		panic(err.Error())
 	}
 
@@ -161,6 +164,7 @@ func main() {
 		cacheFile := path.Join(config.DataDir, "letsencrypt.cache")
 
 		if err := lManager.CacheFile(cacheFile); err != nil {
+			// FIXME: Fail in a more helpful manner than panic().
 			panic(err.Error())
 		}
 
@@ -182,6 +186,7 @@ func main() {
 	// if GetCertificate was set earlier - ListenAndServeTLS silently ignores cert and key
 	err = s.ListenAndServeTLS(config.Cert, config.Key)
 	if err != nil {
+		// FIXME: Fail in a more helpful manner than panic().
 		panic(err.Error())
 	}
 }

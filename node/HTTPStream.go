@@ -55,6 +55,7 @@ func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, erro
 		return nil, err
 	}
 
+	// We use Upgrade, and hope that will make proxies happy.
 	open := fmt.Sprintf("GET /raft HTTP/1.1\nHost: %s\nUpgrade: raft-0\nSecret: %s\n\n", address, h.secret)
 
 	_, err = conn.Write([]byte(open))

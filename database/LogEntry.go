@@ -41,11 +41,12 @@ func (c Command) String() string {
 	case CommandDelete:
 		return "delete"
 	default:
-		panic("unknown command type")
+		// FIXME: This should not panic.
+		panic("Unknown command type. Please update Command.String()")
 	}
 }
 
-// RegisterType will register the type with the log marshaller.
+// RegisterType will register the type with the raft log marshaller.
 func RegisterType(v interface{}) {
 	typesLock.Lock()
 	defer typesLock.Unlock()
@@ -55,6 +56,8 @@ func RegisterType(v interface{}) {
 
 	_, found := types[name]
 	if found {
+		// This should only be triggered at startup, and a panic is okay for
+		// now.
 		panic("An type with that name already exists")
 	}
 
@@ -67,6 +70,7 @@ func GetType(name string) interface{} {
 
 	typ, found := types[name]
 	if !found {
+		// panic() is okay here. We have nothing better to do.
 		panic("Type " + name + " is not registered")
 	}
 

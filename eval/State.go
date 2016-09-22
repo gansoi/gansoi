@@ -31,6 +31,7 @@ func (s State) String() string {
 	case StateDown:
 		return "Down"
 	default:
+		// FIXME: Don't panic.
 		panic("unknown state")
 	}
 }
@@ -54,6 +55,7 @@ func (s State) ColorString() string {
 	case StateDown:
 		return red + "Down" + reset
 	default:
+		// FIXME: Don't panic.
 		panic("unknown state")
 	}
 }

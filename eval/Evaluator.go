@@ -68,6 +68,7 @@ func (e *Evaluator) evaluate1(checkResult *database.CheckResult) {
 
 	err = e.node.Save(&pe)
 	if err != nil {
+		// FIXME: It seems wrong to panic here.
 		panic(err.Error())
 	}
 }
@@ -130,6 +131,7 @@ func (e *Evaluator) evaluate2(n *PartialEvaluation) {
 
 	err = e.node.Save(&eval)
 	if err != nil {
+		// FIXME: It seems wrong to panic here.
 		panic(err.Error())
 	}
 }

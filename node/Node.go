@@ -63,6 +63,7 @@ func NewNode(secret string, db *database.Database, peerStore *PeerStore) (*Node,
 	// Set up nice HTTP based transport.
 	n.stream, err = NewHTTPStream(peerStore.Self(), secret)
 	if err != nil {
+		// FIXME: Return error instead of panic.
 		panic(err)
 	}
 
@@ -72,6 +73,7 @@ func NewNode(secret string, db *database.Database, peerStore *PeerStore) (*Node,
 	logger = log.New(os.Stdout, " SNAPSTORE ", log.Ldate|log.Lmicroseconds|log.Lshortfile)
 	ss, err := raft.NewFileSnapshotStoreWithLogger("/tmp/"+peerStore.Self(), 5, logger)
 	if err != nil {
+		// FIXME: Return error instead of panic.
 		panic(err)
 	}
 
@@ -168,6 +170,8 @@ func (n *Node) apply(entry *database.LogEntry) error {
 		u := "https://" + l + n.basePath + "/apply"
 
 		_, err := http.Post(u, "gansoi/entry", r)
+
+		// FIXME: Implement some kind of retry logic here.
 
 		return err
 	}
