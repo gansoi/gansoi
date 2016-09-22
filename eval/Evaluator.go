@@ -75,6 +75,7 @@ func (e *Evaluator) evaluate1(checkResult *database.CheckResult) {
 
 // evaluate2 will evalute if a given check should be considered up or down when
 // evaluating the result from all nodes.
+// This should only be done on the leader.
 func (e *Evaluator) evaluate2(n *PartialEvaluation) {
 	var eval Evaluation
 
@@ -121,8 +122,11 @@ func (e *Evaluator) evaluate2(n *PartialEvaluation) {
 	}
 
 	if eval.State == state {
+		// There is no change in state. Keep current start time, and update end
+		// time.
 		eval.End = time.Now()
 	} else {
+		// We have a new state. Update both start and end time.
 		eval.Start = time.Now()
 		eval.End = eval.Start
 	}
