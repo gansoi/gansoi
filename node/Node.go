@@ -3,9 +3,7 @@ package node
 import (
 	"bytes"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
@@ -13,6 +11,7 @@ import (
 	"github.com/hashicorp/raft"
 
 	"github.com/abrander/gansoi/database"
+	"github.com/abrander/gansoi/logger"
 )
 
 type (
@@ -58,7 +57,7 @@ func NewNode(secret string, db *database.Database, peerStore *PeerStore) (*Node,
 	conf.ElectionTimeout = 1000 * time.Millisecond
 	conf.LeaderLeaseTimeout = 500 * time.Millisecond
 	conf.CommitTimeout = 200 * time.Millisecond
-	conf.Logger = log.New(os.Stdout, "      RAFT ", log.Lmicroseconds|log.Lshortfile)
+	conf.Logger = logger.Logger("raft")
 
 	// Set up nice HTTP based transport.
 	n.stream, err = NewHTTPStream(peerStore.Self(), secret)
@@ -66,11 +65,9 @@ func NewNode(secret string, db *database.Database, peerStore *PeerStore) (*Node,
 		return nil, err
 	}
 
-	logger := log.New(os.Stdout, " TRANSPORT ", log.Ldate|log.Lmicroseconds|log.Lshortfile)
-	transport := raft.NewNetworkTransportWithLogger(n.stream, 1, 0, logger)
+	transport := raft.NewNetworkTransportWithLogger(n.stream, 1, 0, logger.Logger("raft-transport"))
 
-	logger = log.New(os.Stdout, " SNAPSTORE ", log.Ldate|log.Lmicroseconds|log.Lshortfile)
-	ss, err := raft.NewFileSnapshotStoreWithLogger("/tmp/"+peerStore.Self(), 5, logger)
+	ss, err := raft.NewFileSnapshotStoreWithLogger("/tmp/"+peerStore.Self(), 5, logger.Logger("raft-store"))
 	if err != nil {
 		return nil, err
 	}

@@ -22,6 +22,7 @@ import (
 	"github.com/abrander/gansoi/checks"
 	"github.com/abrander/gansoi/database"
 	"github.com/abrander/gansoi/eval"
+	"github.com/abrander/gansoi/logger"
 	"github.com/abrander/gansoi/node"
 )
 
@@ -182,6 +183,8 @@ func main() {
 		MaxHeaderBytes: 1 << 20,
 		TLSConfig:      &tlsConfig,
 	}
+
+	logger.Green("main", "Binding to %s", bind)
 
 	// if GetCertificate was set earlier - ListenAndServeTLS silently ignores cert and key
 	err = s.ListenAndServeTLS(config.Cert, config.Key)
