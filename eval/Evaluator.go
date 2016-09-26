@@ -31,7 +31,7 @@ func NewEvaluator(n *node.Node, peers raft.PeerStore) *Evaluator {
 }
 
 // evaluate1 will evalute a check result from a single node.
-func (e *Evaluator) evaluate1(checkResult *database.CheckResult) {
+func (e *Evaluator) evaluate1(checkResult *database.CheckResult) error {
 	pe := PartialEvaluation{}
 	pe.ID = checkResult.CheckID + ":::" + checkResult.Node
 
@@ -67,16 +67,14 @@ func (e *Evaluator) evaluate1(checkResult *database.CheckResult) {
 	}
 
 	err = e.node.Save(&pe)
-	if err != nil {
-		// FIXME: It seems wrong to panic here.
-		panic(err.Error())
-	}
+
+	return err
 }
 
 // evaluate2 will evalute if a given check should be considered up or down when
 // evaluating the result from all nodes.
 // This should only be done on the leader.
-func (e *Evaluator) evaluate2(n *PartialEvaluation) {
+func (e *Evaluator) evaluate2(n *PartialEvaluation) error {
 	var eval Evaluation
 
 	// FIXME: Locking.
@@ -133,11 +131,7 @@ func (e *Evaluator) evaluate2(n *PartialEvaluation) {
 
 	eval.State = state
 
-	err = e.node.Save(&eval)
-	if err != nil {
-		// FIXME: It seems wrong to panic here.
-		panic(err.Error())
-	}
+	return e.node.Save(&eval)
 }
 
 // PostClusterApply implements node.Listener.

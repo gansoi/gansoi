@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+
+	"github.com/abrander/gansoi/logger"
 )
 
 type (
@@ -41,8 +43,8 @@ func (c Command) String() string {
 	case CommandDelete:
 		return "delete"
 	default:
-		// FIXME: This should not panic.
-		panic("Unknown command type. Please update Command.String()")
+		logger.Red("database", "Unknown command type '%d'. Please update Command.String().", int(c))
+		return "n/a"
 	}
 }
 

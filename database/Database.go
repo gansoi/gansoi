@@ -89,10 +89,6 @@ func (d *Database) ProcessLogEntry(entry *LogEntry) error {
 		d.listenersLock.RUnlock()
 	}(entry.Command, v, err)
 
-	if err != nil {
-		// FIXME: Do not panic here!
-		panic(err.Error())
-	}
 	return err
 }
 
