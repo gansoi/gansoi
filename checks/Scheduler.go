@@ -1,10 +1,11 @@
 package checks
 
 import (
-	"fmt"
 	"math/rand"
 	"sync"
 	"time"
+
+	"github.com/abrander/gansoi/logger"
 )
 
 type (
@@ -90,7 +91,7 @@ func (s *Scheduler) loop() {
 		var allChecks []Check
 		err := s.node.All(&allChecks, -1, 0, false)
 		if err != nil {
-			fmt.Printf("Err: %s\n", err.Error())
+			logger.Red("scheduler", "%s", err.Error())
 			continue
 		}
 
@@ -120,7 +121,7 @@ func (s *Scheduler) loop() {
 				checkIn := time.Duration(rand.Int63n(int64(check.Interval)))
 				meta.NextCheck = t.Add(checkIn)
 
-				fmt.Printf("%s start delayed for %s\n", check.ID, checkIn.String())
+				logger.Green("scheduler", "%s start delayed for %s", check.ID, checkIn.String())
 			} else if wait < 0 {
 				// If we arrive here, wait is sub-zero, which means that we
 				// should execute now.
@@ -137,9 +138,9 @@ func (s *Scheduler) loop() {
 					checkResult.Node = s.nodeName
 
 					if checkResult.Error != "" {
-						fmt.Printf("%s failed in %s: %s\n", check.ID, time.Now().Sub(start), checkResult.Error)
+						logger.Yellow("scheduler", "%s failed in %s: %s", check.ID, time.Now().Sub(start), checkResult.Error)
 					} else {
-						fmt.Printf("%s ran in %s: %+v\n", check.ID, time.Now().Sub(start), checkResult.Results)
+						logger.Green("scheduler", "%s ran in %s: %+v", check.ID, time.Now().Sub(start), checkResult.Results)
 					}
 
 					s.node.Save(checkResult)

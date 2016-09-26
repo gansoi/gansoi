@@ -189,7 +189,7 @@ func main() {
 	// if GetCertificate was set earlier - ListenAndServeTLS silently ignores cert and key
 	err = s.ListenAndServeTLS(config.Cert, config.Key)
 	if err != nil {
-		logger.Red("Bind to %s failed: %s", bind, err.Error())
+		logger.Red("main", "Bind to %s failed: %s", bind, err.Error())
 		os.Exit(1)
 	}
 }

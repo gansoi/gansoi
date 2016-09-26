@@ -1,10 +1,10 @@
 package eval
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/abrander/gansoi/database"
+	"github.com/abrander/gansoi/logger"
 	"github.com/abrander/gansoi/node"
 	"github.com/hashicorp/raft"
 )
@@ -154,6 +154,6 @@ func (e *Evaluator) PostClusterApply(leader bool, command database.Command, data
 		e.evaluate2(data.(*PartialEvaluation))
 	case *Evaluation:
 		eval := data.(*Evaluation)
-		fmt.Printf("%s: %s (%s)\n", eval.CheckID, eval.State.ColorString(), eval.End.Sub(eval.Start).String())
+		logger.Green("eval", "%s: %s (%s)", eval.CheckID, eval.State.ColorString(), eval.End.Sub(eval.Start).String())
 	}
 }
