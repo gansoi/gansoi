@@ -65,8 +65,8 @@ func main() {
 	var config configuration
 	_, err := toml.DecodeFile(*configFile, &config)
 	if err != nil {
-		// FIXME: Fail in a more helpful manner than panic().
-		panic(err.Error())
+		logger.Red("main", "Failed to read configuration file at %s: %s", *configFile, err.Error())
+		os.Exit(1)
 	}
 
 	self := config.Local
@@ -83,8 +83,8 @@ func main() {
 
 	db, err := database.NewDatabase(config.DataDir)
 	if err != nil {
-		// FIXME: Fail in a more helpful manner than panic().
-		panic(err.Error())
+		logger.Red("main", "failed to open database in %s: %s", config.DataDir, err.Error())
+		os.Exit(1)
 	}
 
 	n, err := node.NewNode(config.Secret, db, peerstore)
@@ -164,9 +164,9 @@ func main() {
 
 		cacheFile := path.Join(config.DataDir, "letsencrypt.cache")
 
-		if err := lManager.CacheFile(cacheFile); err != nil {
-			// FIXME: Fail in a more helpful manner than panic().
-			panic(err.Error())
+		if err = lManager.CacheFile(cacheFile); err != nil {
+			logger.Red("main", "Failed to open Letsencrypt cachefile at %s: %s", cacheFile, err.Error())
+			os.Exit(1)
 		}
 
 		// ensure we dont ask for random certificates
@@ -189,7 +189,7 @@ func main() {
 	// if GetCertificate was set earlier - ListenAndServeTLS silently ignores cert and key
 	err = s.ListenAndServeTLS(config.Cert, config.Key)
 	if err != nil {
-		// FIXME: Fail in a more helpful manner than panic().
-		panic(err.Error())
+		logger.Red("Bind to %s failed: %s", bind, err.Error())
+		os.Exit(1)
 	}
 }
