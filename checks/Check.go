@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"reflect"
 	"time"
 
 	"github.com/Knetic/govaluate"
@@ -68,17 +67,18 @@ func (c *Check) UnmarshalJSON(data []byte) error {
 
 // RunCheck will run a check and return a CheckResult.
 func RunCheck(check *Check) *database.CheckResult {
-	result, e := check.Agent.Check()
+	agentResult := agents.NewAgentResult()
+	e := check.Agent.Check(agentResult)
 
 	checkResult := &database.CheckResult{
 		CheckID:   check.ID,
 		TimeStamp: time.Now(),
-		Results:   result,
+		Results:   agentResult,
 	}
 
 	// If any expressions is defined, we try to evaluate them until one fails.
 	if len(check.Expressions) > 0 && e == nil {
-		e = check.Evaluate(result)
+		e = check.Evaluate(agentResult)
 	}
 
 	if e != nil {
@@ -88,39 +88,15 @@ func RunCheck(check *Check) *database.CheckResult {
 	return checkResult
 }
 
-func newStructMap(in interface{}) map[string]interface{} {
-	r := make(map[string]interface{})
-	v := reflect.ValueOf(in)
-	if v.Kind() == reflect.Ptr {
-		v = v.Elem()
-	}
-
-	// We only accept structs, return an empty map we're served anything else.
-	if v.Kind() != reflect.Struct {
-		return r
-	}
-
-	typ := v.Type()
-	for i := 0; i < v.NumField(); i++ {
-		fi := typ.Field(i)
-		r[fi.Name] = v.Field(i).Interface()
-	}
-
-	return r
-}
-
 // Evaluate will evaluate the CheckResult based on a slice of expressions.
-func (c *Check) Evaluate(results interface{}) error {
-	// govaluate expects a map of values.
-	m := newStructMap(results)
-
+func (c *Check) Evaluate(result *agents.AgentResult) error {
 	for _, exp := range c.Expressions {
 		e, err := govaluate.NewEvaluableExpression(exp)
 		if err != nil {
 			break
 		}
 
-		result, err := e.Evaluate(m)
+		result, err := e.Evaluate(result.Values)
 		if err != nil {
 			break
 		}

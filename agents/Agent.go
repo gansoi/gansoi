@@ -10,7 +10,7 @@ type (
 	// responsible for carrying out all checks.
 	Agent interface {
 		// Check should run the agents check.
-		Check() (interface{}, error)
+		Check(result *AgentResult) error
 	}
 
 	// ArgumentDescription contains everything needed for creating a GUI for

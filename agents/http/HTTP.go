@@ -15,27 +15,19 @@ type HTTP struct {
 	URL string `json:"url" description:"The URL to request"`
 }
 
-// Result is the result from this test.
-type Result struct {
-	StatusCode int    `description:"Result code from web server"`
-	Body       string `description:"The first 1024 bytes of the response body"`
-}
-
 // Check implements agents.Agent.
-func (h *HTTP) Check() (interface{}, error) {
-	r := &Result{}
-
+func (h *HTTP) Check(result *agents.AgentResult) error {
 	resp, err := http.Get(h.URL)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	r.StatusCode = resp.StatusCode
 
 	b := make([]byte, 1024)
 	n, _ := resp.Body.Read(b)
-	r.Body = string(b[:n])
 	resp.Body.Close()
 
-	return r, nil
+	result.AddValue("StatusCode", resp.StatusCode)
+	result.AddValue("Body", string(b[:n]))
+
+	return nil
 }
