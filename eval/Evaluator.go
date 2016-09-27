@@ -3,6 +3,7 @@ package eval
 import (
 	"time"
 
+	"github.com/abrander/gansoi/checks"
 	"github.com/abrander/gansoi/database"
 	"github.com/abrander/gansoi/logger"
 	"github.com/abrander/gansoi/node"
@@ -31,7 +32,7 @@ func NewEvaluator(n *node.Node, peers raft.PeerStore) *Evaluator {
 }
 
 // evaluate1 will evalute a check result from a single node.
-func (e *Evaluator) evaluate1(checkResult *database.CheckResult) error {
+func (e *Evaluator) evaluate1(checkResult *checks.CheckResult) error {
 	pe := PartialEvaluation{}
 	pe.ID = checkResult.CheckID + ":::" + checkResult.Node
 
@@ -148,8 +149,8 @@ func (e *Evaluator) PostClusterApply(leader bool, command database.Command, data
 	}
 
 	switch data.(type) {
-	case *database.CheckResult:
-		e.evaluate1(data.(*database.CheckResult))
+	case *checks.CheckResult:
+		e.evaluate1(data.(*checks.CheckResult))
 	case *PartialEvaluation:
 		e.evaluate2(data.(*PartialEvaluation))
 	case *Evaluation:
