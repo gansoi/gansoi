@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -52,7 +53,12 @@ func (l *Log) Green(pkg string, format string, args ...interface{}) {
 
 // Logger will return a log.Logger.
 func (l *Log) Logger(pkg string) *log.Logger {
-	return log.New(l, "\033[35m"+pkg+"\033[0m: \033[36m", 0)
+	_, print := l.positiveList[pkg]
+	if print || l.printAll {
+		return log.New(l, "\033[35m"+pkg+"\033[0m: \033[36m", 0)
+	}
+
+	return log.New(ioutil.Discard, "", 0)
 }
 
 // Printf will print a log entry according to format.
