@@ -59,6 +59,9 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 
 	flag.Parse()
+
+	database.RegisterType(checks.CheckResult{})
+	database.RegisterType(checks.Check{})
 }
 
 func main() {

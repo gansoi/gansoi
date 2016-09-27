@@ -9,7 +9,6 @@ import (
 	"github.com/Knetic/govaluate"
 
 	"github.com/abrander/gansoi/agents"
-	"github.com/abrander/gansoi/database"
 )
 
 type (
@@ -32,10 +31,6 @@ type (
 		Expressions []string        `json:"expressions"`
 	}
 )
-
-func init() {
-	database.RegisterType(Check{})
-}
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (c *Check) UnmarshalJSON(data []byte) error {
@@ -66,11 +61,11 @@ func (c *Check) UnmarshalJSON(data []byte) error {
 }
 
 // RunCheck will run a check and return a CheckResult.
-func RunCheck(check *Check) *database.CheckResult {
+func RunCheck(check *Check) *CheckResult {
 	agentResult := agents.NewAgentResult()
 	e := check.Agent.Check(agentResult)
 
-	checkResult := &database.CheckResult{
+	checkResult := &CheckResult{
 		CheckID:   check.ID,
 		TimeStamp: time.Now(),
 		Results:   agentResult,
