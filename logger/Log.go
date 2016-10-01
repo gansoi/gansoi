@@ -38,7 +38,7 @@ func New(debug string) *Log {
 
 // Red will log something severe.
 func (l *Log) Red(pkg string, format string, args ...interface{}) {
-	l.Printf(pkg, "\033[31m"+format+"\033[0m", args...)
+	l.logger.Printf("\033[35m"+pkg+"\033[0m: \033[31m"+format+"\033[0m\n", args...)
 }
 
 // Yellow will log something that could be of concern.
