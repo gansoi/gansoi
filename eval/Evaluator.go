@@ -122,12 +122,15 @@ func (e *Evaluator) evaluate2(n *PartialEvaluation) error {
 
 	if eval.State == state {
 		// There is no change in state. Keep current start time, and update end
-		// time.
+		// time and cyclecount.
 		eval.End = time.Now()
+		eval.Cycles++
 	} else {
 		// We have a new state. Update both start and end time.
 		eval.Start = time.Now()
 		eval.End = eval.Start
+		eval.Cycles = 0
+		eval.PreviousState = eval.State
 	}
 
 	eval.State = state
