@@ -3,11 +3,12 @@ package eval
 import (
 	"time"
 
+	"github.com/hashicorp/raft"
+
 	"github.com/abrander/gansoi/checks"
 	"github.com/abrander/gansoi/database"
 	"github.com/abrander/gansoi/logger"
 	"github.com/abrander/gansoi/node"
-	"github.com/hashicorp/raft"
 )
 
 type (
