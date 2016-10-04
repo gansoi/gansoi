@@ -1,6 +1,7 @@
 package eval
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/raft"
@@ -14,8 +15,9 @@ import (
 type (
 	// Evaluator will evaluate check results from all nodes on the leader node.
 	Evaluator struct {
-		node  *node.Node
-		peers raft.PeerStore
+		node          *node.Node
+		peers         raft.PeerStore
+		historyLength int
 	}
 )
 
@@ -26,6 +28,11 @@ func NewEvaluator(n *node.Node, peers raft.PeerStore) *Evaluator {
 		node:  n,
 		peers: peers,
 	}
+
+	// Preserve state history for double the cluster size. This ensures that
+	// we have at least to results from at least two runs from each node.
+	p, _ := peers.Peers()
+	e.historyLength = len(p) * 2
 
 	n.RegisterListener(e)
 
@@ -89,52 +96,53 @@ func (e *Evaluator) evaluate2(n *PartialEvaluation) error {
 		eval.End = n.End
 	}
 
-	state := StateUp
-	states := make(map[State]int)
+	check := checks.Check{}
+	err = e.node.One("ID", n.CheckID, &check)
+	if err != nil {
+		return fmt.Errorf("Got result from unknown check [%s]", n.CheckID)
+	}
+
+	state := StateUnknown
 
 	nodes, _ := e.peers.Peers()
+	nodeStates := States{}
+
 	for _, nodeID := range nodes {
 		ID := n.CheckID + ":::" + nodeID
 
 		var pe PartialEvaluation
 		err = e.node.One("ID", ID, &pe)
 		if err != nil {
-			// Not all nodes have reported yet. Could be StateDegraded instead?
-			state = StateUnknown
+			// Not all nodes have reported yet, abort.
 			break
 		}
 
-		// FIXME: Deal with old checks somehow. Maybe we should simply discard
-		//        them? I'm not sure it makes much sense to evalute a period
-		//        where gansoi were not running for example.
-
-		states[pe.State]++
-	}
-
-	if state == StateUp {
-		if states[StateUp] == len(nodes) {
-			state = StateUp
-		} else if states[StateDown] == len(nodes) {
-			state = StateDown
-		} else {
-			state = StateDegraded
+		// If any result is older than two cycles, we discard it.
+		if time.Now().Sub(pe.End) > check.Interval*2 {
+			logger.Red("Result from %s is too old (T:%s) (D:%s) (I:%s)", nodeID, pe.End, time.Now().Sub(pe.End), check.Interval)
+			break
 		}
+
+		nodeStates.Add(pe.State, -1)
 	}
 
-	if eval.State == state {
+	// Only assume anything other than StateUnknown if all nodes have reported.
+	if len(nodeStates) == len(nodes) {
+		state = nodeStates.Reduce()
+	}
+
+	lastReduce := eval.History.Reduce()
+	eval.History.Add(state, e.historyLength)
+
+	if eval.History.Reduce() == lastReduce {
 		// There is no change in state. Keep current start time, and update end
-		// time and cyclecount.
+		// time.
 		eval.End = time.Now()
-		eval.Cycles++
 	} else {
 		// We have a new state. Update both start and end time.
 		eval.Start = time.Now()
 		eval.End = eval.Start
-		eval.Cycles = 0
-		eval.PreviousState = eval.State
 	}
-
-	eval.State = state
 
 	return e.node.Save(&eval)
 }
@@ -159,6 +167,6 @@ func (e *Evaluator) PostClusterApply(leader bool, command database.Command, data
 		e.evaluate2(data.(*PartialEvaluation))
 	case *Evaluation:
 		eval := data.(*Evaluation)
-		logger.Green("eval", "%s: %s (%s)", eval.CheckID, eval.State.ColorString(), eval.End.Sub(eval.Start).String())
+		logger.Green("eval", "%s: %s (%s) %v", eval.CheckID, eval.History.Reduce().ColorString(), eval.End.Sub(eval.Start).String(), eval.History)
 	}
 }
