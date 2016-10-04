@@ -65,7 +65,7 @@ func TestEvaluate(t *testing.T) {
 	}
 
 	for _, dat := range cases {
-		result := dat.input.Evaluate()
+		result := dat.input.Reduce()
 
 		if result != dat.expected {
 			t.Fatalf("Failed to evalute '%s' correct. Got %s, expected %s", dat.input, result, dat.expected)
