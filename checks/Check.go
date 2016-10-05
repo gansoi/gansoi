@@ -8,7 +8,7 @@ import (
 
 	"github.com/Knetic/govaluate"
 
-	"github.com/abrander/gansoi/agents"
+	"github.com/abrander/gansoi/plugins"
 )
 
 type (
@@ -18,7 +18,7 @@ type (
 		AgentID     string          `json:"agent"`
 		Interval    time.Duration   `json:"interval"`
 		Arguments   json.RawMessage `json:"arguments"`
-		Agent       agents.Agent    `json:"-"`
+		Agent       plugins.Agent   `json:"-"`
 		Expressions []string        `json:"expressions"`
 	}
 
@@ -47,7 +47,7 @@ func (c *Check) UnmarshalJSON(data []byte) error {
 	c.Arguments = proxy.Arguments
 	c.Expressions = proxy.Expressions
 
-	c.Agent = agents.GetAgent(c.AgentID)
+	c.Agent = plugins.GetAgent(c.AgentID)
 	if c.Agent == nil {
 		return errors.New("Agent not found")
 	}
@@ -62,7 +62,7 @@ func (c *Check) UnmarshalJSON(data []byte) error {
 
 // RunCheck will run a check and return a CheckResult.
 func RunCheck(check *Check) *CheckResult {
-	agentResult := agents.NewAgentResult()
+	agentResult := plugins.NewAgentResult()
 	e := check.Agent.Check(agentResult)
 
 	checkResult := &CheckResult{
@@ -84,7 +84,7 @@ func RunCheck(check *Check) *CheckResult {
 }
 
 // Evaluate will evaluate the CheckResult based on a slice of expressions.
-func (c *Check) Evaluate(result *agents.AgentResult) error {
+func (c *Check) Evaluate(result *plugins.AgentResult) error {
 	for _, exp := range c.Expressions {
 		e, err := govaluate.NewEvaluableExpression(exp)
 		if err != nil {

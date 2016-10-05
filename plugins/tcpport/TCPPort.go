@@ -4,11 +4,11 @@ import (
 	"net"
 	"time"
 
-	"github.com/abrander/gansoi/agents"
+	"github.com/abrander/gansoi/plugins"
 )
 
 func init() {
-	agents.RegisterAgent("tcpport", TCPPort{})
+	plugins.RegisterAgent("tcpport", TCPPort{})
 }
 
 // TCPPort will connect to a tcp port and measure timing.
@@ -16,8 +16,8 @@ type TCPPort struct {
 	Address string `json:"address" description:"The address to connect to (host:port)"`
 }
 
-// Check implements agents.Agent.
-func (t *TCPPort) Check(result *agents.AgentResult) error {
+// Check implements plugins.Agent.
+func (t *TCPPort) Check(result *plugins.AgentResult) error {
 	start := time.Now()
 	conn, err := net.Dial("tcp", t.Address)
 	if err != nil {

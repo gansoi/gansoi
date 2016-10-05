@@ -16,14 +16,14 @@ import (
 
 	"rsc.io/letsencrypt"
 
-	"github.com/abrander/gansoi/agents"
-	_ "github.com/abrander/gansoi/agents/http"
-	_ "github.com/abrander/gansoi/agents/tcpport"
 	"github.com/abrander/gansoi/checks"
 	"github.com/abrander/gansoi/database"
 	"github.com/abrander/gansoi/eval"
 	"github.com/abrander/gansoi/logger"
 	"github.com/abrander/gansoi/node"
+	"github.com/abrander/gansoi/plugins"
+	_ "github.com/abrander/gansoi/plugins/http"
+	_ "github.com/abrander/gansoi/plugins/tcpport"
 )
 
 type (
@@ -101,6 +101,7 @@ func main() {
 	checks.NewScheduler(n, peerstore.Self(), true)
 
 	engine := gin.New()
+	engine.Use(gin.Logger())
 
 	n.Router(engine.Group("/raft"))
 
@@ -125,7 +126,7 @@ func main() {
 	})
 
 	engine.GET("/agents", func(c *gin.Context) {
-		descriptions := agents.ListAgents()
+		descriptions := plugins.ListAgents()
 
 		c.JSON(http.StatusOK, descriptions)
 	})

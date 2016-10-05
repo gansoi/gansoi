@@ -10,20 +10,20 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/abrander/gansoi/agents"
+	"github.com/abrander/gansoi/plugins"
 	"github.com/abrander/gansoi/web/client/template"
 )
 
 type (
 	// NewAgent is a controller for adding a new agent.
 	NewAgent struct {
-		description *agents.AgentDescription
+		description *plugins.AgentDescription
 		Parts       []htmltemplate.HTML
 	}
 )
 
 // NewNewAgent will instantiate a NewAgent-controller.
-func NewNewAgent(description *agents.AgentDescription, templates *template.Collection) (*NewAgent, error) {
+func NewNewAgent(description *plugins.AgentDescription, templates *template.Collection) (*NewAgent, error) {
 	newAgent := &NewAgent{
 		description: description,
 	}

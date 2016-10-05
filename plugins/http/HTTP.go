@@ -3,11 +3,11 @@ package http
 import (
 	"net/http"
 
-	"github.com/abrander/gansoi/agents"
+	"github.com/abrander/gansoi/plugins"
 )
 
 func init() {
-	agents.RegisterAgent("http", HTTP{})
+	plugins.RegisterAgent("http", HTTP{})
 }
 
 // HTTP will request a ressource from a HTTP server.
@@ -15,8 +15,8 @@ type HTTP struct {
 	URL string `json:"url" description:"The URL to request"`
 }
 
-// Check implements agents.Agent.
-func (h *HTTP) Check(result *agents.AgentResult) error {
+// Check implements plugins.Agent.
+func (h *HTTP) Check(result *plugins.AgentResult) error {
 	resp, err := http.Get(h.URL)
 	if err != nil {
 		return err

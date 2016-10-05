@@ -1,4 +1,4 @@
-package agents
+package plugins
 
 type (
 	// AgentResult describes the result from an agent.

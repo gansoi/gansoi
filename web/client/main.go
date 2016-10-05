@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/abrander/gansoi/agents"
+	"github.com/abrander/gansoi/plugins"
 	"github.com/abrander/gansoi/web/client/browser"
 	"github.com/abrander/gansoi/web/client/rest"
 	"github.com/abrander/gansoi/web/client/router"
@@ -30,7 +30,7 @@ type (
 )
 
 var (
-	agentDescriptions []agents.AgentDescription
+	agentDescriptions []plugins.AgentDescription
 )
 
 func (c checkList) DeleteCheck(id string) {
@@ -111,7 +111,7 @@ func main() {
 
 	r.AddRoute("check/new/{agent}", func(c *router.Context) {
 		agentID := c.Param("agent")
-		var a *agents.AgentDescription
+		var a *plugins.AgentDescription
 		for _, agentDescription := range agentDescriptions {
 			if agentDescription.Name == agentID {
 				a = &agentDescription
