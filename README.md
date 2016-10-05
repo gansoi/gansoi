@@ -41,4 +41,10 @@ Go 1.5 or newer is required for building gansoi.
     $ cd $GOPATH/src/github.com/gopherjs/gopherjs
     $ git checkout go1.6
 
+You can run a small local gansoi cluster for testing and development:
+
+    $ ./test.sh
+
+A three-node local cluster should be started shortly. You can visit the webinterface at https://gansoi-dev.com:9002/.
+
 \* gansoi is a working title.
