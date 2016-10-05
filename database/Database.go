@@ -26,6 +26,11 @@ type (
 	}
 )
 
+var (
+	// ErrNotFound is returned when the specified record is not saved.
+	ErrNotFound = storm.ErrNotFound
+)
+
 // NewDatabase will instantiate a new database placed in filepath.
 func NewDatabase(filepath string) (*Database, error) {
 	d := &Database{}
