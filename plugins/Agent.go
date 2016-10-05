@@ -2,30 +2,16 @@ package plugins
 
 import (
 	"reflect"
-	"strings"
 )
 
 type (
 	// Agent should be implemented by all agents. An agent is the entity
 	// responsible for carrying out all checks.
 	Agent interface {
+		Plugin
+
 		// Check should run the agents check.
 		Check(result *AgentResult) error
-	}
-
-	// ArgumentDescription contains everything needed for creating a GUI for
-	// configuring an agent.
-	ArgumentDescription struct {
-		Name        string   `json:"name"`
-		Type        string   `json:"type"`
-		Description string   `json:"description"`
-		EnumValues  []string `json:"enum"`
-	}
-
-	// AgentDescription describes an agent.
-	AgentDescription struct {
-		Name      string                `json:"name"`
-		Arguments []ArgumentDescription `json:"arguments"`
 	}
 )
 
@@ -50,48 +36,15 @@ func GetAgent(name string) Agent {
 }
 
 // ListAgents will return a list of all agents.
-func ListAgents() []AgentDescription {
-	list := make([]AgentDescription, 0, len(agents))
+func ListAgents() []PluginDescription {
+	list := make([]PluginDescription, 0, len(agents))
 
 	for name, typ := range agents {
-		list = append(list, AgentDescription{
+		list = append(list, PluginDescription{
 			Name:      name,
 			Arguments: getArguments(typ),
 		})
 	}
 
 	return list
-}
-
-func getArguments(elem reflect.Type) []ArgumentDescription {
-	parameters := []ArgumentDescription{}
-
-	l := elem.NumField()
-
-	for i := 0; i < l; i++ {
-		f := elem.Field(i)
-
-		jsonName := f.Tag.Get("json")
-
-		if f.Anonymous {
-			parameters = append(parameters, getArguments(f.Type)...)
-		} else if jsonName != "" {
-			p := ArgumentDescription{}
-
-			p.Name = jsonName
-			p.Type = f.Type.String()
-			p.Description = f.Tag.Get("description")
-			enum := f.Tag.Get("enum")
-			if enum != "" {
-				p.EnumValues = strings.Split(enum, ",")
-				p.Type = "enum"
-			} else {
-				p.EnumValues = []string{}
-			}
-
-			parameters = append(parameters, p)
-		}
-	}
-
-	return parameters
 }

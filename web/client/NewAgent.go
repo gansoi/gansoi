@@ -17,13 +17,13 @@ import (
 type (
 	// NewAgent is a controller for adding a new agent.
 	NewAgent struct {
-		description *plugins.AgentDescription
+		description *plugins.PluginDescription
 		Parts       []htmltemplate.HTML
 	}
 )
 
 // NewNewAgent will instantiate a NewAgent-controller.
-func NewNewAgent(description *plugins.AgentDescription, templates *template.Collection) (*NewAgent, error) {
+func NewNewAgent(description *plugins.PluginDescription, templates *template.Collection) (*NewAgent, error) {
 	newAgent := &NewAgent{
 		description: description,
 	}

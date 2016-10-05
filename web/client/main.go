@@ -30,7 +30,7 @@ type (
 )
 
 var (
-	agentDescriptions []plugins.AgentDescription
+	agentDescriptions []plugins.PluginDescription
 )
 
 func (c checkList) DeleteCheck(id string) {
@@ -111,7 +111,7 @@ func main() {
 
 	r.AddRoute("check/new/{agent}", func(c *router.Context) {
 		agentID := c.Param("agent")
-		var a *plugins.AgentDescription
+		var a *plugins.PluginDescription
 		for _, agentDescription := range agentDescriptions {
 			if agentDescription.Name == agentID {
 				a = &agentDescription
