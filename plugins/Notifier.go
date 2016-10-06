@@ -10,7 +10,7 @@ type (
 	Notifier interface {
 		Plugin
 
-		Notify(text string)
+		Notify(text string) error
 	}
 )
 
