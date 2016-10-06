@@ -34,6 +34,7 @@ func (s *States) Histogram() map[State]int {
 // Reduce reduces the slice of states to a single state according to a very
 // simple algorithm:
 // If there's noe states stores, the result is StateUnknown.
+// If any of the states are StateUnknown, return StateUnknown.
 // If all states are the same, the result is that state.
 // If the contained states are mixed, the result are StateDegraded.
 func (s *States) Reduce() State {
@@ -44,6 +45,10 @@ func (s *States) Reduce() State {
 	}
 
 	hist := s.Histogram()
+
+	if hist[StateUnknown] > 0 {
+		return StateUnknown
+	}
 
 	for state, count := range hist {
 		if state >= stateMax {

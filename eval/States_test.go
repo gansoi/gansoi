@@ -59,7 +59,7 @@ func TestEvaluate(t *testing.T) {
 		{States{StateUp, StateDegraded}, StateDegraded},
 		{States{StateUp, StateUp}, StateUp},
 		{States{StateUp, StateUp, StateUp, StateDown}, StateDegraded},
-		{States{StateUnknown, StateDegraded, StateUp}, StateDegraded},
+		{States{StateUnknown, StateDegraded, StateUp}, StateUnknown},
 		{States{State(34)}, StateUnknown},
 		{States{StateUp, StateUp, StateUp, State(35)}, StateUnknown},
 	}
