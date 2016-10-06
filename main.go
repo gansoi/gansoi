@@ -24,6 +24,7 @@ import (
 	"github.com/abrander/gansoi/notify"
 	"github.com/abrander/gansoi/plugins"
 	_ "github.com/abrander/gansoi/plugins/http"
+	_ "github.com/abrander/gansoi/plugins/notifiers/slack"
 	_ "github.com/abrander/gansoi/plugins/tcpport"
 )
 
