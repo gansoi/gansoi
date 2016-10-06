@@ -21,6 +21,7 @@ import (
 	"github.com/abrander/gansoi/eval"
 	"github.com/abrander/gansoi/logger"
 	"github.com/abrander/gansoi/node"
+	"github.com/abrander/gansoi/notify"
 	"github.com/abrander/gansoi/plugins"
 	_ "github.com/abrander/gansoi/plugins/http"
 	_ "github.com/abrander/gansoi/plugins/tcpport"
@@ -62,6 +63,8 @@ func init() {
 
 	database.RegisterType(checks.CheckResult{})
 	database.RegisterType(checks.Check{})
+	database.RegisterType(notify.Contact{})
+	database.RegisterType(notify.ContactGroup{})
 }
 
 func main() {
@@ -111,6 +114,12 @@ func main() {
 	restEvaluations := node.NewRestAPI(eval.Evaluation{}, n)
 	restEvaluations.Router(engine.Group("/evaluations"))
 
+	restContacts := node.NewRestAPI(notify.Contact{}, n)
+	restContacts.Router(engine.Group("/contacts"))
+
+	restContactGroups := node.NewRestAPI(notify.ContactGroup{}, n)
+	restContactGroups.Router(engine.Group("/contactgroups"))
+
 	// Endpoint for running a check on the cluster node.
 	engine.POST("/test", func(c *gin.Context) {
 		var check checks.Check
@@ -130,6 +139,12 @@ func main() {
 
 		c.JSON(http.StatusOK, descriptions)
 	})
+
+	notifier, err := notify.NewNotifier(db)
+	if err != nil {
+		logger.Red("main", "Failed to start notifier: %s", err.Error())
+	}
+	n.RegisterListener(notifier)
 
 	live := NewLive()
 	n.RegisterListener(live)

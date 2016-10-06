@@ -14,21 +14,23 @@ import (
 type (
 	// Check defines a check to be conducted by Gansoi.
 	Check struct {
-		ID          string          `json:"id"`
-		AgentID     string          `json:"agent"`
-		Interval    time.Duration   `json:"interval"`
-		Arguments   json.RawMessage `json:"arguments"`
-		Agent       plugins.Agent   `json:"-"`
-		Expressions []string        `json:"expressions"`
+		ID            string          `json:"id"`
+		AgentID       string          `json:"agent"`
+		Interval      time.Duration   `json:"interval"`
+		Arguments     json.RawMessage `json:"arguments"`
+		Agent         plugins.Agent   `json:"-"`
+		Expressions   []string        `json:"expressions"`
+		ContactGroups []string        `json:"contactgroups"`
 	}
 
 	checkProxy struct {
-		ID          string          `json:"id"`
-		AgentID     string          `json:"agent"`
-		Interval    time.Duration   `json:"interval"`
-		Node        string          `json:"node"`
-		Arguments   json.RawMessage `json:"arguments"`
-		Expressions []string        `json:"expressions"`
+		ID            string          `json:"id"`
+		AgentID       string          `json:"agent"`
+		Interval      time.Duration   `json:"interval"`
+		Node          string          `json:"node"`
+		Arguments     json.RawMessage `json:"arguments"`
+		Expressions   []string        `json:"expressions"`
+		ContactGroups []string        `json:"contactgroups"`
 	}
 )
 
@@ -46,6 +48,7 @@ func (c *Check) UnmarshalJSON(data []byte) error {
 	c.Interval = proxy.Interval
 	c.Arguments = proxy.Arguments
 	c.Expressions = proxy.Expressions
+	c.ContactGroups = proxy.ContactGroups
 
 	c.Agent = plugins.GetAgent(c.AgentID)
 	if c.Agent == nil {
