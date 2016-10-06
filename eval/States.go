@@ -31,6 +31,23 @@ func (s *States) Histogram() map[State]int {
 	return ret
 }
 
+// Last returns a new States object containing the latest n states.
+func (s *States) Last(n int) *States {
+	l := len(*s)
+
+	if n <= 0 || l == 0 {
+		return &States{}
+	}
+
+	if n > l {
+		n = l
+	}
+
+	ret := (*s)[:n]
+
+	return &ret
+}
+
 // Reduce reduces the slice of states to a single state according to a very
 // simple algorithm:
 // If there's noe states stores, the result is StateUnknown.
@@ -61,4 +78,17 @@ func (s *States) Reduce() State {
 	}
 
 	return StateDegraded
+}
+
+// ColorString will return a nicely colored array.
+func (s *States) ColorString() string {
+	ret := "\033[0m["
+
+	for _, state := range *s {
+		ret += " " + state.ColorString()
+	}
+
+	ret += " ]"
+
+	return ret
 }

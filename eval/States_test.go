@@ -46,6 +46,44 @@ func TestAdd(t *testing.T) {
 	}
 }
 
+func equal(a, b *States) bool {
+	if len(*a) != len(*b) {
+		return false
+	}
+
+	for i, aa := range *a {
+		if aa != (*b)[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
+func TestLast(t *testing.T) {
+	cases := []struct {
+		input    States
+		n        int
+		expected States
+	}{
+		{States{}, 0, States{}},
+		{States{StateDown}, 0, States{}},
+		{States{StateDown, StateDegraded}, 0, States{}},
+		{States{StateDown, StateUp}, 1, States{StateDown}},
+		{States{StateDown, StateUp}, 2, States{StateDown, StateUp}},
+		{States{StateDown, StateUp}, 3, States{StateDown, StateUp}},
+		{States{StateDown, StateUp}, -5, States{}},
+		{States{}, -1, States{}},
+	}
+
+	for _, c := range cases {
+		result := c.input.Last(c.n)
+		if !equal(result, &c.expected) {
+			t.Fatalf("%v.Last(%d) failed. Returned %s, expected %s", c.input, c.n, result.ColorString(), c.expected.ColorString())
+		}
+	}
+}
+
 func TestEvaluate(t *testing.T) {
 	cases := []struct {
 		input    States
