@@ -56,7 +56,7 @@ func (r *RestAPI) create(c *gin.Context) {
 		return
 	}
 
-	c.Data(http.StatusAccepted, "text/plain", []byte("got it, thanks"))
+	c.Data(http.StatusAccepted, "text/plain", []byte("got it, thanks\n"))
 }
 
 func (r *RestAPI) replace(c *gin.Context) {
