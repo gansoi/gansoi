@@ -119,7 +119,7 @@ func (e *Evaluator) evaluate2(n *PartialEvaluation) error {
 
 		// If any result is older than two cycles, we discard it.
 		if time.Now().Sub(pe.End) > check.Interval*2 {
-			logger.Red("Result from %s is too old (T:%s) (D:%s) (I:%s)", nodeID, pe.End, time.Now().Sub(pe.End), check.Interval)
+			logger.Red("eval", "Result from %s is too old (T:%s) (D:%s) (I:%s)", nodeID, pe.End, time.Now().Sub(pe.End), check.Interval)
 			break
 		}
 
