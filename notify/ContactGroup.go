@@ -1,6 +1,8 @@
 package notify
 
-import "github.com/abrander/agento/logger"
+import (
+	"github.com/abrander/gansoi/logger"
+)
 
 type (
 	// ContactGroup is a group of contacts.
