@@ -2,12 +2,204 @@
 <head>
     <title>Gansoi monitoring</title>
     <script src="/client.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+
+body {
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    font: 14px "Source Sans", helvetica, arial, sans-serif;
+    background: #4b4d4e;
+    color: #f0f1f1;
+    font-weight: 400;
+    font-family: source-sans-pro, sans-serif;
+    position: relative;
+    -webkit-font-smoothing: antialiased;
+}
+
+.right {
+    float: right;
+}
+
+.button {
+    display: inline-block;
+    padding: 0 0.563rem;
+    font-size: 12px;
+    line-height: 1.313rem;
+    letter-spacing: 0;
+    color: #c6c8c8;
+    text-shadow: 0 -1px rgba(0,0,0,0.69);
+    vertical-align: top;
+    background-color: #595b5b;
+    box-shadow: inset 0 1px #737373;
+    border: 1px solid #333434;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.button:disabled {
+    opacity: 0.5;
+    cursor: default;
+    pointer-events: none;
+}
+
+.button:active {
+    background-color: hsla(210, 2%, 25%, 1);
+    box-shadow: inset 0 1px hsla(0, 0%, 0%, .05);
+}
+
+:focus {
+    outline:0;
+}
+
+input[type="text"], input[type="number"] {
+    line-height: 1.313rem;
+    padding: 0 0.563rem;
+    border: 1px solid #333434;
+    border-radius: 4px;
+    background-color: #454646;
+    color: #c6c8c8;
+}
+
+input:focus {
+    border: 1px solid #555656;
+}
+
+.red {
+    background-color: #df1e28;
+    box-shadow: inset 0 1px rgba(255,255,255,0.36);
+    color: #fff;
+    text-shadow: 0 -1px rgba(0,0,0,0.36);
+}
+
+.green {
+    background-color: #28bf8e;
+    box-shadow: inset 0 1px rgba(255,255,255,0.36);
+    color: #fff;
+    text-shadow: 0 -1px rgba(0,0,0,0.36);
+}
+
+.blue {
+    background-color: #288edf;
+    box-shadow: inset 0 1px rgba(255,255,255,0.36);
+    color: #fff;
+    text-shadow: 0 -1px rgba(0,0,0,0.36);
+}
+
+h2 {
+    font-weight: 300;
+    font-size: 28px;
+    border-bottom: 1px solid #58595A;
+}
+
+h3 {
+    font-weight: 300;
+    font-size: 20px;
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+}
+
+h3 + * {
+    margin-top: 0px;
+    padding-top: 0px;
+}
+
+form {
+    display: inline-block;
+}
+
+fieldset {
+    border: none;
+    padding: 5px;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background: #58595a;
+}
+
+.table {
+    border-spacing: 0px;
+    border-collapse: separate;
+}
+
+.table td {
+    background-color: #454646;
+    color: #c6c8c8;
+    padding: 0.5rem;
+    border-top: 1px solid #616363;
+    border-bottom: 1px solid #333434;
+}
+
+.table td:first-child {
+    border-left: 1px solid #616363;
+}
+
+.table td:last-child {
+    border-right: 1px solid #333434;
+}
+
+.table th {
+    padding: 4px 20px;
+    font-size: 0.9em;
+    font-weight: 400;
+    background-color: #3f4041;
+    color: #c6c8c8;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.1);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.table th:first-child {
+    border-left: 1px solid rgba(255,255,255,0.1);
+}
+
+.table th:last-child {
+    border-right: 1px solid rgba(255,255,255,0.05);
+}
+
+.buttonbar {
+    margin: 0px;
+    padding: 0px;
+    overflow: hidden;
+}
+
+.buttonbar .button {
+    float: left;
+    border-right: none;
+    border-radius: 0px;
+}
+
+.buttonbar .button:first-child {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.buttonbar .button:last-child {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    border-right: 1px solid #333434;
+}
+
+.buttonbar *:active {
+    background-color: hsla(210, 2%, 25%, 1);
+    box-shadow: inset 0 1px hsla(0, 0%, 0%, .05);
+}
+
+div.buttonbar *:target {
+    color: #ee0;
+}
+    </style>
 </head>
 <body>
- <a href="#overview">Overview</a>
- <a href="#gansoi">Gansoi</a>
- <a href="#checks">Checks</a>
- <a href="#agents">Agents</a>
+ <div class="buttonbar">
+  <a class="button" id="overview" href="#overview">Overview</a>
+  <a class="button" id="gansoi" href="#gansoi">Gansoi</a>
+  <a class="button" id="checks" href="#checks">Checks</a>
+  <a class="button" id="agents" href="#agents">Agents</a>
+ </div>
  <div id="main"></div>
 </body>
 
@@ -21,7 +213,8 @@
 
 <script type="template" name="gansoi">
 <h2>Gansoi</h2>
-<table>
+<h3>Nodes</h3>
+<table class="table">
  <tr>
   <th>Name</th>
   <th>Started</th>
@@ -51,7 +244,7 @@
 
 <script type="template" name="checks">
 <h2>Checks</h2>
-<table>
+<table class="table">
 {{ range .List }}
 {{ template "check" . }}
 {{ end }}
@@ -64,14 +257,14 @@
 <td>{{ .AgentID }}</td>
 <td>{{ .Interval }}</td>
 <td>{{ .Node }}</td>
-<td><button name="EditCheck" value="{{ .ID }}">Edit</button></td>
-<td><button name="DeleteCheck" value="{{ .ID }}">Delete</button></td>
+<td><button class="button" name="EditCheck" value="{{ .ID }}" disabled>Edit</button></td>
+<td><button class="button" name="DeleteCheck" value="{{ .ID }}" class="red">Delete</button></td>
 </tr>
 </script>
 
 <script type="template" name="agents">
 <h2>Agents</h2>
-<table>
+<table class="table">
 {{ range . }}
 {{ template "agent-line" . }}
 {{ end }}
@@ -80,37 +273,41 @@
 
 <script type="template" name="agent-line">
 <tr>
-<td><a href="#check/new/{{ .Name }}">{{ .Name }}</a></td>
+<td>{{ .Name }}</td><td>[Agent description]</td><td><a class="button" href="#check/new/{{ .Name }}">Add {{ .Name }} check</a></td>
 </tr>
 </script>
 
 <script type="template" name="agent-new">
 <form>
-
- <label>
-  Unique Check ID
-  <input type="text" name="ID"/>
- </label><br />
-
- <label>
-  Check interval
-  <input type="number" name="Interval" min="5" max="3600" value="60">
-  (seconds)
- </label><br />
-
-{{ range .Parts }}
-{{ . }}<br />
-{{ end }}
-<input type="submit" value="Add check" />
+ <fieldset>
+  <table>
+   <tbody>
+    <tr><th colspan="2">Add {{ .Description.Name }} Check</th></tr>
+    <tr><td colspan="2"><hr></td></tr>
+    <tr>
+     <td><label>Unique Check ID</label></td>
+     <td><input type="text" name="ID"/></td>
+    </tr>
+    <tr>
+     <td><label>Check interval</label></td>
+     <td><input type="number" name="Interval" min="5" max="3600" value="60"> (seconds)</td>
+    </tr>
+    <tr><td colspan="2"><hr></td></tr>
+    {{ range .Parts }}
+    {{ . }}
+    {{ end }}
+   </tbody>
+  </table>
+  <input class="button green right" type="submit" value="Add check" />
+ </fieldset>
 </form>
 </script>
 
 <script type="template" name="agent-argument-string">
-<label>
- {{ .Name }}
- <input type="text" name="{{ .Name }}"/>
- {{ .Description }}
-</label>
+<tr>
+ <td><label>{{ .Name }}</label></td>
+ <td><input type="text" name="{{ .Name }}"/> {{ .Description }}</td>
+</tr>
 </script>
 
 </html>

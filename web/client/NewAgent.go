@@ -17,7 +17,7 @@ import (
 type (
 	// NewAgent is a controller for adding a new agent.
 	NewAgent struct {
-		description *plugins.PluginDescription
+		Description *plugins.PluginDescription
 		Parts       []htmltemplate.HTML
 	}
 )
@@ -25,7 +25,7 @@ type (
 // NewNewAgent will instantiate a NewAgent-controller.
 func NewNewAgent(description *plugins.PluginDescription, templates *template.Collection) (*NewAgent, error) {
 	newAgent := &NewAgent{
-		description: description,
+		Description: description,
 	}
 
 	for _, argument := range description.Arguments {
@@ -46,7 +46,7 @@ func (n *NewAgent) Submit(values map[string]string) {
 	arguments := make(map[string]interface{})
 
 	// Iterate through arguments and build arguments map.
-	for _, buh := range n.description.Arguments {
+	for _, buh := range n.Description.Arguments {
 		value, found := values[buh.Name]
 
 		if found {
@@ -64,7 +64,7 @@ func (n *NewAgent) Submit(values map[string]string) {
 
 	check := &Check{
 		ID:        values["ID"],
-		AgentID:   n.description.Name,
+		AgentID:   n.Description.Name,
 		Interval:  time.Duration(interval) * time.Second,
 		Node:      "all",
 		Arguments: arguments,
