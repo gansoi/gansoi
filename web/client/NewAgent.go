@@ -7,7 +7,6 @@ import (
 	htmltemplate "html/template"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/abrander/gansoi/plugins"
@@ -42,28 +41,19 @@ func NewNewAgent(description *plugins.PluginDescription, templates *template.Col
 }
 
 // Submit implements template.Submitter
-func (n *NewAgent) Submit(values map[string]string) {
-	arguments := make(map[string]interface{})
-
-	// Iterate through arguments and build arguments map.
-	for _, buh := range n.Description.Arguments {
-		value, found := values[buh.Name]
-
-		if found {
-			switch buh.Type {
-			case "string":
-				arguments[buh.Name] = value
-			default:
-				panic("Please implement " + buh.Type + " in NewAgent.Submit()")
-			}
-		}
+func (n *NewAgent) Submit(arguments map[string]interface{}) {
+	interval := arguments["Interval"].(float64)
+	if interval <= 0.0 {
+		interval = 30
 	}
 
-	// FIXME: Deal with empty interval.
-	interval, _ := strconv.Atoi(values["Interval"])
+	id := arguments["ID"].(string)
+
+	delete(arguments, "Interval")
+	delete(arguments, "ID")
 
 	check := &Check{
-		ID:        values["ID"],
+		ID:        id,
 		AgentID:   n.Description.Name,
 		Interval:  time.Duration(interval) * time.Second,
 		Node:      "all",

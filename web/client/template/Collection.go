@@ -67,8 +67,8 @@ func (c *Collection) RenderString(templateID string, data interface{}) (string, 
 }
 
 // formToMap will collect all input values and return a map.
-func formToMap(form dom.Element) map[string]string {
-	values := make(map[string]string)
+func formToMap(form dom.Element) map[string]interface{} {
+	values := make(map[string]interface{})
 
 	inputs := form.GetElementsByTagName("input")
 	for _, element := range inputs {
@@ -79,8 +79,23 @@ func formToMap(form dom.Element) map[string]string {
 			continue
 		}
 
-		if input.Name != "" {
+		if input.Name == "" {
+			continue
+		}
+
+		switch input.Type {
+
+		case "number":
+			values[input.Name] = input.ValueAsNumber
+
+		case "text":
 			values[input.Name] = input.Value
+
+		case "checkbox":
+			values[input.Name] = input.Checked
+
+		default:
+			panic("implement " + input.Type + " in formToMap()")
 		}
 	}
 
@@ -130,7 +145,14 @@ func (c *Collection) RenderElement(target dom.Element, templateID string, data i
 			typ := input.GetAttribute("type")
 			name := input.GetAttribute("name")
 
+			val := immutable.Elem().FieldByName(name)
+
 			switch typ {
+			case "checkbox":
+				if val.IsValid() {
+					input.(*dom.HTMLInputElement).Checked = val.Bool()
+				}
+
 			case "number":
 				// number can be treated like string-types for this case.
 				fallthrough
@@ -142,7 +164,6 @@ func (c *Collection) RenderElement(target dom.Element, templateID string, data i
 				fallthrough
 			case "text":
 				// text type should be pre-filled from data
-				val := immutable.Elem().FieldByName(name)
 				if val.IsValid() {
 
 					input.(*dom.HTMLInputElement).Value = val.String()

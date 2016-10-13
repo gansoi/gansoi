@@ -62,6 +62,110 @@ input[type="text"], input[type="number"] {
     color: #c6c8c8;
 }
 
+input[type="checkbox"] {
+  position: absolute;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  opacity: 0.001;
+  z-index: 1;
+  vertical-align: top;
+  outline: none;
+
+  height: 1rem;
+  width: 1rem;
+  margin-top: 0;
+  margin-right: -1rem;
+  margin-bottom: -1rem;
+  margin-left: 0;
+
+  line-height: 1rem;
+}
+
+input[type="checkbox"],
+input[type="checkbox"] + label {
+  cursor: default;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+input[type="checkbox"] + label:before,
+input[type="checkbox"] + label {
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  background-clip: padding-box;
+}
+
+input[type="checkbox"] + label {
+  position: relative;
+  padding-left: 1.15rem;
+  display: inline-block;
+  vertical-align: top;
+}
+
+input[type="checkbox"]:disabled + label {
+  opacity: 0.3;
+  cursor: default;
+  pointer-events: none;
+}
+
+input[type="checkbox"] + label:before,
+input[type="checkbox"] + label:after {
+  content: '';
+  position: absolute;
+  left: 0px;
+}
+
+input[type="checkbox"]:checked + label:after {
+  opacity: 1;
+}
+
+input[type="checkbox"] {
+}
+
+input[type="checkbox"] + label:before {
+  width: 1rem;
+  height: 1rem;
+  background: hsla(180, 1%, 35%, 1);
+  border: 1px solid hsla(180, 1%, 20%, 1);
+  border-radius: 3px;
+  box-shadow: inset 0 1px hsla(0, 0%, 45%, 1);
+}
+
+input[type="checkbox"] + label:after {
+  top: 2px;
+  left: 1px;
+  opacity: 0;
+  width: 14px;
+  height: 4px;
+  background: transparent;
+  border: 7px solid hsla(180, 2%, 78%, 1);
+  border-width: 3px;
+  border-top: none;
+  border-right: none;
+  border-radius: 1px;
+  -webkit-transform: rotate(-50deg);
+  transform: rotate(-50deg);
+}
+
+input[type="checkbox"]:focus + label:before {
+    /* border: 1px solid #555656; */
+}
+
+input[type="checkbox"]:active + label:before {
+  border: 1px solid hsla(180, 1%, 20%, 1);
+  background-color: hsla(210, 2%, 25%, 1);
+  box-shadow: inset 0 1px hsla(0, 0%, 0%, 0.05);
+}
+
+input[type="checkbox"]:disabled:active + label:before {
+  border: 1px solid hsla(180, 1%, 20%, 1);
+  background: hsla(180, 1%, 35%, 1);
+  box-shadow: inset 0 1px hsla(0, 0%, 45%, 1);
+}
+
 input:focus {
     border: 1px solid #555656;
 }
@@ -307,6 +411,13 @@ div.buttonbar *:target {
 <tr>
  <td><label>{{ .Name }}</label></td>
  <td><input type="text" name="{{ .Name }}"/> {{ .Description }}</td>
+</tr>
+</script>
+
+<script type="template" name="agent-argument-bool">
+<tr>
+ <td><label>{{ .Name }}</label></td>
+ <td><input type="checkbox" name="{{ .Name }}"/> <label>{{ .Description }}</label></td>
 </tr>
 </script>
 
