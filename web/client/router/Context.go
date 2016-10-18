@@ -67,6 +67,10 @@ func generateRegex(raw string) (string, error) {
 	return regex, nil
 }
 
+func (c *Context) Redirect(route string) {
+	c.router.Set(route)
+}
+
 func (c *Context) Param(name string) string {
 	return c.params[name]
 }

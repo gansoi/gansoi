@@ -56,6 +56,11 @@ func main() {
 	templates := template.NewCollection("template")
 
 	r := router.New(browser.ID("main"))
+
+	r.AddRoute("", func(c *router.Context) {
+		c.Redirect("overview")
+	})
+
 	r.AddRoute("overview", func(c *router.Context) {
 		c.Render(templates, "overview", nil)
 	})

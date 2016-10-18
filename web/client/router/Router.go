@@ -45,6 +45,13 @@ func (r *Router) AddRoute(path string, f RouterFunc) error {
 	return nil
 }
 
+// Set the route to path.
+func (r *Router) Set(path string) {
+	u := browser.Url()
+	u.Fragment = path
+	browser.SetUrl(*u)
+}
+
 func (r *Router) render(hash string) {
 	// Iterate over all routes
 	for _, description := range r.routes {
