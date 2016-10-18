@@ -1,4 +1,4 @@
-gansoi *
+gansoi
 ======
 
 This software is unusable for now. It's a work in progress monitoring solution
@@ -46,5 +46,3 @@ You can run a small local gansoi cluster for testing and development:
     $ ./test.sh
 
 A three-node local cluster should be started shortly. You can visit the webinterface at https://gansoi-dev.com:9002/.
-
-\* gansoi is a working title.
