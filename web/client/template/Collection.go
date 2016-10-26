@@ -84,6 +84,10 @@ func formToMap(form dom.Element) map[string]interface{} {
 		}
 
 		switch input.Type {
+		case "button":
+			fallthrough
+		case "submit":
+			break
 
 		case "number":
 			values[input.Name] = input.ValueAsNumber
@@ -104,6 +108,13 @@ func formToMap(form dom.Element) map[string]interface{} {
 
 // RenderElement will render a template to a dom.Element.
 func (c *Collection) RenderElement(target dom.Element, templateID string, data interface{}) error {
+	r, ok := data.(Renderer)
+	if ok {
+		r.RenderFunc(func() error {
+			return c.RenderElement(target, templateID, data)
+		})
+	}
+
 	str, err := c.RenderString(templateID, data)
 	if err != nil {
 		return err
@@ -149,13 +160,15 @@ func (c *Collection) RenderElement(target dom.Element, templateID string, data i
 
 			switch typ {
 			case "checkbox":
-				if val.IsValid() {
+				if val.IsValid() && val.Kind() == reflect.Bool {
 					input.(*dom.HTMLInputElement).Checked = val.Bool()
 				}
 
 			case "number":
-				// number can be treated like string-types for this case.
-				fallthrough
+				if val.IsValid() && val.Kind() == reflect.Int {
+					input.(*dom.HTMLInputElement).Value = fmt.Sprintf("%d", val.Int())
+				}
+
 			case "email":
 				fallthrough
 			case "password":
@@ -164,22 +177,29 @@ func (c *Collection) RenderElement(target dom.Element, templateID string, data i
 				fallthrough
 			case "text":
 				// text type should be pre-filled from data
-				if val.IsValid() {
-
+				if val.IsValid() && val.Kind() == reflect.String {
 					input.(*dom.HTMLInputElement).Value = val.String()
 				}
 
+			case "button":
+				fallthrough
 			case "submit":
 				submitter, ok := data.(Submitter)
 				if !ok {
 					return fmt.Errorf("%T does not implement Submitter", data)
 				}
 
+				button := NewButton(input.(*dom.HTMLInputElement))
+
 				input.AddEventListener("click", false, func(event dom.Event) {
 					event.PreventDefault()
 
+					// Disable button before calling handler. This makes sure
+					// the user will not click twice.
+					button.Disable()
+
 					// Call Submit
-					go submitter.Submit(formToMap(form))
+					go submitter.Submit(button, formToMap(form))
 				})
 
 			default:

@@ -16,11 +16,12 @@ import (
 type (
 	// Check mimics checks.Check.
 	Check struct {
-		ID        string        `json:"id"`
-		AgentID   string        `json:"agent"`
-		Interval  time.Duration `json:"interval"`
-		Node      string        `json:"node"`
-		Arguments interface{}   `json:"arguments"`
+		ID          string        `json:"id"`
+		AgentID     string        `json:"agent"`
+		Interval    time.Duration `json:"interval"`
+		Node        string        `json:"node"`
+		Arguments   interface{}   `json:"arguments"`
+		Expressions []string      `json:"expressions"`
 	}
 
 	checkList struct {
@@ -128,7 +129,7 @@ func main() {
 			c.Render(templates, "error", "AgentID not found")
 		}
 
-		controller, err := NewNewAgent(a, templates)
+		controller, err := NewNewAgent(a)
 		if err != nil {
 			c.Render(templates, "error", err.Error())
 			return

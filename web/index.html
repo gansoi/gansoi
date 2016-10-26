@@ -390,35 +390,73 @@ div.buttonbar *:target {
     <tr><td colspan="2"><hr></td></tr>
     <tr>
      <td><label>Unique Check ID</label></td>
-     <td><input type="text" name="ID"/></td>
+     <td><input type="text" name="ID" value="{{ .ID }}"/></td>
     </tr>
     <tr>
      <td><label>Check interval</label></td>
-     <td><input type="number" name="Interval" min="5" max="3600" value="60"> (seconds)</td>
+     <td><input type="number" name="Interval" min="5" max="3600" value="7"> (seconds)</td>
     </tr>
     <tr><td colspan="2"><hr></td></tr>
-    {{ range .Parts }}
-    {{ . }}
+    {{ $arguments := .Arguments }}
+    {{ range $key, $desc := .Description.Arguments }}
+    <tr>
+     <td><label>{{ $desc.Name }}</label></td>
+     {{ if eq $desc.Type "string" }}
+     <td><input type="text" name="{{ $desc.Name }}" value="{{ index $arguments $desc.Name}}"/> {{ $desc.Description }}</td>
+     {{ else if eq $desc.Type "bool" }}
+     <td><input type="checkbox" name="{{ $desc.Name }}"/> {{ $desc.Description }}</td>
+     {{ else }}
+     <td>{{ $desc.Type }} not supported</td>
+     {{ end }}
+    </tr>
     {{ end }}
    </tbody>
   </table>
-  <input class="button green right" type="submit" value="Add check" />
+  <input class="button" name="test" type="button" value="Test">
+{{ if .Result }}
+  <table>
+   <tbody>
+    <tr><th colspan="2">Test Results</th></tr>
+    <tr><td colspan="2"><hr></td></tr>
+    <tr>
+     <td>Node</td>
+     <td>{{ .Result.Node }}</td>
+    </tr>
+    <tr><td colspan="2"><hr></td></tr>
+{{ range $key, $value := .Result.Results.Values }}
+    <tr>
+     <td>{{ $key }}</td>
+     <td>{{ $value }}</td>
+    </tr>
+{{ end }}
+   </tbody>
+  </table>
+  <table>
+   <tbody>
+    <tr><th colspan="2">Evaluations</th></tr>
+    <tr><td colspan="2"><hr></td></tr>
+    {{ range $key, $value := .Tests }}
+     <tr>
+     <td>{{ $key }}</td>
+     <td>
+      <input type="text" name="test:{{ $key }}" value="{{ $value }}" />
+      <input type="button" name="removetest" index="{{ $key }}" value="Remove" class="button red"/>
+     </td>
+    </tr>
+    {{ end }}
+    <tr>
+     <td>New</td>
+     <td>
+      <input type="text" name="NewTest" />
+      <input type="button" name="addtest" value="Add" class="button"/>
+     </td>
+    </tr>
+   </tbody>
+  </table>
+  <input class="button green right" name="add" type="submit" value="Add check" />
+{{ end}}
  </fieldset>
 </form>
-</script>
-
-<script type="template" name="agent-argument-string">
-<tr>
- <td><label>{{ .Name }}</label></td>
- <td><input type="text" name="{{ .Name }}"/> {{ .Description }}</td>
-</tr>
-</script>
-
-<script type="template" name="agent-argument-bool">
-<tr>
- <td><label>{{ .Name }}</label></td>
- <td><input type="checkbox" name="{{ .Name }}"/> <label>{{ .Description }}</label></td>
-</tr>
 </script>
 
 </html>
