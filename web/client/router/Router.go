@@ -47,6 +47,11 @@ func (r *Router) AddRoute(path string, f RouterFunc) error {
 
 // Set the route to path.
 func (r *Router) Set(path string) {
+	Set(path)
+}
+
+// Set the route to path.
+func Set(path string) {
 	u := browser.Url()
 	u.Fragment = path
 	browser.SetUrl(*u)
