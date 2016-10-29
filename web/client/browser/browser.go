@@ -19,11 +19,6 @@ var (
 	doc dom.Document
 )
 
-func init() {
-	win = dom.GetWindow()
-	doc = win.Document()
-}
-
 func ID(id string) dom.Element {
 	return doc.GetElementByID(id)
 }
