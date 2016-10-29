@@ -31,6 +31,11 @@ var (
 	ErrNotFound = storm.ErrNotFound
 )
 
+const (
+	// stableBucket is the bucket name used for raft stable storage.
+	stableBucket = "raft.StableStore"
+)
+
 // NewDatabase will instantiate a new database placed in filepath.
 func NewDatabase(filepath string) (*Database, error) {
 	d := &Database{}
@@ -193,4 +198,35 @@ func (d *Database) RegisterListener(listener Listener) {
 	defer d.listenersLock.Unlock()
 
 	d.listeners = append(d.listeners, listener)
+}
+
+// Set implements raft.StableStore.
+func (d *Database) Set(k, v []byte) error {
+	return d.Storm().Set(stableBucket, k, v)
+}
+
+// Get implements raft.StableStore.
+func (d *Database) Get(k []byte) ([]byte, error) {
+	var value []byte
+	err := d.Storm().Get(stableBucket, k, &value)
+	if err != nil {
+		return nil, err
+	}
+
+	return value, nil
+}
+
+// SetUint64 is like Set, but handles uint64 values
+func (d *Database) SetUint64(key []byte, val uint64) error {
+	return d.Set(key, uint64ToBytes(val))
+}
+
+// GetUint64 is like Get, but handles uint64 values
+func (d *Database) GetUint64(key []byte) (uint64, error) {
+	val, err := d.Get(key)
+	if err != nil {
+		return 0, err
+	}
+
+	return bytesToUint64(val), nil
 }

@@ -76,7 +76,7 @@ func NewNode(secret string, db *database.Database, peerStore *PeerStore) (*Node,
 		conf,                 // raft.Config
 		n.db,                 // raft.FSM
 		raft.NewInmemStore(), // raft.LogStore
-		raft.NewInmemStore(), // raft.StableStore
+		n.db,                 // raft.StableStore
 		ss,                   // raft.SnapshotStore
 		n.peers,              // raft.PeerStore
 		transport,            // raft.Transport
