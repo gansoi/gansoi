@@ -10,7 +10,7 @@ import (
 
 type (
 	// Scheduler takes care of scheduling checks on the local node. For now
-	// it will tick every second.
+	// it will tick two times each second.
 	Scheduler struct {
 		run       bool
 		node      db
@@ -45,7 +45,7 @@ func NewScheduler(n db, nodeName string, run bool) *Scheduler {
 	s := &Scheduler{
 		node:      n,
 		nodeName:  nodeName,
-		ticker:    time.NewTicker(time.Millisecond * 1000),
+		ticker:    time.NewTicker(time.Millisecond * 500),
 		run:       run,
 		metaStore: make(map[string]*checkMeta),
 	}
