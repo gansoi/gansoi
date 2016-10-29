@@ -73,13 +73,13 @@ func NewNode(secret string, db *database.Database, peerStore *PeerStore) (*Node,
 	}
 
 	n.raft, err = raft.NewRaft(
-		conf,                 // raft.Config
-		n.db,                 // raft.FSM
-		raft.NewInmemStore(), // raft.LogStore
-		n.db,                 // raft.StableStore
-		ss,                   // raft.SnapshotStore
-		n.peers,              // raft.PeerStore
-		transport,            // raft.Transport
+		conf,      // raft.Config
+		n.db,      // raft.FSM
+		n.db,      // raft.LogStore
+		n.db,      // raft.StableStore
+		ss,        // raft.SnapshotStore
+		n.peers,   // raft.PeerStore
+		transport, // raft.Transport
 	)
 	if err != nil {
 		return nil, err
