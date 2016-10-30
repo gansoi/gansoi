@@ -51,6 +51,13 @@ func NewDatabase(filepath string) (*Database, error) {
 	return d, nil
 }
 
+// Close will close the database. Accessing the database after this will
+// result in a deadlock.
+func (d *Database) Close() error {
+	d.dbMutex.RLock()
+	return d.db.Close()
+}
+
 // open will open the underlying file storage.
 func (d *Database) open(filepath string) error {
 	db, err := storm.Open(
