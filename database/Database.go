@@ -71,7 +71,7 @@ func (d *Database) open(filepath string) error {
 
 	d.db = db
 
-	d.Storm().Bolt.Update(func(tx *bolt.Tx) error {
+	d.db.Bolt.Update(func(tx *bolt.Tx) error {
 		tx.CreateBucketIfNotExists([]byte(logBucket))
 
 		return nil
