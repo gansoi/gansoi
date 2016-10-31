@@ -30,14 +30,6 @@ var (
 	ErrNotFound = storm.ErrNotFound
 )
 
-const (
-	// stableBucket is the bucket name used for raft stable storage.
-	stableBucket = "raft.StableStore"
-
-	// logBucket is used for raft log storage.
-	logBucket = "raft.LogStore"
-)
-
 // NewDatabase will instantiate a new Database. path will be created if it
 // doesn't exist.
 func NewDatabase(path string) (*Database, error) {
@@ -70,12 +62,6 @@ func (d *Database) open(filepath string) error {
 	}
 
 	d.db = db
-
-	d.db.Bolt.Update(func(tx *bolt.Tx) error {
-		tx.CreateBucketIfNotExists([]byte(logBucket))
-
-		return nil
-	})
 
 	return nil
 }
@@ -214,141 +200,4 @@ func (d *Database) RegisterListener(listener Listener) {
 	defer d.listenersLock.Unlock()
 
 	d.listeners = append(d.listeners, listener)
-}
-
-// Set implements raft.StableStore.
-func (d *Database) Set(k, v []byte) error {
-	return d.Storm().Set(stableBucket, k, v)
-}
-
-// Get implements raft.StableStore.
-func (d *Database) Get(k []byte) ([]byte, error) {
-	var value []byte
-	err := d.Storm().Get(stableBucket, k, &value)
-	if err != nil {
-		return nil, err
-	}
-
-	return value, nil
-}
-
-// SetUint64 is like Set, but handles uint64 values
-func (d *Database) SetUint64(key []byte, val uint64) error {
-	return d.Set(key, uint64ToBytes(val))
-}
-
-// GetUint64 is like Get, but handles uint64 values
-func (d *Database) GetUint64(key []byte) (uint64, error) {
-	val, err := d.Get(key)
-	if err != nil {
-		return 0, err
-	}
-
-	return bytesToUint64(val), nil
-}
-
-// FirstIndex implements raft.LogStore.
-func (d *Database) FirstIndex() (uint64, error) {
-	tx, err := d.Storm().Bolt.Begin(false)
-	if err != nil {
-		return 0, err
-	}
-	defer tx.Rollback()
-
-	curs := tx.Bucket([]byte(logBucket)).Cursor()
-
-	first, _ := curs.First()
-	if first == nil {
-		return 0, nil
-	}
-
-	return bytesToUint64(first), nil
-}
-
-// LastIndex implements raft.LogStore.
-func (d *Database) LastIndex() (uint64, error) {
-	tx, err := d.Storm().Bolt.Begin(false)
-	if err != nil {
-		return 0, err
-	}
-	defer tx.Rollback()
-
-	curs := tx.Bucket([]byte(logBucket)).Cursor()
-
-	last, _ := curs.Last()
-	if last == nil {
-		return 0, nil
-	}
-
-	return bytesToUint64(last), nil
-}
-
-// GetLog implements raft.LogStore.
-func (d *Database) GetLog(idx uint64, log *raft.Log) error {
-	tx, err := d.Storm().Bolt.Begin(false)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	value := tx.Bucket([]byte(logBucket)).Get(uint64ToBytes(idx))
-
-	return json.Unmarshal(value, log)
-}
-
-// StoreLog implements raft.LogStore.
-func (d *Database) StoreLog(log *raft.Log) error {
-	return d.StoreLogs([]*raft.Log{log})
-}
-
-// StoreLogs implements raft.LogStore.
-func (d *Database) StoreLogs(logs []*raft.Log) error {
-	tx, err := d.Storm().Bolt.Begin(true)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	for _, log := range logs {
-		key := uint64ToBytes(log.Index)
-		value, err := json.Marshal(log)
-		if err != nil {
-			return err
-		}
-
-		bucket := tx.Bucket([]byte(logBucket))
-		err = bucket.Put(key, value)
-		if err != nil {
-			return err
-		}
-	}
-
-	return tx.Commit()
-}
-
-// DeleteRange implements raft.LogStore.
-func (d *Database) DeleteRange(min, max uint64) error {
-	minKey := uint64ToBytes(min)
-
-	// We can safely use standar Bolt functions, we're not interested in the
-	// encoded values, we're only using delete, so Storm encoding/decoding
-	// doesn't matter.
-	tx, err := d.Storm().Bolt.Begin(true)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	curs := tx.Bucket([]byte(logBucket)).Cursor()
-	for k, _ := curs.Seek(minKey); k != nil; k, _ = curs.Next() {
-		if bytesToUint64(k) > max {
-			break
-		}
-
-		if err := curs.Delete(); err != nil {
-			return err
-		}
-	}
-
-	return tx.Commit()
 }

@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
+	"path"
 	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hashicorp/raft"
+	"github.com/hashicorp/raft-boltdb"
 
 	"github.com/abrander/gansoi/database"
 	"github.com/abrander/gansoi/logger"
@@ -72,11 +74,16 @@ func NewNode(secret string, datadir string, db *database.Database, peerStore *Pe
 		return nil, err
 	}
 
+	store, err := raftboltdb.NewBoltStore(path.Join(datadir, "/raft.db"))
+	if err != nil {
+		return nil, err
+	}
+
 	n.raft, err = raft.NewRaft(
 		conf,      // raft.Config
 		n.db,      // raft.FSM
-		n.db,      // raft.LogStore
-		n.db,      // raft.StableStore
+		store,     // raft.LogStore
+		store,     // raft.StableStore
 		ss,        // raft.SnapshotStore
 		n.peers,   // raft.PeerStore
 		transport, // raft.Transport
