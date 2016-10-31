@@ -40,7 +40,7 @@ func init() {
 }
 
 // NewNode will initialize a new node.
-func NewNode(secret string, db *database.Database, peerStore *PeerStore) (*Node, error) {
+func NewNode(secret string, datadir string, db *database.Database, peerStore *PeerStore) (*Node, error) {
 	started := time.Now()
 
 	var err error
@@ -67,7 +67,7 @@ func NewNode(secret string, db *database.Database, peerStore *PeerStore) (*Node,
 
 	transport := raft.NewNetworkTransportWithLogger(n.stream, 1, 0, logger.Logger("raft-transport"))
 
-	ss, err := raft.NewFileSnapshotStoreWithLogger("/tmp/"+peerStore.Self(), 5, logger.Logger("raft-store"))
+	ss, err := raft.NewFileSnapshotStoreWithLogger(datadir, 5, logger.Logger("raft-store"))
 	if err != nil {
 		return nil, err
 	}

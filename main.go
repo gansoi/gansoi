@@ -94,7 +94,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	n, err := node.NewNode(config.Secret, db, peerstore)
+	n, err := node.NewNode(config.Secret, config.DataDir, db, peerstore)
 	if err != nil {
 		// FIXME: Fail in a more helpful manner than panic().
 		panic(err.Error())
