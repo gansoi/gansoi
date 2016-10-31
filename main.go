@@ -88,7 +88,7 @@ func main() {
 	peerstore.SetPeers(config.Cluster)
 	peerstore.SetSelf(self)
 
-	db, err := database.NewDatabase(config.DataDir)
+	db, err := database.NewDatabase(path.Join(config.DataDir, "gansoi.db"))
 	if err != nil {
 		logger.Red("main", "failed to open database in %s: %s", config.DataDir, err.Error())
 		os.Exit(1)

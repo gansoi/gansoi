@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"sync"
 	"time"
 
@@ -39,11 +38,12 @@ const (
 	logBucket = "raft.LogStore"
 )
 
-// NewDatabase will instantiate a new database placed in filepath.
-func NewDatabase(filepath string) (*Database, error) {
+// NewDatabase will instantiate a new Database. path will be created if it
+// doesn't exist.
+func NewDatabase(path string) (*Database, error) {
 	d := &Database{}
 
-	err := d.open(path.Join(filepath, "gansoi.db"))
+	err := d.open(path)
 	if err != nil {
 		return nil, err
 	}
