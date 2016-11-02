@@ -14,6 +14,7 @@ import (
 
 	"github.com/abrander/gansoi/database"
 	"github.com/abrander/gansoi/logger"
+	"github.com/abrander/gansoi/stats"
 )
 
 type (
@@ -39,6 +40,14 @@ type (
 
 func init() {
 	database.RegisterType(nodeInfo{})
+
+	stats.CounterInit("apply_noleader")
+	stats.CounterInit("apply_proxy")
+	stats.CounterInit("apply_direct")
+	stats.CounterInit("node_save")
+	stats.CounterInit("node_one")
+	stats.CounterInit("node_all")
+	stats.CounterInit("node_delete")
 }
 
 // NewNode will initialize a new node.
@@ -124,7 +133,9 @@ func (n *Node) raftHandler(c *gin.Context) {
 
 // statsHandler will reply with a few raft statistics.
 func (n *Node) statsHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, n.raft.Stats())
+	s := stats.GetAll()
+
+	c.JSON(http.StatusOK, s)
 }
 
 // applyHandler can be used by other nodes to apply a log entry to the leader.
@@ -163,10 +174,14 @@ func (n *Node) nodesHandler(c *gin.Context) {
 func (n *Node) apply(entry *database.LogEntry) error {
 	// Only attempt this if the cluster is stable with a leader.
 	if n.raft.Leader() == "" {
+		stats.CounterInc("apply_noleader", 1)
+
 		return raft.ErrLeader
 	}
 
 	if !n.leader {
+		stats.CounterInc("apply_proxy", 1)
+
 		r := bytes.NewReader(entry.Byte())
 		l := n.raft.Leader()
 		u := "https://" + l + n.basePath + "/apply"
@@ -178,6 +193,8 @@ func (n *Node) apply(entry *database.LogEntry) error {
 		return err
 	}
 
+	stats.CounterInc("apply_direct", 1)
+
 	n.raft.Apply(entry.Byte(), time.Minute)
 
 	return nil
@@ -185,6 +202,8 @@ func (n *Node) apply(entry *database.LogEntry) error {
 
 // Save will save an object to the cluster database.
 func (n *Node) Save(data interface{}) error {
+	stats.CounterInc("node_save", 1)
+
 	entry := database.NewLogEntry(database.CommandSave, data)
 
 	return n.apply(entry)
@@ -192,16 +211,22 @@ func (n *Node) Save(data interface{}) error {
 
 // One will retrieve one record from the cluster database.
 func (n *Node) One(fieldName string, value interface{}, to interface{}) error {
+	stats.CounterInc("node_one", 1)
+
 	return n.db.One(fieldName, value, to)
 }
 
 // All lists all kinds of a type.
 func (n *Node) All(to interface{}, limit int, skip int, reverse bool) error {
+	stats.CounterInc("node_all", 1)
+
 	return n.db.All(to, limit, skip, reverse)
 }
 
 // Delete deletes one record.
 func (n *Node) Delete(data interface{}) error {
+	stats.CounterInc("node_delete", 1)
+
 	entry := database.NewLogEntry(database.CommandDelete, data)
 
 	return n.apply(entry)

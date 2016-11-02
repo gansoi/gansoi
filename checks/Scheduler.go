@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/abrander/gansoi/logger"
+	"github.com/abrander/gansoi/stats"
 )
 
 type (
@@ -39,6 +40,13 @@ type (
 		All(to interface{}, limit int, skip int, reverse bool) error
 	}
 )
+
+func init() {
+	stats.CounterInit("scheduler_inflight")
+	stats.CounterInit("scheduler_inflight_overrun")
+	stats.CounterInit("scheduler_started")
+	stats.CounterInit("scheduler_failed")
+}
 
 // NewScheduler starts a new scheduler.
 func NewScheduler(n db, nodeName string, run bool) *Scheduler {
@@ -113,6 +121,7 @@ func (s *Scheduler) loop() {
 			inFlightLock.RUnlock()
 
 			if found {
+				stats.CounterInc("scheduler_inflight_overrun", 1)
 				continue
 			}
 
@@ -128,18 +137,21 @@ func (s *Scheduler) loop() {
 				inFlightLock.Lock()
 				inFlight[check.ID] = true
 				inFlightLock.Unlock()
+				stats.CounterInc("scheduler_inflight", 1)
 
 				// Execute the check in its own go routine.
 				go func(check Check) {
 					// Run the job.
 					start := time.Now()
 
+					stats.CounterInc("scheduler_started", 1)
 					checkResult := RunCheck(&check)
 					checkResult.Node = s.nodeName
 
 					if checkResult.Error != "" {
 						logger.Yellow("scheduler", "%s failed in %s: %s", check.ID, time.Now().Sub(start), checkResult.Error)
 					} else {
+						stats.CounterInc("scheduler_failed", 1)
 						logger.Green("scheduler", "%s ran in %s: %+v", check.ID, time.Now().Sub(start), checkResult.Results)
 					}
 
@@ -155,6 +167,8 @@ func (s *Scheduler) loop() {
 					inFlightLock.Lock()
 					delete(inFlight, check.ID)
 					inFlightLock.Unlock()
+
+					stats.CounterDec("scheduler_inflight", 1)
 				}(check)
 			}
 		}

@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/abrander/gansoi/stats"
 )
 
 // HTTPStream implements a raft stream for use with Golang's net/http.
@@ -18,6 +20,13 @@ type HTTPStream struct {
 	accepted chan net.Conn
 	dial     net.Dialer
 	secret   string
+}
+
+func init() {
+	stats.CounterInit("http_dialed")
+	stats.CounterInit("http_failed")
+	stats.CounterInit("http_served")
+	stats.CounterInit("http_accepted")
 }
 
 // NewHTTPStream will instantiate a new HTTPStream.
@@ -49,9 +58,12 @@ func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, erro
 		address += ":443"
 	}
 
+	stats.CounterInc("http_dialed", 1)
+
 	conf := &tls.Config{}
 	conn, err := tls.DialWithDialer(&dial, "tcp", address, conf)
 	if err != nil {
+		stats.CounterInc("http_failed", 1)
 		return nil, err
 	}
 
@@ -62,6 +74,7 @@ func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, erro
 	if err != nil {
 		conn.Close()
 
+		stats.CounterInc("http_failed", 1)
 		return nil, err
 	}
 
@@ -73,6 +86,8 @@ func (h *HTTPStream) Accept() (net.Conn, error) {
 	if h.closed {
 		return nil, errors.New("Server is shutting down")
 	}
+
+	stats.CounterInc("http_accepted", 1)
 
 	return <-h.accepted, nil
 }
@@ -102,6 +117,8 @@ func (h *HTTPStream) Network() string {
 
 // ServeHTTP implements the http.Handler interface.
 func (h *HTTPStream) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	stats.CounterInc("http_served", 1)
+
 	if h.closed {
 		http.Error(w, "Server is shutting down", http.StatusServiceUnavailable)
 		return

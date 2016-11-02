@@ -8,6 +8,7 @@ import (
 	"github.com/abrander/gansoi/database"
 	"github.com/abrander/gansoi/eval"
 	"github.com/abrander/gansoi/logger"
+	"github.com/abrander/gansoi/stats"
 )
 
 type (
@@ -26,6 +27,10 @@ var (
 	stateCacheLock sync.RWMutex
 	stateCache     = make(map[string]eval.State)
 )
+
+func init() {
+	stats.CounterInit("notification_sent")
+}
 
 // NewNotifier will start a new notifier service.
 func NewNotifier(db *database.Database) (*Notifier, error) {
@@ -159,6 +164,9 @@ func (n *Notifier) gotEvaluation(e *eval.Evaluation) error {
 
 		// FIXME: Handle errors somehow.
 		logger.Green("notify", "[%s] Notifying '%s'", e.CheckID, groupID)
+
+		stats.CounterInc("notification_sent", 1)
+
 		go group.Notify(text)
 	}
 

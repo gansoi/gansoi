@@ -12,6 +12,8 @@ import (
 	"github.com/asdine/storm/index"
 	"github.com/boltdb/bolt"
 	"github.com/hashicorp/raft"
+
+	"github.com/abrander/gansoi/stats"
 )
 
 type (
@@ -29,6 +31,13 @@ var (
 	// ErrNotFound is returned when the specified record is not saved.
 	ErrNotFound = storm.ErrNotFound
 )
+
+func init() {
+	stats.CounterInit("database_saves")
+	stats.CounterInit("database_deletes")
+	stats.CounterInit("database_applied")
+	stats.CounterInit("database_snapshot")
+}
 
 // NewDatabase will instantiate a new Database. path will be created if it
 // doesn't exist.
@@ -83,8 +92,10 @@ func (d *Database) ProcessLogEntry(entry *LogEntry) error {
 	switch entry.Command {
 	case CommandSave:
 		v, _ = entry.Payload()
+		stats.CounterInc("database_saves", 1)
 		err = d.Save(v)
 	case CommandDelete:
+		stats.CounterInc("database_deletes", 1)
 		v, _ = entry.Payload()
 		err = d.db.DeleteStruct(v)
 	default:
@@ -106,6 +117,7 @@ func (d *Database) ProcessLogEntry(entry *LogEntry) error {
 
 // Apply implements raft.FSM.
 func (d *Database) Apply(l *raft.Log) interface{} {
+	stats.CounterInc("database_applied", 1)
 	entry := &LogEntry{}
 	err := json.Unmarshal(l.Data, entry)
 	if err != nil {
@@ -119,6 +131,7 @@ func (d *Database) Apply(l *raft.Log) interface{} {
 
 // Snapshot implements raft.FSM.
 func (d *Database) Snapshot() (raft.FSMSnapshot, error) {
+	stats.CounterInc("database_snapshot", 1)
 	return &Snapshot{db: d}, nil
 }
 
