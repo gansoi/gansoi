@@ -13,6 +13,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/abrander/gingopherjs"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/cobra"
 
 	"rsc.io/letsencrypt"
 
@@ -41,7 +42,7 @@ type (
 )
 
 var (
-	configFile = flag.String("config", "/etc/gansoi.conf", "The configuration file to use.")
+	configFile = "/etc/gansoi.conf"
 
 	exampleConfig = `# Example configuration for gansoi.
 local = "london.example.com"
@@ -69,10 +70,27 @@ func init() {
 }
 
 func main() {
+	var cmdCore = &cobra.Command{
+		Use:   "core",
+		Short: "Run a core node",
+		Long:  `Run a core node in a Gansoi cluster`,
+		Run:   runCore,
+	}
+	cmdCore.Flags().StringVar(&configFile,
+		"config",
+		configFile,
+		"The configuration file to use.")
+
+	var rootCmd = &cobra.Command{Use: os.Args[0]}
+	rootCmd.AddCommand(cmdCore)
+	rootCmd.Execute()
+}
+
+func runCore(_ *cobra.Command, _ []string) {
 	var config configuration
-	_, err := toml.DecodeFile(*configFile, &config)
+	_, err := toml.DecodeFile(configFile, &config)
 	if err != nil {
-		logger.Red("main", "Failed to read configuration file at %s: %s", *configFile, err.Error())
+		logger.Red("main", "Failed to read configuration file at %s: %s", configFile, err.Error())
 		os.Exit(1)
 	}
 

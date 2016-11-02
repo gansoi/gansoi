@@ -131,7 +131,7 @@ mkdir /tmp/gansoi-dev/node3-data
 
 export DEBUG=*
 
-tmux new-session -d './gansoi -config /tmp/gansoi-dev/node1.conf'
-tmux split-window -v './gansoi -config /tmp/gansoi-dev/node2.conf'
-tmux split-window -v './gansoi -config /tmp/gansoi-dev/node3.conf'
+tmux new-session -d './gansoi core --config /tmp/gansoi-dev/node1.conf'
+tmux split-window -v './gansoi core --config /tmp/gansoi-dev/node2.conf'
+tmux split-window -v './gansoi core --config /tmp/gansoi-dev/node3.conf'
 tmux -2 attach-session -d
