@@ -16,7 +16,7 @@ type HTTP struct {
 }
 
 // Check implements plugins.Agent.
-func (h *HTTP) Check(result *plugins.AgentResult) error {
+func (h *HTTP) Check(result plugins.AgentResult) error {
 	resp, err := http.Get(h.URL)
 	if err != nil {
 		return err

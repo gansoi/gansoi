@@ -423,7 +423,7 @@ div.buttonbar *:target {
      <td>{{ .Result.Node }}</td>
     </tr>
     <tr><td colspan="2"><hr></td></tr>
-{{ range $key, $value := .Result.Results.Values }}
+{{ range $key, $value := .Result.Results }}
     <tr>
      <td>{{ $key }}</td>
      <td>{{ $value }}</td>

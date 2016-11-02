@@ -11,7 +11,7 @@ type (
 		Plugin
 
 		// Check should run the agents check.
-		Check(result *AgentResult) error
+		Check(result AgentResult) error
 	}
 )
 

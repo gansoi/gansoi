@@ -87,14 +87,14 @@ func RunCheck(check *Check) *CheckResult {
 }
 
 // Evaluate will evaluate the CheckResult based on a slice of expressions.
-func (c *Check) Evaluate(result *plugins.AgentResult) error {
+func (c *Check) Evaluate(result plugins.AgentResult) error {
 	for _, exp := range c.Expressions {
 		e, err := govaluate.NewEvaluableExpression(exp)
 		if err != nil {
 			break
 		}
 
-		result, err := e.Evaluate(result.Values)
+		result, err := e.Evaluate(result)
 		if err != nil {
 			break
 		}

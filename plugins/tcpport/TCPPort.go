@@ -17,7 +17,7 @@ type TCPPort struct {
 }
 
 // Check implements plugins.Agent.
-func (t *TCPPort) Check(result *plugins.AgentResult) error {
+func (t *TCPPort) Check(result plugins.AgentResult) error {
 	start := time.Now()
 	conn, err := net.Dial("tcp", t.Address)
 	if err != nil {
