@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"crypto/tls"
+	"encoding/json"
 	"flag"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
@@ -81,9 +84,90 @@ func main() {
 		configFile,
 		"The configuration file to use.")
 
+	cmdCheck := &cobra.Command{
+		Use:   "runcheck",
+		Short: "Run a Gansoi check locally",
+		Long:  "Run a Gansoi check locally and print result. This will return zero if no error occured",
+		Run: func(_ *cobra.Command, arguments []string) {
+			runCheck(false, arguments)
+		},
+	}
+
+	nagCheck := &cobra.Command{
+		Use:   "nagiosplugin",
+		Short: "Run a Gansoi check as a nagios plugin",
+		Long:  "Run a Gansoi check locally for use as a nagios plugin.",
+		Run: func(_ *cobra.Command, arguments []string) {
+			runCheck(true, arguments)
+		},
+	}
+
 	var rootCmd = &cobra.Command{Use: os.Args[0]}
 	rootCmd.AddCommand(cmdCore)
+	rootCmd.AddCommand(cmdCheck)
+	rootCmd.AddCommand(nagCheck)
 	rootCmd.Execute()
+}
+
+func runCheck(printSummary bool, arguments []string) {
+	var err error
+	var check checks.Check
+	f := os.Stdin
+	if len(arguments) > 0 {
+		f, err = os.Open(arguments[0])
+		if err != nil {
+			os.Stderr.WriteString(err.Error())
+
+			os.Exit(3)
+		}
+	}
+
+	in, err := ioutil.ReadAll(f)
+	if err != nil {
+		os.Stderr.WriteString(err.Error())
+
+		os.Exit(3)
+	}
+
+	// Input looks like we're called from a hash-bang script. Try to find json
+	// start.
+	if bytes.HasPrefix(in, []byte("#!")) {
+		start := bytes.IndexRune(in, '{')
+		if start == -1 {
+			os.Stderr.WriteString("Cannot find JSON in input stream")
+
+			os.Exit(3)
+		}
+
+		in = in[start:]
+	}
+
+	err = json.Unmarshal(in, &check)
+	if err != nil {
+		os.Stderr.WriteString(err.Error())
+
+		os.Exit(3)
+	}
+
+	result := checks.RunCheck(&check)
+
+	if printSummary {
+		if result.Error != "" {
+			os.Stdout.WriteString(result.Error + "\n")
+		} else {
+			os.Stdout.WriteString("ok\n")
+		}
+	}
+
+	// Pretty-print result as json.
+	out, _ := json.MarshalIndent(result, "", "\t")
+	os.Stdout.Write(out)
+
+	if result.Error != "" {
+		// Nagios and many other monitoring solutions use the exit code 2 to
+		// signal check failure. Let's all agree :)
+		os.Exit(2)
+	}
 }
 
 func runCore(_ *cobra.Command, _ []string) {
