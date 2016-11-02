@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
-	"flag"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -64,8 +63,6 @@ func init() {
 	// This should not be used for crypto, time.Now() is enough.
 	rand.Seed(time.Now().UnixNano())
 
-	flag.Parse()
-
 	database.RegisterType(checks.CheckResult{})
 	database.RegisterType(checks.Check{})
 	database.RegisterType(notify.Contact{})
@@ -73,7 +70,7 @@ func init() {
 }
 
 func main() {
-	var cmdCore = &cobra.Command{
+	cmdCore := &cobra.Command{
 		Use:   "core",
 		Short: "Run a core node",
 		Long:  `Run a core node in a Gansoi cluster`,
