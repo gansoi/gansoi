@@ -68,4 +68,33 @@ func TestUnmarshalJSON(t *testing.T) {
 	if out["s1"] != StateUp || out["s2"] != StateDown || out["s3"] != StateUnknown || out["s4"] != StateDegraded {
 		t.Fatalf("Failed to decode JSON properly")
 	}
+
+	err = json.Unmarshal([]byte(`"hello"`), nil)
+	if err == nil {
+		t.Fatalf("Failed to catch invalid input")
+	}
+}
+
+func TestUnmarshalJSONInvalid(t *testing.T) {
+	cases := []string{
+		`"invalid"`,
+		`"up`,
+		`2`,
+		`"`,
+		``,
+	}
+
+	var s State
+
+	for _, j := range cases {
+		err := json.Unmarshal([]byte(j), &s)
+		if s != StateUnknown {
+			t.Fatalf("Output changed by invalid input: %s", j)
+		}
+
+		if err == nil {
+			t.Fatalf("Failed to catch invalid input: %s", j)
+		}
+
+	}
 }
