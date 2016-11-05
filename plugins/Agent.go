@@ -32,7 +32,12 @@ func RegisterAgent(name string, agent interface{}) {
 
 // GetAgent will return an agent registred with the name.
 func GetAgent(name string) Agent {
-	return reflect.New(agents[name]).Interface().(Agent)
+	agent, found := agents[name]
+	if !found {
+		return nil
+	}
+
+	return reflect.New(agent).Interface().(Agent)
 }
 
 // ListAgents will return a list of all agents.
