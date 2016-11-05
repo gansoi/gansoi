@@ -91,12 +91,12 @@ func (c *Check) Evaluate(result plugins.AgentResult) error {
 	for _, exp := range c.Expressions {
 		e, err := govaluate.NewEvaluableExpression(exp)
 		if err != nil {
-			break
+			return err
 		}
 
 		result, err := e.Evaluate(result)
 		if err != nil {
-			break
+			return err
 		}
 
 		// This is a nifty go trick. If result is NOT a bool, this will assign
