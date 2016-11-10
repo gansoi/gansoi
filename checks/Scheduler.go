@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/abrander/gansoi/database"
 	"github.com/abrander/gansoi/logger"
 	"github.com/abrander/gansoi/stats"
 )
@@ -14,7 +15,7 @@ type (
 	// it will tick two times each second.
 	Scheduler struct {
 		run       bool
-		node      db
+		node      database.Database
 		nodeName  string
 		ticker    *time.Ticker
 		metaStore map[string]*checkMeta
@@ -26,19 +27,6 @@ type (
 		LastCheck time.Time
 		NextCheck time.Time
 	}
-
-	// db defines the database interface that the scheduler can read checks
-	// from and store results to.
-	db interface {
-		// Save will save an object to the database.
-		Save(data interface{}) error
-
-		// One will retrieve one record from the database.
-		One(fieldName string, value interface{}, to interface{}) error
-
-		// All lists all kinds of a type.
-		All(to interface{}, limit int, skip int, reverse bool) error
-	}
 )
 
 func init() {
@@ -49,7 +37,7 @@ func init() {
 }
 
 // NewScheduler starts a new scheduler.
-func NewScheduler(n db, nodeName string, run bool) *Scheduler {
+func NewScheduler(n database.Database, nodeName string, run bool) *Scheduler {
 	s := &Scheduler{
 		node:      n,
 		nodeName:  nodeName,

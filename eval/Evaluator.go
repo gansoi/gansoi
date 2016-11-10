@@ -147,7 +147,7 @@ func (e *Evaluator) evaluate2(n *PartialEvaluation) error {
 	return e.node.Save(&eval)
 }
 
-// PostClusterApply implements node.Listener.
+// PostClusterApply implements databse.ClusterListener.
 func (e *Evaluator) PostClusterApply(leader bool, command database.Command, data interface{}, err error) {
 	// If we're not the leader, we abort. Only the leader should evaluate
 	// check results.

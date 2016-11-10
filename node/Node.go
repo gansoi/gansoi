@@ -20,14 +20,14 @@ import (
 type (
 	// Node represents a single gansoi node.
 	Node struct {
-		db            *database.Database
+		db            database.Database
 		peers         *PeerStore
 		raft          *raft.Raft
 		leader        bool
 		stream        *HTTPStream
 		basePath      string
 		listenersLock sync.RWMutex
-		listeners     []ClusterListener
+		listeners     []database.ClusterListener
 	}
 
 	nodeInfo struct {
@@ -51,7 +51,7 @@ func init() {
 }
 
 // NewNode will initialize a new node.
-func NewNode(secret string, datadir string, db *database.Database, peerStore *PeerStore) (*Node, error) {
+func NewNode(secret string, datadir string, db database.LocalDatabase, fsm raft.FSM, peerStore *PeerStore) (*Node, error) {
 	started := time.Now()
 
 	var err error
@@ -90,7 +90,7 @@ func NewNode(secret string, datadir string, db *database.Database, peerStore *Pe
 
 	n.raft, err = raft.NewRaft(
 		conf,      // raft.Config
-		n.db,      // raft.FSM
+		fsm,       // raft.FSM
 		store,     // raft.LogStore
 		store,     // raft.StableStore
 		ss,        // raft.SnapshotStore
@@ -233,14 +233,14 @@ func (n *Node) Delete(data interface{}) error {
 }
 
 // RegisterClusterListener will register a listener for new changes to the database.
-func (n *Node) RegisterClusterListener(listener ClusterListener) {
+func (n *Node) RegisterClusterListener(listener database.ClusterListener) {
 	n.listenersLock.Lock()
 	defer n.listenersLock.Unlock()
 
 	n.listeners = append(n.listeners, listener)
 }
 
-// PostLocalApply satisfies the database.Listener interface.
+// PostLocalApply satisfies the database.ClusterDatabase interface.
 func (n *Node) PostLocalApply(command database.Command, data interface{}, err error) {
 	n.listenersLock.RLock()
 	defer n.listenersLock.RUnlock()

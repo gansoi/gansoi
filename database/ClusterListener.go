@@ -1,8 +1,4 @@
-package node
-
-import (
-	"github.com/abrander/gansoi/database"
-)
+package database
 
 type (
 	// ClusterListener is an interface for type capable of listening to changes
@@ -11,6 +7,6 @@ type (
 		// PostClusterApply will be called in its own goroutine when the node
 		// detects a change in the cluster database. leader will be true if the
 		// current node is leader.
-		PostClusterApply(leader bool, command database.Command, data interface{}, err error)
+		PostClusterApply(leader bool, command Command, data interface{}, err error)
 	}
 )

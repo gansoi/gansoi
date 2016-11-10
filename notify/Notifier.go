@@ -14,7 +14,7 @@ import (
 type (
 	// Notifier takes care of notifying all contacts in a relevant ContactGroup.
 	Notifier struct {
-		db *database.Database
+		db database.Database
 	}
 )
 
@@ -33,7 +33,7 @@ func init() {
 }
 
 // NewNotifier will start a new notifier service.
-func NewNotifier(db *database.Database) (*Notifier, error) {
+func NewNotifier(db database.Database) (*Notifier, error) {
 	n := &Notifier{
 		db: db,
 	}
@@ -64,7 +64,7 @@ func NewNotifier(db *database.Database) (*Notifier, error) {
 	return n, nil
 }
 
-// PostClusterApply implements node.Listener.
+// PostClusterApply implements database.ClusterListener.
 func (n *Notifier) PostClusterApply(leader bool, command database.Command, data interface{}, err error) {
 	if !leader {
 		return

@@ -19,6 +19,7 @@ import (
 
 	"rsc.io/letsencrypt"
 
+	"github.com/abrander/gansoi/boltdb"
 	"github.com/abrander/gansoi/checks"
 	"github.com/abrander/gansoi/database"
 	"github.com/abrander/gansoi/eval"
@@ -187,13 +188,13 @@ func runCore(_ *cobra.Command, _ []string) {
 	peerstore.SetPeers(config.Cluster)
 	peerstore.SetSelf(self)
 
-	db, err := database.NewDatabase(path.Join(config.DataDir, "gansoi.db"))
+	db, err := boltdb.NewDatabase(path.Join(config.DataDir, "gansoi.db"))
 	if err != nil {
 		logger.Red("main", "failed to open database in %s: %s", config.DataDir, err.Error())
 		os.Exit(1)
 	}
 
-	n, err := node.NewNode(config.Secret, config.DataDir, db, peerstore)
+	n, err := node.NewNode(config.Secret, config.DataDir, db, db, peerstore)
 	if err != nil {
 		// FIXME: Fail in a more helpful manner than panic().
 		panic(err.Error())
