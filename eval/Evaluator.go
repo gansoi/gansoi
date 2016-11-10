@@ -34,7 +34,7 @@ func NewEvaluator(n *node.Node, peers raft.PeerStore) *Evaluator {
 	p, _ := peers.Peers()
 	e.historyLength = len(p) * 2
 
-	n.RegisterListener(e)
+	n.RegisterClusterListener(e)
 
 	return e
 }

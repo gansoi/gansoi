@@ -5,9 +5,9 @@ import (
 )
 
 type (
-	// Listener is an interface for type capable of listening to changes
+	// ClusterListener is an interface for type capable of listening to changes
 	// in the cluster database.
-	Listener interface {
+	ClusterListener interface {
 		// PostClusterApply will be called in its own goroutine when the node
 		// detects a change in the cluster database. leader will be true if the
 		// current node is leader.

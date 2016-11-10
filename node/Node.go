@@ -27,7 +27,7 @@ type (
 		stream        *HTTPStream
 		basePath      string
 		listenersLock sync.RWMutex
-		listeners     []Listener
+		listeners     []ClusterListener
 	}
 
 	nodeInfo struct {
@@ -60,7 +60,7 @@ func NewNode(secret string, datadir string, db *database.Database, peerStore *Pe
 		peers: peerStore,
 	}
 
-	db.RegisterListener(n)
+	db.RegisterLocalListener(n)
 
 	// Raft config.
 	conf := raft.DefaultConfig()
@@ -232,8 +232,8 @@ func (n *Node) Delete(data interface{}) error {
 	return n.apply(entry)
 }
 
-// RegisterListener will register a listener for new changes to the database.
-func (n *Node) RegisterListener(listener Listener) {
+// RegisterClusterListener will register a listener for new changes to the database.
+func (n *Node) RegisterClusterListener(listener ClusterListener) {
 	n.listenersLock.Lock()
 	defer n.listenersLock.Unlock()
 

@@ -207,8 +207,8 @@ func (d *Database) All(to interface{}, limit int, skip int, reverse bool) error 
 	})
 }
 
-// RegisterListener will register a listener for new changes to the database.
-func (d *Database) RegisterListener(listener Listener) {
+// RegisterLocalListener will register a listener for new changes to the database.
+func (d *Database) RegisterLocalListener(listener Listener) {
 	d.listenersLock.Lock()
 	defer d.listenersLock.Unlock()
 
