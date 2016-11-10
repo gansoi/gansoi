@@ -3,27 +3,29 @@ package boltdb
 import (
 	"os"
 	"testing"
+
+	"github.com/abrander/gansoi/database"
 )
 
 var (
-	db *Database
+	db *BoltStore
 )
 
 type (
 	TestDb struct {
-		*Database
+		*BoltStore
 	}
 )
 
 func newTestDb() *TestDb {
 	var err error
-	db, err = NewDatabase("/dev/shm/gansoi-test.db")
+	db, err = NewBoltStore("/dev/shm/gansoi-test.db")
 	if err != nil {
 		panic(err.Error())
 	}
 
 	return &TestDb{
-		Database: db,
+		BoltStore: db,
 	}
 }
 
@@ -48,7 +50,7 @@ func TestDatabaseOpen(t *testing.T) {
 }
 
 func TestDatabaseOpenFail(t *testing.T) {
-	db, err := NewDatabase("/iudfhgiudfgh/iuoshdgiusfdhgiufhdg/notexisting")
+	db, err := NewBoltStore("/iudfhgiudfgh/iuoshdgiusfdhgiufhdg/notexisting")
 	if err == nil {
 		t.Fatalf("NewDatabase() failed to return an error for unexisting path")
 	}
@@ -57,3 +59,5 @@ func TestDatabaseOpenFail(t *testing.T) {
 		t.Fatalf("NewDatabase() failed to return nil for unexisting path")
 	}
 }
+
+var _ database.Database = (*BoltStore)(nil)
