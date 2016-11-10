@@ -18,9 +18,9 @@ import (
 )
 
 type (
-	// Database is the lowest level of the gansoi database, it represent the
-	// on-disk database. Database implements raft.FSM and database.LocalDatabase.
-	Database struct {
+	// BoltStore is the lowest level of the gansoi database, it represent the
+	// on-disk database. BoltStore implements raft.FSM and database.LocalDatabase.
+	BoltStore struct {
 		dbMutex       sync.RWMutex
 		db            *storm.DB
 		listenersLock sync.RWMutex
@@ -35,10 +35,10 @@ func init() {
 	stats.CounterInit("database_snapshot")
 }
 
-// NewDatabase will instantiate a new Database. path will be created if it
+// NewBoltStore will instantiate a new BoltStore. path will be created if it
 // doesn't exist.
-func NewDatabase(path string) (*Database, error) {
-	d := &Database{}
+func NewBoltStore(path string) (*BoltStore, error) {
+	d := &BoltStore{}
 
 	err := d.open(path)
 	if err != nil {
@@ -50,13 +50,13 @@ func NewDatabase(path string) (*Database, error) {
 
 // Close will close the database. Accessing the database after this will
 // result in a deadlock.
-func (d *Database) Close() error {
+func (d *BoltStore) Close() error {
 	d.dbMutex.RLock()
 	return d.db.Close()
 }
 
 // open will open the underlying file storage.
-func (d *Database) open(filepath string) error {
+func (d *BoltStore) open(filepath string) error {
 	db, err := storm.Open(
 		filepath,
 		storm.BoltOptions(0600, &bolt.Options{Timeout: 1 * time.Second}),
@@ -72,7 +72,7 @@ func (d *Database) open(filepath string) error {
 }
 
 // Storm will return the underlying Storm database.
-func (d *Database) Storm() *storm.DB {
+func (d *BoltStore) Storm() *storm.DB {
 	d.dbMutex.RLock()
 	defer d.dbMutex.RUnlock()
 
@@ -80,7 +80,7 @@ func (d *Database) Storm() *storm.DB {
 }
 
 // ProcessLogEntry will process the log entry and apply whatever needs doing.
-func (d *Database) ProcessLogEntry(entry *database.LogEntry) error {
+func (d *BoltStore) ProcessLogEntry(entry *database.LogEntry) error {
 	var err error
 
 	var v interface{}
@@ -112,7 +112,7 @@ func (d *Database) ProcessLogEntry(entry *database.LogEntry) error {
 }
 
 // Apply implements raft.FSM.
-func (d *Database) Apply(l *raft.Log) interface{} {
+func (d *BoltStore) Apply(l *raft.Log) interface{} {
 	stats.CounterInc("database_applied", 1)
 	entry := &database.LogEntry{}
 	err := json.Unmarshal(l.Data, entry)
@@ -126,13 +126,13 @@ func (d *Database) Apply(l *raft.Log) interface{} {
 }
 
 // Snapshot implements raft.FSM.
-func (d *Database) Snapshot() (raft.FSMSnapshot, error) {
+func (d *BoltStore) Snapshot() (raft.FSMSnapshot, error) {
 	stats.CounterInc("database_snapshot", 1)
 	return &Snapshot{db: d}, nil
 }
 
 // Restore implements raft.FSM.
-func (d *Database) Restore(source io.ReadCloser) error {
+func (d *BoltStore) Restore(source io.ReadCloser) error {
 	db := d.Storm().Bolt
 	d.dbMutex.Lock()
 	defer d.dbMutex.Unlock()
@@ -176,7 +176,7 @@ func (d *Database) Restore(source io.ReadCloser) error {
 }
 
 // Save will save an object to the database.
-func (d *Database) Save(data interface{}) error {
+func (d *BoltStore) Save(data interface{}) error {
 	d.dbMutex.RLock()
 	defer d.dbMutex.RUnlock()
 
@@ -184,7 +184,7 @@ func (d *Database) Save(data interface{}) error {
 }
 
 // One will retrieve one (or zero) record from the database.
-func (d *Database) One(fieldName string, value interface{}, to interface{}) error {
+func (d *BoltStore) One(fieldName string, value interface{}, to interface{}) error {
 	d.dbMutex.RLock()
 	defer d.dbMutex.RUnlock()
 
@@ -192,7 +192,7 @@ func (d *Database) One(fieldName string, value interface{}, to interface{}) erro
 }
 
 // All lists all kinds of a type.
-func (d *Database) All(to interface{}, limit int, skip int, reverse bool) error {
+func (d *BoltStore) All(to interface{}, limit int, skip int, reverse bool) error {
 	d.dbMutex.RLock()
 	defer d.dbMutex.RUnlock()
 
@@ -209,8 +209,8 @@ func (d *Database) All(to interface{}, limit int, skip int, reverse bool) error 
 	return err
 }
 
-// RegisterLocalListener will register a listener for new changes to the database.
-func (d *Database) RegisterLocalListener(listener database.LocalListener) {
+// RegisterLocalListener implements database.LocalDatabase.
+func (d *BoltStore) RegisterLocalListener(listener database.LocalListener) {
 	d.listenersLock.Lock()
 	defer d.listenersLock.Unlock()
 

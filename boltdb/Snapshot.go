@@ -8,7 +8,7 @@ import (
 type (
 	// Snapshot allows raft to retrieve a complete snapshot of the database.
 	Snapshot struct {
-		db *Database
+		db *BoltStore
 	}
 )
 

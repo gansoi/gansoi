@@ -188,7 +188,7 @@ func runCore(_ *cobra.Command, _ []string) {
 	peerstore.SetPeers(config.Cluster)
 	peerstore.SetSelf(self)
 
-	db, err := boltdb.NewDatabase(path.Join(config.DataDir, "gansoi.db"))
+	db, err := boltdb.NewBoltStore(path.Join(config.DataDir, "gansoi.db"))
 	if err != nil {
 		logger.Red("main", "failed to open database in %s: %s", config.DataDir, err.Error())
 		os.Exit(1)
