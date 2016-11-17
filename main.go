@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
-	"github.com/abrander/gingopherjs"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 
@@ -255,13 +254,11 @@ func runCore(_ *cobra.Command, _ []string) {
 		live.ServeHTTP(c.Writer, c.Request)
 	})
 
-	// This is extremely slow. Should be replaced by something else in production.
-	g, _ := gingopherjs.New("github.com/abrander/gansoi/web/client")
-	engine.GET("/client.js", g.Handler)
-
 	gopath := os.Getenv("GOPATH")
 
 	engine.StaticFile("/", gopath+"/src/github.com/abrander/gansoi/web/index.html")
+	engine.StaticFile("/client.js", gopath+"/src/github.com/abrander/gansoi/web/client.js")
+
 	// By default we bind to port 443 (HTTPS) on all interfaecs on both IPv4
 	// and IPv6.
 	bind := ":443"

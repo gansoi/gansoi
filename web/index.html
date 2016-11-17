@@ -1,7 +1,6 @@
 <html>
 <head>
     <title>Gansoi monitoring</title>
-    <script src="/client.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
 
@@ -292,30 +291,31 @@ hr {
     box-shadow: inset 0 1px hsla(0, 0%, 0%, .05);
 }
 
-div.buttonbar *:target {
+.router-link-active {
     color: #ee0;
 }
     </style>
 </head>
 <body>
- <div class="buttonbar">
-  <a class="button" id="overview" href="#overview">Overview</a>
-  <a class="button" id="gansoi" href="#gansoi">Gansoi</a>
-  <a class="button" id="checks" href="#checks">Checks</a>
-  <a class="button" id="agents" href="#agents">Agents</a>
- </div>
+
+    <div id="app">
+        <div class="buttonbar">
+         <router-link class="button" id="overview" to="/overview">Overview</router-link>
+         <router-link class="button" id="gansoi" to="/gansoi">Gansoi</router-link>
+         <router-link class="button" id="checks" to="/checks">Checks</router-link>
+        </div>
+      <router-view></router-view>
+    </div>
+
  <div id="main"></div>
 </body>
 
-<script type="template" name="error">
-<h1>{{ . }}</h1>
-</script>
-
-<script type="template" name="overview">
+<template id="template-overview">
 <h2>Overview</h2>
-</script>
+</template>
 
-<script type="template" name="gansoi">
+<template id="template-nodes">
+<div>
 <h2>Gansoi</h2>
 <h3>Nodes</h3>
 <table class="table">
@@ -328,135 +328,95 @@ div.buttonbar *:target {
   <th>Commit</th>
   <th>Last</th>
  </tr>
-{{ range . }}
-{{ template "gansoinode" . }}
-{{ end }}
+ <tr v-for="node in nodes.data">
+ <td>{{ node.name }}</td>
+ <td>{{ node.started }}</td>
+ <td>{{ node.raft.state }}</td>
+ <td>{{ node.raft.last_contact }}</td>
+ <td>{{ node.raft.applied_index }}</td>
+ <td>{{ node.raft.commit_index }}</td>
+ <td>{{ node.raft.last_log_index }}</td>
+ </tr>
 </table>
-</script>
+</div>
+</template>
 
-<script type="template" name="gansoinode">
-<tr>
-<td>{{ .Name }}</td>
-<td>{{ .Started }}</td>
-<td>{{ .Raft.state }}</td>
-<td>{{ .Raft.last_contact }}</td>
-<td>{{ .Raft.applied_index }}</td>
-<td>{{ .Raft.commit_index }}</td>
-<td>{{ .Raft.last_log_index }}</td>
-</tr>
-</script>
-
-<script type="template" name="checks">
+<template id="template-checks">
+<div>
 <h2>Checks</h2>
 <table class="table">
-{{ range .List }}
-{{ template "check" . }}
-{{ end }}
-</table>
-</script>
-
-<script type="template" name="check">
-<tr>
-<td>{{ .ID }}</td>
-<td>{{ .AgentID }}</td>
-<td>{{ .Interval }}</td>
-<td>{{ .Node }}</td>
-<td><button class="button" name="EditCheck" value="{{ .ID }}" disabled>Edit</button></td>
-<td><button class="button" name="DeleteCheck" value="{{ .ID }}" class="red">Delete</button></td>
+<tr v-for="check in checks.data">
+<td>{{ check.id }}</td>
+<td>{{ check.agent }}</td>
+<td>{{ check.interval }}</td>
+<td><button class="button red" v-on:click="deleteCheck(this, check.id)">Delete</button></td>
+<td><button class="button" v-on:click="editCheck(check.id)">Edit</button></td>
 </tr>
-</script>
-
-<script type="template" name="agents">
-<h2>Agents</h2>
-<table class="table">
-{{ range . }}
-{{ template "agent-line" . }}
-{{ end }}
 </table>
-</script>
+<router-link class="button" id="dddd" to="/check/edit/new">Add Check</router-link>
+</div>
+</template>
 
-<script type="template" name="agent-line">
-<tr>
-<td>{{ .Name }}</td><td>[Agent description]</td><td><a class="button" href="#check/new/{{ .Name }}">Add {{ .Name }} check</a></td>
-</tr>
-</script>
-
-<script type="template" name="agent-new">
+<template id="template-edit-check">
 <form>
  <fieldset>
   <table>
    <tbody>
-    <tr><th colspan="2">Add {{ .Description.Name }} Check</th></tr>
+    <tr><th colspan="2">{{ title }}</th></tr>
     <tr><td colspan="2"><hr></td></tr>
     <tr>
      <td><label>Unique Check ID</label></td>
-     <td><input type="text" name="ID" value="{{ .ID }}"/></td>
+     <td><input type="text" v-model="check.id"/></td>
     </tr>
     <tr>
      <td><label>Check interval</label></td>
-     <td><input type="number" name="Interval" min="5" max="3600" value="7"> (seconds)</td>
+     <td><input type="number" min="5000000000" max="3600000000000" v-model="check.interval"> (nanoseconds)</td>
     </tr>
-    <tr><td colspan="2"><hr></td></tr>
-    {{ $arguments := .Arguments }}
-    {{ range $key, $desc := .Description.Arguments }}
     <tr>
-     <td><label>{{ $desc.Name }}</label></td>
-     {{ if eq $desc.Type "string" }}
-     <td><input type="text" name="{{ $desc.Name }}" value="{{ index $arguments $desc.Name}}"/> {{ $desc.Description }}</td>
-     {{ else if eq $desc.Type "bool" }}
-     <td><input type="checkbox" name="{{ $desc.Name }}"/> {{ $desc.Description }}</td>
-     {{ else }}
-     <td>{{ $desc.Type }} not supported</td>
-     {{ end }}
-    </tr>
-    {{ end }}
-   </tbody>
-  </table>
-  <input class="button" name="test" type="button" value="Test">
-{{ if .Result }}
-  <table>
-   <tbody>
-    <tr><th colspan="2">Test Results</th></tr>
-    <tr><td colspan="2"><hr></td></tr>
-    <tr>
-     <td>Node</td>
-     <td>{{ .Result.Node }}</td>
-    </tr>
-    <tr><td colspan="2"><hr></td></tr>
-{{ range $key, $value := .Result.Results }}
-    <tr>
-     <td>{{ $key }}</td>
-     <td>{{ $value }}</td>
-    </tr>
-{{ end }}
-   </tbody>
-  </table>
-  <table>
-   <tbody>
-    <tr><th colspan="2">Evaluations</th></tr>
-    <tr><td colspan="2"><hr></td></tr>
-    {{ range $key, $value := .Tests }}
-     <tr>
-     <td>{{ $key }}</td>
+     <td><label>Agent</label></td>
      <td>
-      <input type="text" name="test:{{ $key }}" value="{{ $value }}" />
-      <input type="button" name="removetest" index="{{ $key }}" value="Remove" class="button red"/>
+      <select v-model="check.agent">
+       <option v-for="agent in agents">{{ agent.name }}</option>
+      </select>
      </td>
     </tr>
-    {{ end }}
-    <tr>
-     <td>New</td>
-     <td>
-      <input type="text" name="NewTest" />
-      <input type="button" name="addtest" value="Add" class="button"/>
-     </td>
-    </tr>
-   </tbody>
-  </table>
-  <input class="button green right" name="add" type="submit" value="Add check" />
-{{ end}}
- </fieldset>
-</form>
-</script>
 
+    <tr v-for="argument in arguments">
+     <td><label>{{ argument.name }}</label></td>
+     <td><input type="text" v-model="check.arguments[argument.name]" /> {{ argument.description }}</td>
+    </tr>
+
+    <tr><th colspan="2">Results</th></tr>
+    <tr><td colspan="2"><hr></td></tr>
+    <tr v-for="(value, key) in results.results">
+     <td><label>{{ key }}</label></td>
+     <td>{{ value }}</td>
+    </tr>
+
+    <tr><th colspan="2">Expressions</th></tr>
+    <tr><td colspan="2"><hr></td></tr>
+    <tr v-for="(expression, index) in check.expressions">
+     <td><label>{{ index }}</label></td>
+     <td>
+      <input type="text" v-model="check.expressions[index]" />
+      <input class="button" type="button" v-on:click="removeExpression(index)" value="Remove" />
+     </td>
+    </tr>
+    <tr>
+     <td colspan="2"><input class="button" type="button" v-on:click="addExpression()" value="Add Expression" /></td>
+    </tr>
+   </tbody>
+  </table>
+  <input class="button" type="button" value="Test" v-on:click="testCheck()" />
+  <input class="button green right" name="add" type="button" value="Add check" v-on:click="addCheck()" />
+ </fieldset>
+ <pre>{{ check }}</pre>
+ <pre>{{ results }}</pre>
+</form>
+</template>
+
+<script src="https://unpkg.com/vue@2.0.5/dist/vue.js"></script>
+<script src="https://unpkg.com/vue-resource@1.0.3/dist/vue-resource.min.js"></script>
+<script src="https://unpkg.com/vue-router@2.0.1"></script>
+<script src="/client.js"></script>
 </html>
