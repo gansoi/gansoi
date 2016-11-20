@@ -36,10 +36,7 @@ Go 1.5 or newer is required for building gansoi.
 
 `go get ./...` should get all dependencies.
 
-`go build .` should be enough to build gansoi. If you get an error like `undefined: ___GOPHERJS_REQUIRES_GO_VERSION_1_7___` you should switch to a branch of gopherjs matching your Go version. It can be done like this:
-
-    $ cd $GOPATH/src/github.com/gopherjs/gopherjs
-    $ git checkout go1.6
+`go build .` should be enough to build gansoi.
 
 You can run a small local gansoi cluster for testing and development:
 
