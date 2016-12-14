@@ -9,10 +9,8 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"strings"
 	"time"
 
-	"github.com/BurntSushi/toml"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 
@@ -29,34 +27,6 @@ import (
 	_ "github.com/abrander/gansoi/plugins/http"
 	_ "github.com/abrander/gansoi/plugins/notifiers/slack"
 	_ "github.com/abrander/gansoi/plugins/tcpport"
-)
-
-type (
-	configuration struct {
-		Local       string   `toml:"local"`
-		Cert        string   `toml:"cert"`
-		Key         string   `toml:"key"`
-		DataDir     string   `toml:"datadir"`
-		Cluster     []string `toml:"cluster"`
-		Secret      string   `toml:"secret"`
-		LetsEncrypt bool     `toml:"letsencrypt"`
-	}
-)
-
-var (
-	configFile = "/etc/gansoi.conf"
-
-	exampleConfig = `# Example configuration for gansoi.
-local = "london.example.com"
-cert = "/etc/gansoi/me-cert.pem"
-key = "/etc/gansoi/me-key.pem"
-datadir = "/var/lib/gansoi"
-cluster = ["london.example.com", "copenhagen.example.com", "berlin.example.com"]
-secret = "This is unsecure. Pick a good alphanumeric secret."
-
-# cert and key are ignored if set
-letsencrypt = true
-`
 )
 
 func init() {
@@ -168,24 +138,17 @@ func runCheck(printSummary bool, arguments []string) {
 }
 
 func runCore(_ *cobra.Command, _ []string) {
-	var config configuration
-	_, err := toml.DecodeFile(configFile, &config)
+	var config Configuration
+	config.SetDefaults()
+	err := config.LoadFromFile(configFile)
 	if err != nil {
 		logger.Red("main", "Failed to read configuration file at %s: %s", configFile, err.Error())
 		os.Exit(1)
 	}
 
-	self := config.Local
-
-	// If local is not defined in configuration file, we use the hostname
-	// according to the OS.
-	if self == "" {
-		self, _ = os.Hostname()
-	}
-
 	peerstore := node.NewPeerStore()
 	peerstore.SetPeers(config.Cluster)
-	peerstore.SetSelf(self)
+	peerstore.SetSelf(config.Self())
 
 	db, err := boltdb.NewBoltStore(path.Join(config.DataDir, "gansoi.db"))
 	if err != nil {
@@ -259,20 +222,6 @@ func runCore(_ *cobra.Command, _ []string) {
 	engine.StaticFile("/", gopath+"/src/github.com/abrander/gansoi/web/index.html")
 	engine.StaticFile("/client.js", gopath+"/src/github.com/abrander/gansoi/web/client.js")
 
-	// By default we bind to port 443 (HTTPS) on all interfaecs on both IPv4
-	// and IPv6.
-	bind := ":443"
-
-	// If local is defined thou, we use that instead.
-	if config.Local != "" {
-		bind = config.Local
-
-		// ... and add prot 443 if needed.
-		if strings.Index(bind, ":") < 0 {
-			bind += ":443"
-		}
-	}
-
 	var tlsConfig tls.Config
 
 	// if letsencrypt is enabled, put a GetCertificate function into tlsConfig
@@ -287,13 +236,13 @@ func runCore(_ *cobra.Command, _ []string) {
 		}
 
 		// ensure we dont ask for random certificates
-		lManager.SetHosts([]string{self}) // .. or config.Local ?
+		lManager.SetHosts(config.Hostnames())
 
 		tlsConfig.GetCertificate = lManager.GetCertificate
 	}
 
 	s := &http.Server{
-		Addr:           bind,
+		Addr:           config.Local,
 		Handler:        engine,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
@@ -301,12 +250,12 @@ func runCore(_ *cobra.Command, _ []string) {
 		TLSConfig:      &tlsConfig,
 	}
 
-	logger.Green("main", "Binding to %s", bind)
+	logger.Green("main", "Binding to %s (Self: %s)", config.Local, config.Self())
 
 	// if GetCertificate was set earlier - ListenAndServeTLS silently ignores cert and key
 	err = s.ListenAndServeTLS(config.Cert, config.Key)
 	if err != nil {
-		logger.Red("main", "Bind to %s failed: %s", bind, err.Error())
+		logger.Red("main", "Bind to %s failed: %s", config.Local, err.Error())
 		os.Exit(1)
 	}
 }
