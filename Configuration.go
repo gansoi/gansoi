@@ -2,6 +2,7 @@ package main
 
 import (
 	"net"
+	"net/url"
 	"os"
 	"sync"
 
@@ -78,6 +79,21 @@ func (c *Configuration) Self() string {
 	c.self = c.Local
 
 	return c.self
+}
+
+// Bind will return a string suitable for binding.
+func (c *Configuration) Bind() string {
+	defaultPort := "443"
+
+	URL, _ := url.Parse(c.Local)
+
+	host, port, _ := net.SplitHostPort(URL.Host)
+
+	if port == "" {
+		host = defaultPort
+	}
+
+	return net.JoinHostPort(host, port)
 }
 
 // Hostnames returns a list of hostnames exposed.

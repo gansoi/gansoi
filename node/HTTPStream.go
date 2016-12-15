@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"strings"
+	"net/url"
 	"time"
 
+	"github.com/abrander/gansoi/logger"
 	"github.com/abrander/gansoi/stats"
 )
 
@@ -50,25 +51,42 @@ func NewHTTPStream(addr string, secret string) (*HTTPStream, error) {
 
 // Dial will dial a remote http endpoint (and implement raft.StreamLayer).
 func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, error) {
+	var conn net.Conn
+	var err error
 	// Make a copy of our dialer to allow custom timeout.
 	dial := h.dial
 	dial.Timeout = timeout
 
-	if strings.Index(address, ":") < 0 {
-		address += ":443"
+	URL, err := url.Parse(address)
+	if err != nil {
+		return nil, err
 	}
 
-	stats.CounterInc("http_dialed", 1)
+	host, port, _ := net.SplitHostPort(URL.Host)
 
-	conf := &tls.Config{}
-	conn, err := tls.DialWithDialer(&dial, "tcp", address, conf)
+	switch URL.Scheme {
+	case "https":
+		stats.CounterInc("http_dialed", 1)
+
+		if port == "" {
+			port = "443"
+		}
+
+		logger.Green("httpstream", "Dialing %s [%s]", host, address)
+
+		conf := &tls.Config{}
+		conn, err = tls.DialWithDialer(&dial, "tcp", net.JoinHostPort(host, port), conf)
+	default:
+		return nil, errors.New("Unknown scheme: " + URL.Scheme)
+	}
+
 	if err != nil {
 		stats.CounterInc("http_failed", 1)
 		return nil, err
 	}
 
 	// We use Upgrade, and hope that will make proxies happy.
-	open := fmt.Sprintf("GET /raft HTTP/1.1\nHost: %s\nUpgrade: raft-0\nSecret: %s\n\n", address, h.secret)
+	open := fmt.Sprintf("GET /raft HTTP/1.1\nHost: %s\nUpgrade: raft-0\nSecret: %s\n\n", host, h.secret)
 
 	_, err = conn.Write([]byte(open))
 	if err != nil {

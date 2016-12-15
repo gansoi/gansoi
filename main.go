@@ -242,7 +242,7 @@ func runCore(_ *cobra.Command, _ []string) {
 	}
 
 	s := &http.Server{
-		Addr:           config.Local,
+		Addr:           config.Bind(),
 		Handler:        engine,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
@@ -250,12 +250,12 @@ func runCore(_ *cobra.Command, _ []string) {
 		TLSConfig:      &tlsConfig,
 	}
 
-	logger.Green("main", "Binding to %s (Self: %s)", config.Local, config.Self())
+	logger.Green("main", "Binding to %s (Self: %s)", config.Bind(), config.Self())
 
 	// if GetCertificate was set earlier - ListenAndServeTLS silently ignores cert and key
 	err = s.ListenAndServeTLS(config.Cert, config.Key)
 	if err != nil {
-		logger.Red("main", "Bind to %s failed: %s", config.Local, err.Error())
+		logger.Red("main", "Bind to %s failed: %s", config.Bind(), err.Error())
 		os.Exit(1)
 	}
 }

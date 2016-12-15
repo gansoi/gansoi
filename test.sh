@@ -99,29 +99,29 @@ o+7hG62xVvzquorK1CB0MKx92GIyGtk0319Ta0bt6oWwe/MoLtslgcYbjk8UdN5P
 EOF
 
 cat >/tmp/gansoi-dev/node1.conf <<EOF
-local = "node1.gansoi-dev.com:9002"
+local = "https://node1.gansoi-dev.com:9002"
 cert = "/tmp/gansoi-dev/cert.pem"
 key = "/tmp/gansoi-dev/key.pem"
 datadir = "/tmp/gansoi-dev/node1-data"
-cluster = ["node1.gansoi-dev.com:9002", "node2.gansoi-dev.com:9002", "node3.gansoi-dev.com:9002"]
+cluster = ["https://node1.gansoi-dev.com:9002", "https://node2.gansoi-dev.com:9002", "https://node3.gansoi-dev.com:9002"]
 secret = "Qhzw5UTm66dWbHNyBdxazf6LfB7iaqcaRXzoot77gwMLErm1vb3VEDTBTupm8KxH"
 EOF
 
 cat >/tmp/gansoi-dev/node2.conf <<EOF
-local = "node2.gansoi-dev.com:9002"
+local = "https://node2.gansoi-dev.com:9002"
 cert = "/tmp/gansoi-dev/cert.pem"
 key = "/tmp/gansoi-dev/key.pem"
 datadir = "/tmp/gansoi-dev/node2-data"
-cluster = ["node1.gansoi-dev.com:9002", "node2.gansoi-dev.com:9002", "node3.gansoi-dev.com:9002"]
+cluster = ["https://node1.gansoi-dev.com:9002", "https://node2.gansoi-dev.com:9002", "https://node3.gansoi-dev.com:9002"]
 secret = "Qhzw5UTm66dWbHNyBdxazf6LfB7iaqcaRXzoot77gwMLErm1vb3VEDTBTupm8KxH"
 EOF
 
 cat >/tmp/gansoi-dev/node3.conf <<EOF
-local = "node3.gansoi-dev.com:9002"
+local = "https://node3.gansoi-dev.com:9002"
 cert = "/tmp/gansoi-dev/cert.pem"
 key = "/tmp/gansoi-dev/key.pem"
 datadir = "/tmp/gansoi-dev/node3-data"
-cluster = ["node1.gansoi-dev.com:9002", "node2.gansoi-dev.com:9002", "node3.gansoi-dev.com:9002"]
+cluster = ["https://node1.gansoi-dev.com:9002", "https://node2.gansoi-dev.com:9002", "https://node3.gansoi-dev.com:9002"]
 secret = "Qhzw5UTm66dWbHNyBdxazf6LfB7iaqcaRXzoot77gwMLErm1vb3VEDTBTupm8KxH"
 EOF
 
