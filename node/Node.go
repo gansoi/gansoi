@@ -184,7 +184,7 @@ func (n *Node) apply(entry *database.LogEntry) error {
 
 		r := bytes.NewReader(entry.Byte())
 		l := n.raft.Leader()
-		u := "https://" + l + n.basePath + "/apply"
+		u := l + n.basePath + "/apply"
 
 		_, err := http.Post(u, "gansoi/entry", r)
 
