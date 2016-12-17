@@ -222,38 +222,44 @@ func runCore(_ *cobra.Command, _ []string) {
 	engine.StaticFile("/", gopath+"/src/github.com/abrander/gansoi/web/index.html")
 	engine.StaticFile("/client.js", gopath+"/src/github.com/abrander/gansoi/web/client.js")
 
-	var tlsConfig tls.Config
-
-	// if letsencrypt is enabled, put a GetCertificate function into tlsConfig
-	if config.LetsEncrypt {
-		var lManager letsencrypt.Manager
-
-		cacheFile := path.Join(config.DataDir, "letsencrypt.cache")
-
-		if err = lManager.CacheFile(cacheFile); err != nil {
-			logger.Red("main", "Failed to open Letsencrypt cachefile at %s: %s", cacheFile, err.Error())
-			os.Exit(1)
-		}
-
-		// ensure we dont ask for random certificates
-		lManager.SetHosts(config.Hostnames())
-
-		tlsConfig.GetCertificate = lManager.GetCertificate
-	}
-
 	s := &http.Server{
 		Addr:           config.Bind(),
 		Handler:        engine,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
-		TLSConfig:      &tlsConfig,
 	}
 
 	logger.Green("main", "Binding to %s (Self: %s)", config.Bind(), config.Self())
 
-	// if GetCertificate was set earlier - ListenAndServeTLS silently ignores cert and key
-	err = s.ListenAndServeTLS(config.Cert, config.Key)
+	if config.TLS() {
+		var tlsConfig tls.Config
+
+		// if letsencrypt is enabled, put a GetCertificate function into tlsConfig
+		if config.LetsEncrypt {
+			var lManager letsencrypt.Manager
+
+			cacheFile := path.Join(config.DataDir, "letsencrypt.cache")
+
+			if err = lManager.CacheFile(cacheFile); err != nil {
+				logger.Red("main", "Failed to open Letsencrypt cachefile at %s: %s", cacheFile, err.Error())
+				os.Exit(1)
+			}
+
+			// ensure we dont ask for random certificates
+			lManager.SetHosts(config.Hostnames())
+
+			tlsConfig.GetCertificate = lManager.GetCertificate
+		}
+
+		s.TLSConfig = &tlsConfig
+
+		// if GetCertificate was set earlier - ListenAndServeTLS silently ignores cert and key
+		err = s.ListenAndServeTLS(config.Cert, config.Key)
+	} else {
+		err = s.ListenAndServe()
+	}
+
 	if err != nil {
 		logger.Red("main", "Bind to %s failed: %s", config.Bind(), err.Error())
 		os.Exit(1)

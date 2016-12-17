@@ -83,14 +83,17 @@ func (c *Configuration) Self() string {
 
 // Bind will return a string suitable for binding.
 func (c *Configuration) Bind() string {
-	defaultPort := "443"
-
 	URL, _ := url.Parse(c.Local)
 
 	host, port, _ := net.SplitHostPort(URL.Host)
 
 	if port == "" {
-		host = defaultPort
+		switch URL.Scheme {
+		case "https":
+			port = "443"
+		case "http":
+			port = "80"
+		}
 	}
 
 	return net.JoinHostPort(host, port)
@@ -115,4 +118,11 @@ func (c *Configuration) Hostnames() []string {
 	}
 
 	return hostnames
+}
+
+// TLS will return true if we should set up TLS.
+func (c *Configuration) TLS() bool {
+	URL, _ := url.Parse(c.Local)
+
+	return URL.Scheme == "https"
 }

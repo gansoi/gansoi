@@ -1,3 +1,34 @@
+/**
+ * Global gansoi-scope.
+ * @const
+ */
+var g = {
+    /**
+     * Get scheme for current site.
+     * @return {string} Scheme. Examples: "http" or "https"
+     */
+    getScheme: function() {
+        return window.location.protocol.replace(/:/g, '');
+    },
+
+    /**
+     * Check if the HTTP connection is encrypted.
+     * @return {boolean} True if connection is encrypted, false otherwise
+     */
+    isEncrypted: function() {
+        return (g.getScheme() === 'https');
+    },
+
+    /**
+     * Get the hostname part of website URL. This includes port (!) if port is
+     * non-standard.
+     * @return {string} Hostname of website. Examples: "localhost:9000"
+     */
+    getHost: function() {
+        return window.location.host;
+    }
+};
+
 var Collection = function(identifier) {
     var self = this;
 
@@ -114,7 +145,13 @@ Vue.http.get('/checks').then(function(response) {
     });
 });
 
-var live = new WebSocket('wss://' + window.location.host + '/live');
+var live;
+if (g.isEncrypted()) {
+    live = new WebSocket('wss://' + g.getHost() + '/live');
+} else {
+    live = new WebSocket('ws://' + g.getHost() + '/live');
+}
+
 live.onmessage = function(event) {
     var data = JSON.parse(event.data);
 

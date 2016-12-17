@@ -64,18 +64,26 @@ func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, erro
 
 	host, port, _ := net.SplitHostPort(URL.Host)
 
+	stats.CounterInc("http_dialed", 1)
+
+	logger.Green("httpstream", "Dialing %s [%s]", host, address)
+
 	switch URL.Scheme {
 	case "https":
-		stats.CounterInc("http_dialed", 1)
-
 		if port == "" {
 			port = "443"
 		}
 
-		logger.Green("httpstream", "Dialing %s [%s]", host, address)
-
 		conf := &tls.Config{}
 		conn, err = tls.DialWithDialer(&dial, "tcp", net.JoinHostPort(host, port), conf)
+
+	case "http":
+		if port == "" {
+			port = "80"
+		}
+
+		conn, err = dial.Dial("tcp", net.JoinHostPort(host, port))
+
 	default:
 		return nil, errors.New("Unknown scheme: " + URL.Scheme)
 	}
