@@ -80,7 +80,9 @@ func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, erro
 			port = "443"
 		}
 
-		conf := &tls.Config{}
+		conf := &tls.Config{
+			ServerName: host,
+		}
 		conn, err = tls.DialWithDialer(&dial, "tcp", net.JoinHostPort(host, port), conf)
 
 	case "http":
