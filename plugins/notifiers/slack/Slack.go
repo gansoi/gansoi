@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/abrander/gansoi/plugins"
+	"github.com/gansoi/gansoi/plugins"
 )
 
 type (

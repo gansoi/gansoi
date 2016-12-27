@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/abrander/gansoi/checks"
-	"github.com/abrander/gansoi/database"
-	"github.com/abrander/gansoi/eval"
-	"github.com/abrander/gansoi/logger"
-	"github.com/abrander/gansoi/stats"
+	"github.com/gansoi/gansoi/checks"
+	"github.com/gansoi/gansoi/database"
+	"github.com/gansoi/gansoi/eval"
+	"github.com/gansoi/gansoi/logger"
+	"github.com/gansoi/gansoi/stats"
 )
 
 type (

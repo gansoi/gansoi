@@ -3,7 +3,7 @@ package http
 import (
 	"testing"
 
-	"github.com/abrander/gansoi/plugins"
+	"github.com/gansoi/gansoi/plugins"
 )
 
 func TestAgent(t *testing.T) {

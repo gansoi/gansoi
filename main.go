@@ -16,17 +16,17 @@ import (
 
 	"rsc.io/letsencrypt"
 
-	"github.com/abrander/gansoi/boltdb"
-	"github.com/abrander/gansoi/checks"
-	"github.com/abrander/gansoi/database"
-	"github.com/abrander/gansoi/eval"
-	"github.com/abrander/gansoi/logger"
-	"github.com/abrander/gansoi/node"
-	"github.com/abrander/gansoi/notify"
-	"github.com/abrander/gansoi/plugins"
-	_ "github.com/abrander/gansoi/plugins/http"
-	_ "github.com/abrander/gansoi/plugins/notifiers/slack"
-	_ "github.com/abrander/gansoi/plugins/tcpport"
+	"github.com/gansoi/gansoi/boltdb"
+	"github.com/gansoi/gansoi/checks"
+	"github.com/gansoi/gansoi/database"
+	"github.com/gansoi/gansoi/eval"
+	"github.com/gansoi/gansoi/logger"
+	"github.com/gansoi/gansoi/node"
+	"github.com/gansoi/gansoi/notify"
+	"github.com/gansoi/gansoi/plugins"
+	_ "github.com/gansoi/gansoi/plugins/http"
+	_ "github.com/gansoi/gansoi/plugins/notifiers/slack"
+	_ "github.com/gansoi/gansoi/plugins/tcpport"
 )
 
 func init() {
@@ -219,8 +219,8 @@ func runCore(_ *cobra.Command, _ []string) {
 
 	gopath := os.Getenv("GOPATH")
 
-	engine.StaticFile("/", gopath+"/src/github.com/abrander/gansoi/web/index.html")
-	engine.StaticFile("/client.js", gopath+"/src/github.com/abrander/gansoi/web/client.js")
+	engine.StaticFile("/", gopath+"/src/github.com/gansoi/gansoi/web/index.html")
+	engine.StaticFile("/client.js", gopath+"/src/github.com/gansoi/gansoi/web/client.js")
 
 	s := &http.Server{
 		Addr:           config.Bind(),

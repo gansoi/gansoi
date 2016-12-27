@@ -3,7 +3,7 @@ package slack
 import (
 	"testing"
 
-	"github.com/abrander/gansoi/plugins"
+	"github.com/gansoi/gansoi/plugins"
 )
 
 func TestNotifier(t *testing.T) {

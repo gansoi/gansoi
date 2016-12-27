@@ -6,10 +6,10 @@ import (
 
 	"github.com/hashicorp/raft"
 
-	"github.com/abrander/gansoi/checks"
-	"github.com/abrander/gansoi/database"
-	"github.com/abrander/gansoi/logger"
-	"github.com/abrander/gansoi/node"
+	"github.com/gansoi/gansoi/checks"
+	"github.com/gansoi/gansoi/database"
+	"github.com/gansoi/gansoi/logger"
+	"github.com/gansoi/gansoi/node"
 )
 
 type (

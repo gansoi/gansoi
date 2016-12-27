@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/abrander/gansoi/database"
+	"github.com/gansoi/gansoi/database"
 )
 
 var (

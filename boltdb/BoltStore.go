@@ -13,8 +13,8 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/hashicorp/raft"
 
-	"github.com/abrander/gansoi/database"
-	"github.com/abrander/gansoi/stats"
+	"github.com/gansoi/gansoi/database"
+	"github.com/gansoi/gansoi/stats"
 )
 
 type (

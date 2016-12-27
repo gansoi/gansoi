@@ -4,7 +4,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/abrander/gansoi/plugins"
+	"github.com/gansoi/gansoi/plugins"
 )
 
 func init() {

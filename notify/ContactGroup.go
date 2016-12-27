@@ -1,7 +1,7 @@
 package notify
 
 import (
-	"github.com/abrander/gansoi/logger"
+	"github.com/gansoi/gansoi/logger"
 )
 
 type (

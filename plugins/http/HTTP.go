@@ -3,7 +3,7 @@ package http
 import (
 	"net/http"
 
-	"github.com/abrander/gansoi/plugins"
+	"github.com/gansoi/gansoi/plugins"
 )
 
 func init() {

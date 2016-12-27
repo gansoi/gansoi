@@ -3,7 +3,7 @@ package notify
 import (
 	"encoding/json"
 
-	"github.com/abrander/gansoi/plugins"
+	"github.com/gansoi/gansoi/plugins"
 )
 
 type (

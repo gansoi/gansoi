@@ -1,7 +1,7 @@
 package database
 
 import (
-	"github.com/abrander/gansoi/logger"
+	"github.com/gansoi/gansoi/logger"
 )
 
 type (

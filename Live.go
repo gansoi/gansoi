@@ -10,7 +10,7 @@ import (
 
 	"golang.org/x/net/websocket"
 
-	"github.com/abrander/gansoi/database"
+	"github.com/gansoi/gansoi/database"
 )
 
 type (

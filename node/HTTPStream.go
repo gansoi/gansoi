@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/abrander/gansoi/logger"
-	"github.com/abrander/gansoi/stats"
+	"github.com/gansoi/gansoi/logger"
+	"github.com/gansoi/gansoi/stats"
 )
 
 // HTTPStream implements a raft stream for use with Golang's net/http.

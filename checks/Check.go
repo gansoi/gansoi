@@ -8,7 +8,7 @@ import (
 
 	"github.com/Knetic/govaluate"
 
-	"github.com/abrander/gansoi/plugins"
+	"github.com/gansoi/gansoi/plugins"
 )
 
 type (

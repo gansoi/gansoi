@@ -3,7 +3,7 @@ package eval
 import (
 	"time"
 
-	"github.com/abrander/gansoi/database"
+	"github.com/gansoi/gansoi/database"
 )
 
 type (

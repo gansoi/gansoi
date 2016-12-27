@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/abrander/gansoi/database"
-	"github.com/abrander/gansoi/logger"
-	"github.com/abrander/gansoi/stats"
+	"github.com/gansoi/gansoi/database"
+	"github.com/gansoi/gansoi/logger"
+	"github.com/gansoi/gansoi/stats"
 )
 
 type (

@@ -1,7 +1,7 @@
 package notify
 
 import (
-	"github.com/abrander/gansoi/database"
+	"github.com/gansoi/gansoi/database"
 )
 
 var _ database.ClusterListener = (*Notifier)(nil)
