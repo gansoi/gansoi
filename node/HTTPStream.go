@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/abrander/gansoi/logger"
@@ -53,6 +54,7 @@ func NewHTTPStream(addr string, secret string) (*HTTPStream, error) {
 func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, error) {
 	var conn net.Conn
 	var err error
+	var host, port string
 	// Make a copy of our dialer to allow custom timeout.
 	dial := h.dial
 	dial.Timeout = timeout
@@ -62,7 +64,11 @@ func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, erro
 		return nil, err
 	}
 
-	host, port, _ := net.SplitHostPort(URL.Host)
+	if strings.IndexRune(URL.Host, ':') < 0 {
+		host = URL.Host
+	} else {
+		host, port, _ = net.SplitHostPort(URL.Host)
+	}
 
 	stats.CounterInc("http_dialed", 1)
 
