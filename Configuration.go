@@ -85,7 +85,10 @@ func (c *Configuration) Self() string {
 func (c *Configuration) Bind() string {
 	URL, _ := url.Parse(c.Local)
 
-	host, port, _ := net.SplitHostPort(URL.Host)
+	host, port, err := net.SplitHostPort(URL.Host)
+	if err != nil {
+		return c.Local
+	}
 
 	if port == "" {
 		switch URL.Scheme {
