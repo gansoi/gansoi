@@ -173,6 +173,12 @@ func runCore(_ *cobra.Command, _ []string) {
 
 	api := engine.Group("/api")
 
+	if config.Login != "" && config.Password != "" {
+		api.Use(gin.BasicAuth(gin.Accounts{
+			config.Login: config.Password,
+		}))
+	}
+
 	restChecks := node.NewRestAPI(checks.Check{}, n)
 	restChecks.Router(api.Group("/checks"))
 

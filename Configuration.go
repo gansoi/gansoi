@@ -22,6 +22,8 @@ type (
 		Secret      string   `toml:"secret"`
 		LetsEncrypt bool     `toml:"letsencrypt"`
 		self        string
+		Login       string `toml:"login"`
+		Password    string `toml:"password"`
 	}
 )
 
