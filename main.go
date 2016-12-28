@@ -171,20 +171,22 @@ func runCore(_ *cobra.Command, _ []string) {
 
 	n.Router(engine.Group("/raft"))
 
+	api := engine.Group("/api")
+
 	restChecks := node.NewRestAPI(checks.Check{}, n)
-	restChecks.Router(engine.Group("/checks"))
+	restChecks.Router(api.Group("/checks"))
 
 	restEvaluations := node.NewRestAPI(eval.Evaluation{}, n)
-	restEvaluations.Router(engine.Group("/evaluations"))
+	restEvaluations.Router(api.Group("/evaluations"))
 
 	restContacts := node.NewRestAPI(notify.Contact{}, n)
-	restContacts.Router(engine.Group("/contacts"))
+	restContacts.Router(api.Group("/contacts"))
 
 	restContactGroups := node.NewRestAPI(notify.ContactGroup{}, n)
-	restContactGroups.Router(engine.Group("/contactgroups"))
+	restContactGroups.Router(api.Group("/contactgroups"))
 
 	// Endpoint for running a check on the cluster node.
-	engine.POST("/test", func(c *gin.Context) {
+	api.POST("/test", func(c *gin.Context) {
 		var check checks.Check
 		e := c.BindJSON(&check)
 		if e != nil {
@@ -197,7 +199,7 @@ func runCore(_ *cobra.Command, _ []string) {
 		c.JSON(http.StatusOK, checkResult)
 	})
 
-	engine.GET("/agents", func(c *gin.Context) {
+	api.GET("/agents", func(c *gin.Context) {
 		descriptions := plugins.ListAgents()
 
 		c.JSON(http.StatusOK, descriptions)
@@ -213,7 +215,7 @@ func runCore(_ *cobra.Command, _ []string) {
 	n.RegisterClusterListener(live)
 
 	// Provide a websocket for clients to keep updated.
-	engine.GET("/live", func(c *gin.Context) {
+	api.GET("/live", func(c *gin.Context) {
 		live.ServeHTTP(c.Writer, c.Request)
 	})
 

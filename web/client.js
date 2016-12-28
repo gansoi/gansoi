@@ -112,7 +112,7 @@ var listChecks = Vue.component('list-checks', {
         deleteCheck: function(button, id) {
             button.disabled = true;
 
-            Vue.http.delete('/checks/' + id);
+            Vue.http.delete('/api/checks/' + id);
         },
 
         editCheck: function(id) {
@@ -133,13 +133,13 @@ var listNodes = Vue.component('list-nodes', {
     template: '#template-nodes'
 });
 
-Vue.http.get('/agents').then(function(response) {
+Vue.http.get('/api/agents').then(function(response) {
     response.body.forEach(function(check) {
         agents.push(check);
     });
 });
 
-Vue.http.get('/checks').then(function(response) {
+Vue.http.get('/api/checks').then(function(response) {
     response.body.forEach(function(check) {
         checks.upsert(check);
     });
@@ -147,9 +147,9 @@ Vue.http.get('/checks').then(function(response) {
 
 var live;
 if (g.isEncrypted()) {
-    live = new WebSocket('wss://' + g.getHost() + '/live');
+    live = new WebSocket('wss://' + g.getHost() + '/api/live');
 } else {
-    live = new WebSocket('ws://' + g.getHost() + '/live');
+    live = new WebSocket('ws://' + g.getHost() + '/api/live');
 }
 
 live.onmessage = function(event) {
@@ -213,13 +213,13 @@ var editCheck = Vue.component('edit-check', {
         },
 
         testCheck: function() {
-            this.$http.post("/test", this.check).then(function(response) {
+            this.$http.post("/api/test", this.check).then(function(response) {
                 this.results = response.body;
             });
         },
 
         addCheck: function() {
-            this.$http.post("/checks", this.check).then(function(response) {
+            this.$http.post("/api/checks", this.check).then(function(response) {
                 router.push('/checks');
             });
         }
