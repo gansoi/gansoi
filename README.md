@@ -4,6 +4,9 @@ gansoi
 This software is unusable for now. It's a work in progress monitoring solution
 for a modern world. As of the moment it's at most a non-working proof-of-concept.
 
+[![Build Status](https://travis-ci.org/gansoi/gansoi.svg?branch=master)](https://travis-ci.org/gansoi/gansoi)
+[![codebeat badge](https://codebeat.co/badges/3f6e63cc-d32d-4962-a285-0f3a71d6cb80)](https://codebeat.co/projects/github-com-gansoi-gansoi)
+
 ### Design goals
 
 - Fault tolerant and distributed - should tolerate multiple node failures with no single point of failure.
