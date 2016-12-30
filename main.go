@@ -24,9 +24,9 @@ import (
 	"github.com/gansoi/gansoi/node"
 	"github.com/gansoi/gansoi/notify"
 	"github.com/gansoi/gansoi/plugins"
-	_ "github.com/gansoi/gansoi/plugins/http"
+	_ "github.com/gansoi/gansoi/plugins/agents/http"
+	_ "github.com/gansoi/gansoi/plugins/agents/tcpport"
 	_ "github.com/gansoi/gansoi/plugins/notifiers/slack"
-	_ "github.com/gansoi/gansoi/plugins/tcpport"
 )
 
 func init() {
