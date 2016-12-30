@@ -383,7 +383,9 @@ hr {
 
     <tr v-for="argument in arguments">
      <td><label>{{ argument.name }}</label></td>
-     <td><input type="text" v-model="check.arguments[argument.name]" /> {{ argument.description }}</td>
+     <td v-if="argument.type == 'string'"><input type="text" v-model="check.arguments[argument.name]" /> {{ argument.description }}</td>
+     <td v-else-if="argument.type == 'bool'"><input type="checkbox" v-model="check.arguments[argument.name]" /><label>{{ argument.description }}</label></td>
+     <td v-else>{{ argument.type }} not supported in client</td>
     </tr>
 
     <tr><th colspan="2">Results</th></tr>
