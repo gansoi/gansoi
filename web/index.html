@@ -390,6 +390,7 @@ hr {
 
     <tr><th colspan="2">Results</th></tr>
     <tr><td colspan="2"><hr></td></tr>
+    <tr v-if="results.error"><td class="red" colspan="2">ERROR: {{ results.error }}</td></tr>
     <tr v-for="(value, key) in results.results">
      <td><label>{{ key }}</label></td>
      <td>{{ value }}</td>
