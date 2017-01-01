@@ -29,6 +29,35 @@ var g = {
     }
 };
 
+/**
+ * Will wait for a number of done()'s before calling cb.
+ * @param {!func} cb
+ * @constructor
+ */
+g.waitGroup = function(cb) {
+    var count = 0;
+
+    /**
+     * Add delta units of work to finish before calling cb
+     * @param {!number} delta The number to add.
+     */
+    this.add = function(delta) {
+        count += delta;
+    };
+
+    /**
+     * Mark one job as done.
+     */
+    this.done = function() {
+        count--;
+        if (count === 0) {
+            cb();
+        }
+    };
+
+    return this;
+};
+
 var Collection = function(identifier) {
     var self = this;
 
@@ -133,15 +162,30 @@ var listNodes = Vue.component('list-nodes', {
     template: '#template-nodes'
 });
 
+var init = g.waitGroup(function() {
+    g.live();
+
+    const app = new Vue({
+        el: '#app',
+        router: router
+    });
+});
+
+console.log(init);
+
 Vue.http.get('/api/agents').then(function(response) {
+    init.add(1);
     response.body.forEach(function(check) {
         agents.push(check);
+        init.done();
     });
 });
 
 Vue.http.get('/api/checks').then(function(response) {
+    init.add(1);
     response.body.forEach(function(check) {
         checks.upsert(check);
+        init.done();
     });
 });
 
@@ -200,8 +244,6 @@ g.live = function() {
     // Open the connection right away.
     open();
 };
-
-g.live();
 
 var editCheck = Vue.component('edit-check', {
     data: function() {
@@ -282,9 +324,4 @@ const router = new VueRouter({
         { path: '/checks', component: listChecks },
         { path: '/check/edit/:id', component: editCheck }
     ]
-});
-
-const app = new Vue({
-    el: '#app',
-    router: router
 });
