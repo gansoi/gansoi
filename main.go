@@ -25,6 +25,7 @@ import (
 	"github.com/gansoi/gansoi/notify"
 	"github.com/gansoi/gansoi/plugins"
 	_ "github.com/gansoi/gansoi/plugins/agents/http"
+	_ "github.com/gansoi/gansoi/plugins/agents/ssh"
 	_ "github.com/gansoi/gansoi/plugins/agents/tcpport"
 	_ "github.com/gansoi/gansoi/plugins/notifiers/slack"
 )
