@@ -145,29 +145,63 @@ Vue.http.get('/api/checks').then(function(response) {
     });
 });
 
-var live;
-if (g.isEncrypted()) {
-    live = new WebSocket('wss://' + g.getHost() + '/api/live');
-} else {
-    live = new WebSocket('ws://' + g.getHost() + '/api/live');
-}
+/**
+ * Keep live updates from service.
+ */
+g.live = function() {
+    var socket;
 
-live.onmessage = function(event) {
-    var data = JSON.parse(event.data);
+    /**
+     * Open the websocket connection.
+     */
+    var open = function() {
+        if (g.isEncrypted()) {
+            socket = new WebSocket('wss://' + g.getHost() + '/api/live');
+        } else {
+            socket = new WebSocket('ws://' + g.getHost() + '/api/live');
+        }
 
-    switch (data.type) {
-        case 'nodeinfo':
-            nodes.log(data);
-            break;
-        case 'checkresult':
-            break;
-        case 'check':
-            checks.log(data);
-            break;
-        default:
-            console.log(data);
-    }
+        socket.onclose = onclose;
+        socket.onmessage = onmessage;
+    };
+
+    /**
+     * onmessage callback.
+     * @param {!MessageEvent} event
+     */
+    var onmessage = function(event) {
+        var data = JSON.parse(event.data);
+
+        switch (data.type) {
+            case 'nodeinfo':
+                nodes.log(data);
+                break;
+            case 'checkresult':
+                break;
+            case 'check':
+                checks.log(data);
+                break;
+            default:
+                console.log(data);
+        }
+    };
+
+    /**
+     * Use as onclose callback from websocket, will try to reconnect after
+     * two and a half second.
+     * @param {!CloseEvent} event
+     */
+    var onclose = function(event) {
+        setTimeout(function() {
+            open();
+        }, 2500);
+    };
+
+    // Open the connection right away.
+    open();
 };
+
+g.live();
 
 var editCheck = Vue.component('edit-check', {
     data: function() {
