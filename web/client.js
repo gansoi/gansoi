@@ -58,7 +58,13 @@ g.waitGroup = function(cb) {
     return this;
 };
 
-var Collection = function(identifier) {
+/**
+ * A collection of objects from Gansoi.
+ * @constructor
+ * @param {!string} identifier THe name of the member used to identify an
+ *        object.
+ */
+g.Collection = function(identifier) {
     var self = this;
 
     self.data = new Array();
@@ -116,19 +122,9 @@ var Collection = function(identifier) {
     };
 };
 
-var checks = new Collection('id');
-var nodes = new Collection('name');
-
-var agents = new Array();
-agents.get = function(name) {
-    return agents.find(function(agent) {
-        if (agent.name === name) {
-            return true;
-        }
-
-        return false;
-    })
-};
+var checks = new g.Collection('id');
+var nodes = new g.Collection('name');
+var agents = new g.Collection('name');
 
 var listChecks = Vue.component('list-checks', {
     data: function() {
@@ -171,12 +167,10 @@ var init = g.waitGroup(function() {
     });
 });
 
-console.log(init);
-
 Vue.http.get('/api/agents').then(function(response) {
     init.add(1);
     response.body.forEach(function(check) {
-        agents.push(check);
+        agents.upsert(check);
         init.done();
     });
 });
@@ -249,21 +243,21 @@ var editCheck = Vue.component('edit-check', {
     data: function() {
         return {
             title: 'Add check',
-            agents: agents,
+            agents: agents.data,
             check: {
                 arguments: {},
                 agent: 'http',
                 id: '',
                 expressions: []
             },
-            results: {results:{}},
+            results: {results: {}},
         };
     },
 
     created: function() {
         // fetch the data when the view is created and the data is
         // already being observed
-        this.fetchData()
+        this.fetchData();
     },
 
     watch: {
@@ -289,25 +283,22 @@ var editCheck = Vue.component('edit-check', {
         },
 
         testCheck: function() {
-            this.$http.post("/api/test", this.check).then(function(response) {
+            this.$http.post('/api/test', this.check).then(function(response) {
                 this.results = response.body;
             });
         },
 
         addCheck: function() {
-            this.$http.post("/api/checks", this.check).then(function(response) {
+            this.$http.post('/api/checks', this.check).then(function(response) {
                 router.push('/checks');
             });
         }
     },
 
     computed: {
-        arguments: function () {
+        arguments: function() {
             var agentId = this.check.agent;
             var agent = agents.get(agentId);
-
-            console.log(agentId);
-            console.log(agent);
 
             return agent.arguments;
         }
