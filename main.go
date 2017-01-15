@@ -2,13 +2,17 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"net"
 	"net/http"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -18,6 +22,7 @@ import (
 
 	"github.com/gansoi/gansoi/boltdb"
 	"github.com/gansoi/gansoi/checks"
+	"github.com/gansoi/gansoi/cluster"
 	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/eval"
 	"github.com/gansoi/gansoi/logger"
@@ -40,6 +45,13 @@ func init() {
 	database.RegisterType(notify.ContactGroup{})
 }
 
+func bailIfError(err error) {
+	if err != nil {
+		logger.Red("main", err.Error())
+		os.Exit(1)
+	}
+}
+
 func main() {
 	cmdCore := &cobra.Command{
 		Use:   "core",
@@ -47,10 +59,41 @@ func main() {
 		Long:  `Run a core node in a Gansoi cluster`,
 		Run:   runCore,
 	}
-	cmdCore.Flags().StringVar(&configFile,
+	cmdCore.PersistentFlags().StringVar(&configFile,
 		"config",
 		configFile,
 		"The configuration file to use.")
+
+	coreInit := &cobra.Command{
+		Use:   "init",
+		Short: "Initialize a new cluster",
+		Long:  "Initialize a new cluster and start an internal CA",
+		Run:   initCore,
+	}
+	cmdCore.AddCommand(coreInit)
+
+	corePrintCA := &cobra.Command{
+		Use:   "print-ca",
+		Short: "Print the CA root certificate",
+		Run:   printCa,
+	}
+	cmdCore.AddCommand(corePrintCA)
+
+	corePrintToken := &cobra.Command{
+		Use:   "print-token",
+		Short: "Print join token",
+		Long: "Print the join token for this cluster node. Can be used by new\n" +
+			"nodes to join this cluster.",
+		Run: printToken,
+	}
+	cmdCore.AddCommand(corePrintToken)
+
+	coreJoin := &cobra.Command{
+		Use:   "join [leader-ip] [join-token]",
+		Short: "Join a Gansoi cluster",
+		Run:   joinCore,
+	}
+	cmdCore.AddCommand(coreJoin)
 
 	cmdCheck := &cobra.Command{
 		Use:   "runcheck",
@@ -138,7 +181,7 @@ func runCheck(printSummary bool, arguments []string) {
 	}
 }
 
-func runCore(_ *cobra.Command, _ []string) {
+func loadConfig() *Configuration {
 	var config Configuration
 	config.SetDefaults()
 	err := config.LoadFromFile(configFile)
@@ -147,30 +190,123 @@ func runCore(_ *cobra.Command, _ []string) {
 		os.Exit(1)
 	}
 
-	peerstore := node.NewPeerStore()
-	peerstore.SetPeers(config.Cluster)
-	peerstore.SetSelf(config.Self())
+	return &config
+}
 
+func openDatabase(config *Configuration) *boltdb.BoltStore {
 	db, err := boltdb.NewBoltStore(path.Join(config.DataDir, "gansoi.db"))
 	if err != nil {
 		logger.Red("main", "failed to open database in %s: %s", config.DataDir, err.Error())
 		os.Exit(1)
 	}
 
-	n, err := node.NewNode(config.Secret, config.DataDir, db, db, peerstore)
+	return db
+}
+
+func initCore(cmd *cobra.Command, _ []string) {
+	config := loadConfig()
+	info := cluster.NewInfo(path.Join(config.DataDir, "cluster.json"))
+	core := cluster.NewCore(info)
+
+	err := core.Bootstrap()
+	bailIfError(err)
+
+	info.SetPeers([]string{cluster.DefaultPort(config.BindPrivate)})
+}
+
+func joinCore(_ *cobra.Command, arguments []string) {
+	config := loadConfig()
+	info := cluster.NewInfo(path.Join(config.DataDir, "cluster.json"))
+	core := cluster.NewCore(info)
+
+	// Check that we have all arguments.
+	if len(arguments) < 2 {
+		logger.Red("join", "Too few arguments")
+		os.Exit(1)
+	}
+
+	ip := net.ParseIP(arguments[0])
+	if ip == nil {
+		logger.Red("join", "%s does not look like an IP address", arguments[0])
+		os.Exit(1)
+	}
+
+	// Split join-token in hash and cluster-token.
+	parts := strings.Split(arguments[1], ".")
+	if len(parts) < 2 {
+		logger.Red("join", "Join-token is malformed")
+		os.Exit(1)
+	}
+
+	hash := parts[0]
+	token := parts[1]
+
+	err := core.Join(arguments[0], hash, token, config.BindPrivate)
+	bailIfError(err)
+}
+
+func printCa(_ *cobra.Command, _ []string) {
+	config := loadConfig()
+	info := cluster.NewInfo(path.Join(config.DataDir, "cluster.json"))
+
+	fmt.Printf("%s", info.CACert)
+}
+
+func printToken(_ *cobra.Command, _ []string) {
+	config := loadConfig()
+	info := cluster.NewInfo(path.Join(config.DataDir, "cluster.json"))
+
+	hash := sha256.Sum256(info.CACert)
+
+	fmt.Printf("%x.%s\n", hash, info.ClusterToken)
+
+	fmt.Printf("\nCan be used to join a new core node to the cluster like this:\n"+
+		"# gansoi core join %s %x.%s\n",
+		info.Self(), hash, info.ClusterToken)
+}
+
+func runCore(_ *cobra.Command, _ []string) {
+	config := loadConfig()
+	db := openDatabase(config)
+	info := cluster.NewInfo(path.Join(config.DataDir, "cluster.json"))
+	core := cluster.NewCore(info)
+
+	self := cluster.DefaultPort(config.BindPrivate)
+	info.SetSelf(self)
+
+	pair, err := core.Start()
+	bailIfError(err)
+
+	internal := gin.New()
+	internal.Use(gin.Logger())
+
+	server := &http.Server{
+		Addr: cluster.DefaultPort(config.BindPrivate),
+		TLSConfig: &tls.Config{
+			Certificates: pair,
+			ClientCAs:    core.CA().CertPool(),
+			ClientAuth:   tls.RequestClientCert,
+		},
+		Handler: internal,
+	}
+
+	go server.ListenAndServeTLS("", "")
+
+	stream, _ := node.NewHTTPStream(config.BindPrivate, pair, core.CA())
+	n, err := node.NewNode(stream, config.DataDir, db, db, info, pair, core.CA())
 	if err != nil {
 		// FIXME: Fail in a more helpful manner than panic().
 		panic(err.Error())
 	}
+	eval.NewEvaluator(n, info)
 
-	eval.NewEvaluator(n, peerstore)
-
-	checks.NewScheduler(n, peerstore.Self(), true)
+	checks.NewScheduler(n, info.Self(), true)
 
 	engine := gin.New()
 	engine.Use(gin.Logger())
 
-	n.Router(engine.Group("/raft"))
+	n.Router(internal.Group("/node"))
+	core.Router(internal.Group(cluster.CorePrefix), stream, n)
 
 	api := engine.Group("/api")
 
@@ -201,7 +337,7 @@ func runCore(_ *cobra.Command, _ []string) {
 		}
 
 		checkResult := checks.RunCheck(&check)
-		checkResult.Node = peerstore.Self()
+		checkResult.Node = info.Self()
 
 		c.JSON(http.StatusOK, checkResult)
 	})
@@ -239,7 +375,7 @@ func runCore(_ *cobra.Command, _ []string) {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	logger.Green("main", "Binding to %s (Self: %s)", config.Bind(), config.Self())
+	logger.Green("main", "Binding public interface to %s", config.Bind())
 
 	if config.TLS() {
 		var tlsConfig tls.Config

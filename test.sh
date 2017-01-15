@@ -99,30 +99,27 @@ o+7hG62xVvzquorK1CB0MKx92GIyGtk0319Ta0bt6oWwe/MoLtslgcYbjk8UdN5P
 EOF
 
 cat >/tmp/gansoi-dev/node1.conf <<EOF
-local = "https://node1.gansoi-dev.com:9002"
+private = "127.0.0.1:4934"
+public = "https://node1.gansoi-dev.com:9002"
 cert = "/tmp/gansoi-dev/cert.pem"
 key = "/tmp/gansoi-dev/key.pem"
 datadir = "/tmp/gansoi-dev/node1-data"
-cluster = ["https://node1.gansoi-dev.com:9002", "https://node2.gansoi-dev.com:9002", "https://node3.gansoi-dev.com:9002"]
-secret = "Qhzw5UTm66dWbHNyBdxazf6LfB7iaqcaRXzoot77gwMLErm1vb3VEDTBTupm8KxH"
 EOF
 
 cat >/tmp/gansoi-dev/node2.conf <<EOF
-local = "https://node2.gansoi-dev.com:9002"
+private = "127.0.0.2:4934"
+public = "https://node2.gansoi-dev.com:9002"
 cert = "/tmp/gansoi-dev/cert.pem"
 key = "/tmp/gansoi-dev/key.pem"
 datadir = "/tmp/gansoi-dev/node2-data"
-cluster = ["https://node1.gansoi-dev.com:9002", "https://node2.gansoi-dev.com:9002", "https://node3.gansoi-dev.com:9002"]
-secret = "Qhzw5UTm66dWbHNyBdxazf6LfB7iaqcaRXzoot77gwMLErm1vb3VEDTBTupm8KxH"
 EOF
 
 cat >/tmp/gansoi-dev/node3.conf <<EOF
-local = "https://node3.gansoi-dev.com:9002"
+private = "127.0.0.3:4934"
+public = "https://node3.gansoi-dev.com:9002"
 cert = "/tmp/gansoi-dev/cert.pem"
 key = "/tmp/gansoi-dev/key.pem"
 datadir = "/tmp/gansoi-dev/node3-data"
-cluster = ["https://node1.gansoi-dev.com:9002", "https://node2.gansoi-dev.com:9002", "https://node3.gansoi-dev.com:9002"]
-secret = "Qhzw5UTm66dWbHNyBdxazf6LfB7iaqcaRXzoot77gwMLErm1vb3VEDTBTupm8KxH"
 EOF
 
 mkdir /tmp/gansoi-dev/node1-data
@@ -131,7 +128,18 @@ mkdir /tmp/gansoi-dev/node3-data
 
 export DEBUG=*
 
-tmux new-session -d './gansoi core --config /tmp/gansoi-dev/node1.conf'
-tmux split-window -v './gansoi core --config /tmp/gansoi-dev/node2.conf'
-tmux split-window -v './gansoi core --config /tmp/gansoi-dev/node3.conf'
+./gansoi core --config /tmp/gansoi-dev/node1.conf init
+TOKEN=$(./gansoi core --config /tmp/gansoi-dev/node1.conf print-token)
+
+# Start first server
+tmux new-session -d './gansoi core --config /tmp/gansoi-dev/node1.conf; netstat -lnpt ; sleep 10'
+
+sleep 3
+./gansoi core --config /tmp/gansoi-dev/node2.conf join 127.0.0.1 $TOKEN
+tmux split-window -v './gansoi core --config /tmp/gansoi-dev/node2.conf; sleep 10'
+
+sleep 3
+./gansoi core --config /tmp/gansoi-dev/node3.conf join 127.0.0.1 $TOKEN
+tmux split-window -v './gansoi core --config /tmp/gansoi-dev/node3.conf; sleep 10'
+
 tmux -2 attach-session -d

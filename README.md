@@ -16,8 +16,6 @@ and developers. It's a just-working proof-of-concept.
 
 - No useful agents implemented yet.
 - The web interface is rudimentary at best. Useless at worst.
-- Single node operation is not supported. A cluster of core nodes *is* needed.
-  You can however run them on the same host.
 
 #### What We Currently Have
 

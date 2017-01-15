@@ -13,15 +13,14 @@ type (
 	// Configuration keeps configuration for a core node.
 	Configuration struct {
 		sync.RWMutex
-		Local       string   `toml:"local"`
-		Cert        string   `toml:"cert"`
-		Key         string   `toml:"key"`
-		DataDir     string   `toml:"datadir"`
-		Cluster     []string `toml:"cluster"`
-		ClusterName string   `toml:"cluster_name"`
-		Secret      string   `toml:"secret"`
-		LetsEncrypt bool     `toml:"letsencrypt"`
-		self        string
+		BindPrivate string `toml:"private"`
+		BindPublic  string `toml:"public"`
+		Cert        string `toml:"cert"`
+		Key         string `toml:"key"`
+		DataDir     string `toml:"datadir"`
+		Hostname    string `toml:"hostname"`
+		Secret      string `toml:"secret"`
+		LetsEncrypt bool   `toml:"letsencrypt"`
 		Login       string `toml:"login"`
 		Password    string `toml:"password"`
 	}
@@ -31,13 +30,12 @@ var (
 	configFile = "/etc/gansoi.conf"
 
 	exampleConfig = `# Example configuration for gansoi.
-local = "london.example.com"
+private = ":4934"
+public = "https://0.0.0.0/:443"
 cert = "/etc/gansoi/me-cert.pem"
 key = "/etc/gansoi/me-key.pem"
 datadir = "/var/lib/gansoi"
-cluster = ["london.example.com", "copenhagen.example.com", "berlin.example.com"]
-cluster_name = "gansoi.example.com"
-secret = "This is unsecure. Pick a good alphanumeric secret."
+hostname = "gansoi.example.com"
 
 # cert and key are ignored if set
 letsencrypt = true
@@ -48,7 +46,9 @@ letsencrypt = true
 func (c *Configuration) SetDefaults() {
 	// By default we bind to port 443 (HTTPS) on all interfaces on both IPv4
 	// and IPv6.
-	c.Local = ":443"
+	c.BindPublic = ":443"
+
+	c.BindPrivate = ":4934"
 
 	// This makes sense on a unix system.
 	c.DataDir = "/var/lib/gansoi"
@@ -64,32 +64,13 @@ func (c *Configuration) LoadFromFile(path string) error {
 	return err
 }
 
-// Self returns a string that can be used to describe this node.
-func (c *Configuration) Self() string {
-	c.Lock()
-	defer c.Unlock()
-
-	if c.self != "" {
-		return c.self
-	}
-
-	if c.Local == "" {
-		hostname, _ := os.Hostname()
-		c.self = hostname
-	}
-
-	c.self = c.Local
-
-	return c.self
-}
-
 // Bind will return a string suitable for binding.
 func (c *Configuration) Bind() string {
-	URL, _ := url.Parse(c.Local)
+	URL, _ := url.Parse(c.BindPublic)
 
 	host, port, err := net.SplitHostPort(URL.Host)
 	if err != nil {
-		return c.Local
+		return ":443"
 	}
 
 	if port == "" {
@@ -113,13 +94,13 @@ func (c *Configuration) Hostnames() []string {
 
 	hostnames := []string{hostname}
 
-	local, _, _ := net.SplitHostPort(c.Local)
+	local, _, _ := net.SplitHostPort(c.BindPublic)
 	if local != "" {
 		hostnames = append(hostnames, local)
 	}
 
-	if c.ClusterName != "" {
-		hostnames = append(hostnames, c.ClusterName)
+	if c.Hostname != "" {
+		hostnames = append(hostnames, c.Hostname)
 	}
 
 	return hostnames
@@ -127,7 +108,7 @@ func (c *Configuration) Hostnames() []string {
 
 // TLS will return true if we should set up TLS.
 func (c *Configuration) TLS() bool {
-	URL, _ := url.Parse(c.Local)
+	URL, _ := url.Parse(c.BindPublic)
 
 	return URL.Scheme == "https"
 }

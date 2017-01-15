@@ -1,27 +1,30 @@
 package node
 
 import (
-	"crypto/subtle"
 	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"net"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
+	"github.com/gansoi/gansoi/ca"
+	"github.com/gansoi/gansoi/cluster"
 	"github.com/gansoi/gansoi/logger"
 	"github.com/gansoi/gansoi/stats"
 )
 
 // HTTPStream implements a raft stream for use with Golang's net/http.
 type HTTPStream struct {
-	closed   bool
-	addr     string
-	accepted chan net.Conn
-	dial     net.Dialer
-	secret   string
+	closed       bool
+	addr         string
+	accepted     chan net.Conn
+	dial         net.Dialer
+	certificates []tls.Certificate
+	ca           *ca.CA
+	rootCAs      *x509.CertPool
 }
 
 func init() {
@@ -32,7 +35,7 @@ func init() {
 }
 
 // NewHTTPStream will instantiate a new HTTPStream.
-func NewHTTPStream(addr string, secret string) (*HTTPStream, error) {
+func NewHTTPStream(addr string, certificates []tls.Certificate, coreCA *ca.CA) (*HTTPStream, error) {
 	// Set up our own dialer.
 	dial := net.Dialer{
 		// Some crappy NAT devices will close a connection after 30 seconds of
@@ -41,10 +44,12 @@ func NewHTTPStream(addr string, secret string) (*HTTPStream, error) {
 	}
 
 	h := &HTTPStream{
-		addr:     addr,
-		accepted: make(chan net.Conn),
-		dial:     dial,
-		secret:   secret,
+		addr:         addr,
+		accepted:     make(chan net.Conn),
+		dial:         dial,
+		certificates: certificates,
+		ca:           coreCA,
+		rootCAs:      coreCA.CertPool(),
 	}
 
 	return h, nil
@@ -54,55 +59,35 @@ func NewHTTPStream(addr string, secret string) (*HTTPStream, error) {
 func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, error) {
 	var conn net.Conn
 	var err error
-	var host, port string
+
 	// Make a copy of our dialer to allow custom timeout.
 	dial := h.dial
 	dial.Timeout = timeout
 
-	URL, err := url.Parse(address)
-	if err != nil {
-		return nil, err
-	}
-
-	if strings.IndexRune(URL.Host, ':') < 0 {
-		host = URL.Host
-	} else {
-		host, port, _ = net.SplitHostPort(URL.Host)
+	if strings.IndexRune(address, ':') < 0 {
+		address += ":4934"
 	}
 
 	stats.CounterInc("http_dialed", 1)
 
-	logger.Green("httpstream", "Dialing %s [%s]", host, address)
+	logger.Green("httpstream", "Dialing %s", address)
 
-	switch URL.Scheme {
-	case "https":
-		if port == "" {
-			port = "443"
-		}
-
-		conf := &tls.Config{
-			ServerName: host,
-		}
-		conn, err = tls.DialWithDialer(&dial, "tcp", net.JoinHostPort(host, port), conf)
-
-	case "http":
-		if port == "" {
-			port = "80"
-		}
-
-		conn, err = dial.Dial("tcp", net.JoinHostPort(host, port))
-
-	default:
-		return nil, errors.New("Unknown scheme: " + URL.Scheme)
+	conf := &tls.Config{
+		RootCAs:            h.rootCAs,
+		Certificates:       h.certificates,
+		ServerName:         address,
+		InsecureSkipVerify: true,
 	}
+	conn, err = tls.DialWithDialer(&dial, "tcp", address, conf)
 
 	if err != nil {
 		stats.CounterInc("http_failed", 1)
+		fmt.Printf("ERRRRRROR %s\n", err.Error())
 		return nil, err
 	}
 
 	// We use Upgrade, and hope that will make proxies happy.
-	open := fmt.Sprintf("GET /raft HTTP/1.1\nHost: %s\nUpgrade: raft-0\nSecret: %s\n\n", host, h.secret)
+	open := fmt.Sprintf("GET %s/raft HTTP/1.1\nHost: %s\nUpgrade: raft-0\n\n", cluster.CorePrefix, address)
 
 	_, err = conn.Write([]byte(open))
 	if err != nil {
@@ -164,9 +149,9 @@ func (h *HTTPStream) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	secret := r.Header.Get("Secret")
-	if subtle.ConstantTimeCompare([]byte(h.secret), []byte(secret)) != 1 {
-		http.Error(w, "Wrong secret", http.StatusForbidden)
+	_, err := h.ca.VerifyHTTPRequest(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 

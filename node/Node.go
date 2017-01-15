@@ -2,6 +2,7 @@ package node
 
 import (
 	"bytes"
+	"crypto/tls"
 	"io/ioutil"
 	"net/http"
 	"path"
@@ -12,6 +13,8 @@ import (
 	"github.com/hashicorp/raft"
 	"github.com/hashicorp/raft-boltdb"
 
+	"github.com/gansoi/gansoi/ca"
+	"github.com/gansoi/gansoi/cluster"
 	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/logger"
 	"github.com/gansoi/gansoi/stats"
@@ -21,13 +24,14 @@ type (
 	// Node represents a single gansoi node.
 	Node struct {
 		db            database.Database
-		peers         *PeerStore
+		peers         *cluster.Info
 		raft          *raft.Raft
 		leader        bool
 		stream        *HTTPStream
 		basePath      string
 		listenersLock sync.RWMutex
 		listeners     []database.ClusterListener
+		client        *http.Client
 	}
 
 	nodeInfo struct {
@@ -51,13 +55,23 @@ func init() {
 }
 
 // NewNode will initialize a new node.
-func NewNode(secret string, datadir string, db database.LocalDatabase, fsm raft.FSM, peerStore *PeerStore) (*Node, error) {
+func NewNode(stream *HTTPStream, datadir string, db database.LocalDatabase, fsm raft.FSM, peers *cluster.Info, pair []tls.Certificate, coreCA *ca.CA) (*Node, error) {
 	started := time.Now()
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			Certificates:       pair,
+			RootCAs:            coreCA.CertPool(),
+			InsecureSkipVerify: false,
+		},
+	}
 
 	var err error
 	n := &Node{
-		db:    db,
-		peers: peerStore,
+		db:     db,
+		peers:  peers,
+		stream: stream,
+		client: &http.Client{Transport: tr},
 	}
 
 	db.RegisterLocalListener(n)
@@ -70,10 +84,12 @@ func NewNode(secret string, datadir string, db database.LocalDatabase, fsm raft.
 	conf.CommitTimeout = 200 * time.Millisecond
 	conf.Logger = logger.Logger("raft")
 
-	// Set up nice HTTP based transport.
-	n.stream, err = NewHTTPStream(peerStore.Self(), secret)
-	if err != nil {
-		return nil, err
+	// If we have exactly one peer - and its ourself, we are bootstrapping.
+	p, _ := peers.Peers()
+	if len(p) == 1 && p[0] == peers.Self() {
+		logger.Green("node", "Starting raft in bootstrap mode")
+		conf.EnableSingleNode = true
+		conf.DisableBootstrapAfterElect = false
 	}
 
 	transport := raft.NewNetworkTransportWithLogger(n.stream, 1, 0, logger.Logger("raft-transport"))
@@ -115,7 +131,7 @@ func NewNode(secret string, datadir string, db database.LocalDatabase, fsm raft.
 				var ni nodeInfo
 				ni.Started = started
 				ni.Updated = time.Now()
-				ni.Name = peerStore.Self()
+				ni.Name = peers.Self()
 				ni.Raft = n.raft.Stats()
 
 				n.Save(&ni)
@@ -124,11 +140,6 @@ func NewNode(secret string, datadir string, db database.LocalDatabase, fsm raft.
 	}()
 
 	return n, nil
-}
-
-// raftHandler is a handler for the other nodes.
-func (n *Node) raftHandler(c *gin.Context) {
-	n.stream.ServeHTTP(c.Writer, c.Request)
 }
 
 // statsHandler will reply with a few raft statistics.
@@ -184,9 +195,9 @@ func (n *Node) apply(entry *database.LogEntry) error {
 
 		r := bytes.NewReader(entry.Byte())
 		l := n.raft.Leader()
-		u := l + n.basePath + "/apply"
+		u := "https://" + l + n.basePath + "/apply"
 
-		_, err := http.Post(u, "gansoi/entry", r)
+		_, err := n.client.Post(u, "gansoi/entry", r)
 
 		// FIXME: Implement some kind of retry logic here.
 
@@ -254,8 +265,12 @@ func (n *Node) PostLocalApply(command database.Command, data interface{}, err er
 func (n *Node) Router(router *gin.RouterGroup) {
 	n.basePath = router.BasePath()
 
-	router.GET("", n.raftHandler)
 	router.GET("/stats", n.statsHandler)
 	router.GET("/nodes", n.nodesHandler)
 	router.POST("/apply", n.applyHandler)
+}
+
+// AddPeer adds a new cluster/raft peer.
+func (n *Node) AddPeer(name string) error {
+	return n.raft.AddPeer(name).Error()
 }
