@@ -26,7 +26,7 @@ func counter(key string) *int64 {
 // CounterInit will add a new counter.
 func CounterInit(key string) {
 	counterMutex.RLock()
-	counter, found := counters[key]
+	_, found := counters[key]
 	counterMutex.RUnlock()
 
 	if found {
@@ -34,7 +34,7 @@ func CounterInit(key string) {
 	}
 
 	var i int64
-	counter = &i
+	counter := &i
 
 	counterMutex.Lock()
 	counters[key] = counter
