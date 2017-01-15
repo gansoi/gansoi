@@ -188,7 +188,12 @@ func (d *BoltStore) One(fieldName string, value interface{}, to interface{}) err
 	d.dbMutex.RLock()
 	defer d.dbMutex.RUnlock()
 
-	return d.db.One(fieldName, value, to)
+	err := d.db.One(fieldName, value, to)
+	if err == storm.ErrNotFound {
+		return database.ErrNotFound
+	}
+
+	return err
 }
 
 // All lists all kinds of a type.
