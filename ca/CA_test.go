@@ -2,7 +2,10 @@ package ca
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"io/ioutil"
+	"net/http"
 	"testing"
 )
 
@@ -353,5 +356,53 @@ func TestCertPoolFail(t *testing.T) {
 
 	if len(pool.Subjects()) != 0 {
 		t.Fatalf("CertPol() returned the wrong number of certificates")
+	}
+}
+
+func TestVerifyHTTPRequest(t *testing.T) {
+	ca := &CA{}
+	req := &http.Request{}
+	req.TLS = &tls.ConnectionState{}
+
+	// Test blank CA
+	_, err := ca.VerifyHTTPRequest(req)
+	if err == nil {
+		t.Fatalf("VerifyHTTPRequest() failed to error on 'blank' CA")
+	}
+
+	// Add certificate
+	cn := "test123"
+	key, _ := GenerateKey()
+	csr, err := GenerateCSR(key, cn, nil)
+	if err != nil {
+		t.Fatalf("GenerateCSR() failed: %s", err.Error())
+	}
+
+	if csr.Subject.CommonName != cn {
+		t.Fatalf("CommonName is wrong. got '%s', expected '%s'", csr.Subject.CommonName, cn)
+	}
+
+	// Test request without cert
+	ca, _ = openTestCA()
+	_, err = ca.VerifyHTTPRequest(req)
+	if err == nil {
+		t.Fatalf("VerifyHTTPRequest() failed to error on missing cert")
+	}
+
+	cert, err := ca.SignCSR(csr)
+	if err != nil {
+		t.Fatalf("SignCSR() failed: %s", err.Error())
+	}
+
+	req.TLS.PeerCertificates = []*x509.Certificate{cert}
+	_, err = ca.VerifyHTTPRequest(req)
+	if err != nil {
+		t.Fatalf("VerifyHTTPRequest() errored on signed request")
+	}
+
+	ca, _ = InitCA()
+	_, err = ca.VerifyHTTPRequest(req)
+	if err == nil {
+		t.Fatalf("VerifyHTTPRequest() failed to catch unsigned cert")
 	}
 }

@@ -190,6 +190,10 @@ func (ca *CA) CertPool() *x509.CertPool {
 // VerifyHTTPRequest verifies that a HTTP remote has presented a certificate
 // signed by this CA.
 func (ca *CA) VerifyHTTPRequest(req *http.Request) (string, error) {
+	if ca.Certificate == nil {
+		return "", errors.New("CA not ready")
+	}
+
 	if len(req.TLS.PeerCertificates) < 1 {
 		return "", errors.New("No certificate provided")
 	}
