@@ -1,9 +1,5 @@
 package database
 
-import (
-	"github.com/gansoi/gansoi/logger"
-)
-
 type (
 	// Command is used to denote which operation should be carried out as a
 	// result of a Raft commit.
@@ -26,7 +22,6 @@ func (c Command) String() string {
 	case CommandDelete:
 		return "delete"
 	default:
-		logger.Red("database", "Unknown command type '%d'. Please update Command.String().", int(c))
 		return "n/a"
 	}
 }
