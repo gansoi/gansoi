@@ -87,7 +87,7 @@ func (s *Scheduler) loop() {
 		var allChecks []Check
 		err := s.node.All(&allChecks, -1, 0, false)
 		if err != nil {
-			logger.Red("scheduler", "%s", err.Error())
+			logger.Info("scheduler", "%s", err.Error())
 			continue
 		}
 
@@ -118,7 +118,7 @@ func (s *Scheduler) loop() {
 				checkIn := time.Duration(rand.Int63n(int64(check.Interval)))
 				meta.NextCheck = t.Add(checkIn)
 
-				logger.Green("scheduler", "%s start delayed for %s", check.ID, checkIn.String())
+				logger.Debug("scheduler", "%s start delayed for %s", check.ID, checkIn.String())
 			} else if wait < 0 {
 				// If we arrive here, wait is sub-zero, which means that we
 				// should execute now.
@@ -137,10 +137,10 @@ func (s *Scheduler) loop() {
 					checkResult.Node = s.nodeName
 
 					if checkResult.Error != "" {
-						logger.Yellow("scheduler", "%s failed in %s: %s", check.ID, time.Now().Sub(start), checkResult.Error)
+						logger.Info("scheduler", "%s failed in %s: %s", check.ID, time.Now().Sub(start), checkResult.Error)
 					} else {
 						stats.CounterInc("scheduler_failed", 1)
-						logger.Green("scheduler", "%s ran in %s: %+v", check.ID, time.Now().Sub(start), checkResult.Results)
+						logger.Debug("scheduler", "%s ran in %s: %+v", check.ID, time.Now().Sub(start), checkResult.Results)
 					}
 
 					s.node.Save(checkResult)

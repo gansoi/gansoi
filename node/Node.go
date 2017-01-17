@@ -82,19 +82,19 @@ func NewNode(stream *HTTPStream, datadir string, db database.LocalDatabase, fsm 
 	conf.ElectionTimeout = 1000 * time.Millisecond
 	conf.LeaderLeaseTimeout = 500 * time.Millisecond
 	conf.CommitTimeout = 200 * time.Millisecond
-	conf.Logger = logger.Logger("raft")
+	conf.Logger = logger.InfoLogger("raft")
 
 	// If we have exactly one peer - and its ourself, we are bootstrapping.
 	p, _ := peers.Peers()
 	if len(p) == 1 && p[0] == peers.Self() {
-		logger.Green("node", "Starting raft in bootstrap mode")
+		logger.Info("node", "Starting raft in bootstrap mode")
 		conf.EnableSingleNode = true
 		conf.DisableBootstrapAfterElect = false
 	}
 
-	transport := raft.NewNetworkTransportWithLogger(n.stream, 1, 0, logger.Logger("raft-transport"))
+	transport := raft.NewNetworkTransportWithLogger(n.stream, 1, 0, logger.DebugLogger("raft-transport"))
 
-	ss, err := raft.NewFileSnapshotStoreWithLogger(datadir, 5, logger.Logger("raft-store"))
+	ss, err := raft.NewFileSnapshotStoreWithLogger(datadir, 5, logger.DebugLogger("raft-store"))
 	if err != nil {
 		return nil, err
 	}

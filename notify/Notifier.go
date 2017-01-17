@@ -96,7 +96,7 @@ func (n *Notifier) PostClusterApply(leader bool, command database.Command, data 
 	case *eval.Evaluation:
 		e := n.gotEvaluation(data.(*eval.Evaluation))
 		if e != nil {
-			logger.Red("notify", "%s", e.Error())
+			logger.Debug("notify", "%s", e.Error())
 		}
 	}
 }
@@ -111,7 +111,7 @@ func (n *Notifier) gotEvaluation(e *eval.Evaluation) error {
 	state := e.History.Last(3).Reduce()
 
 	if state == eval.StateUnknown {
-		logger.Green("notify", "[%s] Ignoring %s %s", e.CheckID, state.String(), e.History.ColorString())
+		logger.Debug("notify", "[%s] Ignoring %s %s", e.CheckID, state.String(), e.History.ColorString())
 		return nil
 	}
 
@@ -122,7 +122,7 @@ func (n *Notifier) gotEvaluation(e *eval.Evaluation) error {
 	stateCacheLock.RUnlock()
 
 	if state == lastState {
-		logger.Green("notify", "[%s] Ignoring unchanged state (Last: %s, Current: %s, Duration: %s) %s", e.CheckID, lastState, state, duration.String(), e.History.ColorString())
+		logger.Debug("notify", "[%s] Ignoring unchanged state (Last: %s, Current: %s, Duration: %s) %s", e.CheckID, lastState, state, duration.String(), e.History.ColorString())
 		// Nothing changed. Abort.
 		return nil
 	}
@@ -132,20 +132,20 @@ func (n *Notifier) gotEvaluation(e *eval.Evaluation) error {
 	stateCacheLock.Unlock()
 
 	if lastState == eval.StateUnknown {
-		logger.Green("notify", "[%s] Ignoring %s when previous state is %s %v", e.CheckID, state, lastState, e.History.ColorString())
+		logger.Info("notify", "[%s] Ignoring %s when previous state is %s %v", e.CheckID, state, lastState, e.History.ColorString())
 		// Last state was unknown. Maybe we just started. Don't notify.
 		return nil
 	}
 
 	if duration < check.Interval*2 && state == eval.StateDegraded {
-		logger.Green("notify", "[%s] Ignoring %s for less than two cycles when degraded %s", e.CheckID, state, e.History.ColorString())
+		logger.Info("notify", "[%s] Ignoring %s for less than two cycles when degraded %s", e.CheckID, state, e.History.ColorString())
 		return nil
 	}
 
-	logger.Yellow("notify", "%s is %s %s", e.CheckID, state, e.History.ColorString())
+	logger.Info("notify", "%s is %s %s", e.CheckID, state, e.History.ColorString())
 
 	if len(check.ContactGroups) == 0 {
-		logger.Green("notify", "[%s] No-one to nofity, aborting", e.CheckID)
+		logger.Info("notify", "[%s] No-one to nofity, aborting", e.CheckID)
 		return nil
 	}
 
@@ -158,12 +158,12 @@ func (n *Notifier) gotEvaluation(e *eval.Evaluation) error {
 		cacheLock.RUnlock()
 
 		if !found {
-			logger.Yellow("notify", "[%s] ContactGroup not found (%s)", e.CheckID, groupID)
+			logger.Info("notify", "[%s] ContactGroup not found (%s)", e.CheckID, groupID)
 			continue
 		}
 
 		// FIXME: Handle errors somehow.
-		logger.Green("notify", "[%s] Notifying '%s'", e.CheckID, groupID)
+		logger.Info("notify", "[%s] Notifying '%s'", e.CheckID, groupID)
 
 		stats.CounterInc("notification_sent", 1)
 

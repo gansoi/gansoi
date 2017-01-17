@@ -47,7 +47,7 @@ func init() {
 
 func bailIfError(err error) {
 	if err != nil {
-		logger.Red("main", err.Error())
+		logger.Info("main", err.Error())
 		os.Exit(1)
 	}
 }
@@ -186,7 +186,7 @@ func loadConfig() *Configuration {
 	config.SetDefaults()
 	err := config.LoadFromFile(configFile)
 	if err != nil {
-		logger.Red("main", "Failed to read configuration file at %s: %s", configFile, err.Error())
+		logger.Info("main", "Failed to read configuration file at %s: %s", configFile, err.Error())
 		os.Exit(1)
 	}
 
@@ -196,7 +196,7 @@ func loadConfig() *Configuration {
 func openDatabase(config *Configuration) *boltdb.BoltStore {
 	db, err := boltdb.NewBoltStore(path.Join(config.DataDir, "gansoi.db"))
 	if err != nil {
-		logger.Red("main", "failed to open database in %s: %s", config.DataDir, err.Error())
+		logger.Info("main", "failed to open database in %s: %s", config.DataDir, err.Error())
 		os.Exit(1)
 	}
 
@@ -221,20 +221,20 @@ func joinCore(_ *cobra.Command, arguments []string) {
 
 	// Check that we have all arguments.
 	if len(arguments) < 2 {
-		logger.Red("join", "Too few arguments")
+		logger.Info("join", "Too few arguments")
 		os.Exit(1)
 	}
 
 	ip := net.ParseIP(arguments[0])
 	if ip == nil {
-		logger.Red("join", "%s does not look like an IP address", arguments[0])
+		logger.Info("join", "%s does not look like an IP address", arguments[0])
 		os.Exit(1)
 	}
 
 	// Split join-token in hash and cluster-token.
 	parts := strings.Split(arguments[1], ".")
 	if len(parts) < 2 {
-		logger.Red("join", "Join-token is malformed")
+		logger.Info("join", "Join-token is malformed")
 		os.Exit(1)
 	}
 
@@ -350,7 +350,7 @@ func runCore(_ *cobra.Command, _ []string) {
 
 	notifier, err := notify.NewNotifier(db)
 	if err != nil {
-		logger.Red("main", "Failed to start notifier: %s", err.Error())
+		logger.Info("main", "Failed to start notifier: %s", err.Error())
 	}
 	n.RegisterClusterListener(notifier)
 
@@ -375,7 +375,7 @@ func runCore(_ *cobra.Command, _ []string) {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	logger.Green("main", "Binding public interface to %s", config.Bind())
+	logger.Info("main", "Binding public interface to %s", config.Bind())
 
 	if config.TLS() {
 		var tlsConfig tls.Config
@@ -387,7 +387,7 @@ func runCore(_ *cobra.Command, _ []string) {
 			cacheFile := path.Join(config.DataDir, "letsencrypt.cache")
 
 			if err = lManager.CacheFile(cacheFile); err != nil {
-				logger.Red("main", "Failed to open Letsencrypt cachefile at %s: %s", cacheFile, err.Error())
+				logger.Info("main", "Failed to open Letsencrypt cachefile at %s: %s", cacheFile, err.Error())
 				os.Exit(1)
 			}
 
@@ -406,7 +406,7 @@ func runCore(_ *cobra.Command, _ []string) {
 	}
 
 	if err != nil {
-		logger.Red("main", "Bind to %s failed: %s", config.Bind(), err.Error())
+		logger.Info("main", "Bind to %s failed: %s", config.Bind(), err.Error())
 		os.Exit(1)
 	}
 }

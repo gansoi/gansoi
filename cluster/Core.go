@@ -114,7 +114,7 @@ func (c *Core) Bootstrap() error {
 	var err error
 
 	if c.info.CACert != nil {
-		logger.Red("main", "Cluster seem to already be initialized")
+		logger.Info("main", "Cluster seem to already be initialized")
 		os.Exit(1)
 	}
 
@@ -191,7 +191,7 @@ func (c *Core) Join(address string, hash string, token string, bindPrivate strin
 		return err
 	}
 
-	logger.Green("join", "Got cluster root certificate")
+	logger.Info("join", "Got cluster root certificate")
 
 	// Get the root key authenticating with our cluster token.
 	req, _ := http.NewRequest("GET", "https://"+DefaultPort(address)+CorePrefix+"/key", nil)
@@ -204,7 +204,7 @@ func (c *Core) Join(address string, hash string, token string, bindPrivate strin
 	defer resp.Body.Close()
 
 	c.info.CAKey, _ = ioutil.ReadAll(resp.Body)
-	logger.Green("join", "Got cluster root key")
+	logger.Info("join", "Got cluster root key")
 
 	// Set up local CA
 	c.ca, err = ca.OpenCA(c.info.CAKey, c.info.CACert)
@@ -217,12 +217,12 @@ func (c *Core) Join(address string, hash string, token string, bindPrivate strin
 		return err
 	}
 
-	logger.Green("join", "Local core initialized")
+	logger.Info("join", "Local core initialized")
 
 	c.info.ClusterToken = token
 
 	// Request to join cluster.
-	logger.Green("join", "Requesting raft join")
+	logger.Info("join", "Requesting raft join")
 	req, _ = http.NewRequest("GET", "https://"+DefaultPort(address)+CorePrefix+"/join", nil)
 	if bindPrivate != "" {
 		req.Header.Add("X-Gansoi-Announce", DefaultPort(bindPrivate))
@@ -244,7 +244,7 @@ func (c *Core) Join(address string, hash string, token string, bindPrivate strin
 		DefaultPort(address),
 	})
 
-	logger.Yellow("join", "Joined.")
+	logger.Info("join", "Joined.")
 
 	return nil
 }
@@ -304,11 +304,11 @@ func (c *Core) handleJoin(context *gin.Context) {
 		return
 	}
 
-	logger.Green("cluster", "%s at %s requesting to join", name, context.Request.RemoteAddr)
+	logger.Debug("cluster", "%s at %s requesting to join", name, context.Request.RemoteAddr)
 
 	err = c.peerAdder.AddPeer(announce)
 	if err != nil {
-		logger.Red("join", err.Error())
+		logger.Info("join", err.Error())
 	}
 }
 
@@ -319,7 +319,7 @@ func (c *Core) handleRaft(context *gin.Context) {
 		return
 	}
 
-	logger.Green("internal-comm", "%s connected", name)
+	logger.Debug("internal-comm", "%s connected", name)
 
 	c.raftHandler.ServeHTTP(context.Writer, context.Request)
 }

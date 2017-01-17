@@ -119,7 +119,7 @@ func (e *Evaluator) evaluate2(n *PartialEvaluation) error {
 
 		// If any result is older than two cycles, we discard it.
 		if time.Now().Sub(pe.End) > check.Interval*2 {
-			logger.Red("eval", "Result from %s is too old (T:%s) (D:%s) (I:%s)", nodeID, pe.End, time.Now().Sub(pe.End), check.Interval)
+			logger.Debug("eval", "Result from %s is too old (T:%s) (D:%s) (I:%s)", nodeID, pe.End, time.Now().Sub(pe.End), check.Interval)
 			break
 		}
 
@@ -167,6 +167,6 @@ func (e *Evaluator) PostClusterApply(leader bool, command database.Command, data
 		e.evaluate2(data.(*PartialEvaluation))
 	case *Evaluation:
 		eval := data.(*Evaluation)
-		logger.Green("eval", "%s: %s (%s) %v", eval.CheckID, eval.History.Reduce().ColorString(), eval.End.Sub(eval.Start).String(), eval.History)
+		logger.Debug("eval", "%s: %s (%s) %v", eval.CheckID, eval.History.Reduce().ColorString(), eval.End.Sub(eval.Start).String(), eval.History)
 	}
 }

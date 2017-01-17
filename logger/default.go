@@ -9,22 +9,22 @@ var (
 	defaultLogger = New(os.Getenv("DEBUG"))
 )
 
-// Red will log something severe using the default logger.
-func Red(pkg string, format string, args ...interface{}) {
-	defaultLogger.Red(pkg, format, args...)
+// Info will log something for the end user using the default logger.
+func Info(pkg string, format string, args ...interface{}) {
+	defaultLogger.Info(pkg, format, args...)
 }
 
-// Yellow will log something that could be of concern using the default logger.
-func Yellow(pkg string, format string, args ...interface{}) {
-	defaultLogger.Yellow(pkg, format, args...)
+// Debug will log pure debug information using the default logger.
+func Debug(pkg string, format string, args ...interface{}) {
+	defaultLogger.Debug(pkg, format, args...)
 }
 
-// Green will log pure debug information using the default logger.
-func Green(pkg string, format string, args ...interface{}) {
-	defaultLogger.Green(pkg, format, args...)
+// InfoLogger will return a log.Logger from the default logger.
+func InfoLogger(pkg string) *log.Logger {
+	return defaultLogger.InfoLogger(pkg)
 }
 
-// Logger will return a log.Logger from the default logger.
-func Logger(pkg string) *log.Logger {
-	return defaultLogger.Logger(pkg)
+// DebugLogger will return a log.Logger from the default logger.
+func DebugLogger(pkg string) *log.Logger {
+	return defaultLogger.DebugLogger(pkg)
 }

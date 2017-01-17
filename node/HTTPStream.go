@@ -70,7 +70,7 @@ func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, erro
 
 	stats.CounterInc("http_dialed", 1)
 
-	logger.Green("httpstream", "Dialing %s", address)
+	logger.Debug("httpstream", "Dialing %s", address)
 
 	conf := &tls.Config{
 		RootCAs:            h.rootCAs,

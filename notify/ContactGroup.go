@@ -20,7 +20,7 @@ func (g *ContactGroup) Notify(txt string) error {
 		cacheLock.RUnlock()
 
 		if !found {
-			logger.Yellow("notify", "ContactID '%s' not found", contactID)
+			logger.Info("notify", "ContactID '%s' not found", contactID)
 			continue
 		}
 
