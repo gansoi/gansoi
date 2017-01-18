@@ -76,9 +76,7 @@ func (c *Info) SetPeers(peers []string) error {
 	c.PeerList = peers
 	c.lock.Unlock()
 
-	c.Save()
-
-	return nil
+	return c.Save()
 }
 
 // Self will return our own name as set by SetSelf().
