@@ -24,10 +24,8 @@ type (
 	// Node represents a single gansoi node.
 	Node struct {
 		db            database.Database
-		peers         *cluster.Info
 		raft          *raft.Raft
 		leader        bool
-		stream        *HTTPStream
 		basePath      string
 		listenersLock sync.RWMutex
 		listeners     []database.ClusterListener
@@ -69,8 +67,6 @@ func NewNode(stream *HTTPStream, datadir string, db database.LocalDatabase, fsm 
 	var err error
 	n := &Node{
 		db:     db,
-		peers:  peers,
-		stream: stream,
 		client: &http.Client{Transport: tr},
 	}
 
@@ -92,7 +88,7 @@ func NewNode(stream *HTTPStream, datadir string, db database.LocalDatabase, fsm 
 		conf.DisableBootstrapAfterElect = false
 	}
 
-	transport := raft.NewNetworkTransportWithLogger(n.stream, 1, 0, logger.DebugLogger("raft-transport"))
+	transport := raft.NewNetworkTransportWithLogger(stream, 1, 0, logger.DebugLogger("raft-transport"))
 
 	ss, err := raft.NewFileSnapshotStoreWithLogger(datadir, 5, logger.DebugLogger("raft-store"))
 	if err != nil {
@@ -110,7 +106,7 @@ func NewNode(stream *HTTPStream, datadir string, db database.LocalDatabase, fsm 
 		store,     // raft.LogStore
 		store,     // raft.StableStore
 		ss,        // raft.SnapshotStore
-		n.peers,   // raft.PeerStore
+		peers,     // raft.PeerStore
 		transport, // raft.Transport
 	)
 	if err != nil {
