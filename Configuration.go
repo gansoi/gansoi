@@ -19,7 +19,6 @@ type (
 		Key         string `toml:"key"`
 		DataDir     string `toml:"datadir"`
 		Hostname    string `toml:"hostname"`
-		Secret      string `toml:"secret"`
 		LetsEncrypt bool   `toml:"letsencrypt"`
 		Login       string `toml:"login"`
 		Password    string `toml:"password"`
