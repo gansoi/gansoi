@@ -44,11 +44,7 @@ func (s *SSH) Check(result plugins.AgentResult) error {
 	conn, err := ssh.Dial("tcp", defaultPort(s.Address), &conf)
 
 	// This is ugly, but there's no other way of recognizing this "error".
-	if err != nil && err.Error() == "ssh: handshake failed: ssh: unable to authenticate, attempted methods [none], no supported methods remain" {
-		err = nil
-	}
-
-	if err != nil {
+	if err != nil && err.Error() != "ssh: handshake failed: ssh: unable to authenticate, attempted methods [none], no supported methods remain" {
 		return err
 	}
 
