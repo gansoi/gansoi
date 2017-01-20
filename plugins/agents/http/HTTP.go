@@ -47,6 +47,20 @@ func getHostPort(URL *url.URL) (string, string) {
 	return host, port
 }
 
+func camelCaseHeader(key string) string {
+	fields := strings.FieldsFunc(key, func(r rune) bool {
+		return !plugins.ValidateResultKeyRune(r)
+	})
+
+	result := "Header"
+
+	for _, f := range fields {
+		result += strings.Title(f)
+	}
+
+	return result
+}
+
 // Check implements plugins.Agent.
 func (h *HTTP) Check(result plugins.AgentResult) error {
 	URL, err := url.Parse(h.URL)
@@ -121,7 +135,7 @@ func (h *HTTP) Check(result plugins.AgentResult) error {
 				return err
 			}
 
-			result.AddValue(fmt.Sprintf("Redirect-%d", try), URL.String())
+			result.AddValue(fmt.Sprintf("Redirect%d", try), URL.String())
 
 			continue
 		}
@@ -137,16 +151,16 @@ func (h *HTTP) Check(result plugins.AgentResult) error {
 		}
 
 		result.AddValue("StatusCode", resp.StatusCode)
-		result.AddValue("time-DNS", ms(t1.Sub(t0)))
-		result.AddValue("time-Connect", ms(t2.Sub(t1)))
-		result.AddValue("time-TLS", ms(t3.Sub(t2)))
-		result.AddValue("time-Request", ms(t4.Sub(t3)))
-		result.AddValue("time-ReadHeaders", ms(t5.Sub(t4)))
-		result.AddValue("time-ReadBody", ms(t6.Sub(t5)))
-		result.AddValue("time-Accumulated", ms(t6.Sub(t0)))
+		result.AddValue("TimeDNS", ms(t1.Sub(t0)))
+		result.AddValue("TimeConnect", ms(t2.Sub(t1)))
+		result.AddValue("TimeTLS", ms(t3.Sub(t2)))
+		result.AddValue("TimeRequest", ms(t4.Sub(t3)))
+		result.AddValue("TimeReadHeaders", ms(t5.Sub(t4)))
+		result.AddValue("TimeReadBody", ms(t6.Sub(t5)))
+		result.AddValue("TimeAccumulated", ms(t6.Sub(t0)))
 
 		for k, v := range resp.Header {
-			result.AddValue("header-"+k, strings.Join(v, " "))
+			result.AddValue(camelCaseHeader(k), strings.Join(v, " "))
 		}
 
 		break
