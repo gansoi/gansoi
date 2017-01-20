@@ -50,7 +50,7 @@ func TestGetHostPort(t *testing.T) {
 func TestCheckFail(t *testing.T) {
 	cases := []string{
 		"",
-		"http://",
+		"http://:",
 		"example.com",
 		"non://",
 		"/",
