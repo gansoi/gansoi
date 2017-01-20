@@ -83,9 +83,9 @@ func TestInfoPeers(t *testing.T) {
 
 	cases := [][]string{
 		nil,
-		[]string{},
-		[]string{"a"},
-		[]string{"a", "b"},
+		{},
+		{"a"},
+		{"a", "b"},
 	}
 
 	for _, c := range cases {

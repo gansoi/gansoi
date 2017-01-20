@@ -98,7 +98,7 @@ func main() {
 	cmdCheck := &cobra.Command{
 		Use:   "runcheck",
 		Short: "Run a Gansoi check locally",
-		Long:  "Run a Gansoi check locally and print result. This will return zero if no error occured",
+		Long:  "Run a Gansoi check locally and print result. This will return zero if no error occurred",
 		Run: func(_ *cobra.Command, arguments []string) {
 			runCheck(false, arguments)
 		},

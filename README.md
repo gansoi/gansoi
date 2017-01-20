@@ -6,6 +6,7 @@ software (Nagios and friends) updated to modern and best practices.
 
 [![Build Status](https://travis-ci.org/gansoi/gansoi.svg?branch=master)](https://travis-ci.org/gansoi/gansoi)
 [![codebeat badge](https://codebeat.co/badges/3f6e63cc-d32d-4962-a285-0f3a71d6cb80)](https://codebeat.co/projects/github-com-gansoi-gansoi)
+[![Go Report Card](https://goreportcard.com/badge/github.com/gansoi/gansoi)](https://goreportcard.com/report/github.com/gansoi/gansoi)
 
 ### Disclaimer and Current State
 

@@ -9,8 +9,6 @@ import (
 	"testing"
 )
 
-var ()
-
 var (
 	testKey = []byte(`-----BEGIN EC PRIVATE KEY-----
 MHcCAQEEIMgdcx/E0yUexfJ7j5H1gikqMxU8LY9Nyz1NBtirp/5poAoGCCqGSM49

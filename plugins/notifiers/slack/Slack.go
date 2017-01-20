@@ -54,7 +54,7 @@ func (s *Slack) Notify(text string) error {
 		Channel:   s.Channel,
 		IconEmoji: ":alien:",
 		Attachments: []attachment{
-			attachment{
+			{
 				Fallback:  text,
 				Title:     text,
 				Footer:    "Gansoi",

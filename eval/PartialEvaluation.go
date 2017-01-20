@@ -9,7 +9,7 @@ import (
 type (
 	// PartialEvaluation describes a summary for a check for a specific node.
 	PartialEvaluation struct {
-		ID      string `storm:"id"` // A composit between checkid and nodeid.
+		ID      string `storm:"id"` // A composite between checkid and nodeid.
 		CheckID string
 		NodeID  string
 		State   State
