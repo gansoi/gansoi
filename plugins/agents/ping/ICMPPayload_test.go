@@ -25,11 +25,11 @@ func TestPayloadRead(t *testing.T) {
 	}
 
 	if p.Timestamp != p2.Timestamp {
-		t.Fatalf("Failed to encode/decode timestamp")
+		t.Fatalf("Failed to encode/decode timestamp, expected '%s', got '%s'", p.Timestamp, p2.Timestamp)
 	}
 
 	if p.Helo != p2.Helo {
-		t.Fatalf("Failed to encode/decode helo")
+		t.Fatalf("Failed to encode/decode helo, expected '%s', got '%s'", p.Helo, p2.Helo)
 	}
 }
 

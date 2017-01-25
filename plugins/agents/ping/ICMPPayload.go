@@ -30,10 +30,10 @@ const (
 	helo = "Gansoi ping agent"
 )
 
-func init() {
-	n, err := rand.Reader.Read(secret)
-	if n != 10 || err != nil {
-		logger.Info("ping", "Something is wrong with our random source.")
+func _init() {
+	_, err := rand.Reader.Read(secret)
+	if err != nil {
+		logger.Info("ping", "Something is wrong with our random source: %s", err.Error())
 	}
 }
 
