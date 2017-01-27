@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 
@@ -364,9 +365,7 @@ func runCore(_ *cobra.Command, _ []string) {
 	})
 
 	gopath := os.Getenv("GOPATH")
-
-	engine.StaticFile("/", gopath+"/src/github.com/gansoi/gansoi/web/index.html")
-	engine.StaticFile("/client.js", gopath+"/src/github.com/gansoi/gansoi/web/client.js")
+	engine.Use(static.Serve("/", static.LocalFile(gopath+"/src/github.com/gansoi/gansoi/web/", true)))
 
 	s := &http.Server{
 		Addr:           config.Bind(),
