@@ -1,6 +1,9 @@
 package eval
 
 import (
+	"bytes"
+	"encoding/json"
+	"reflect"
 	"testing"
 )
 
@@ -107,6 +110,48 @@ func TestEvaluate(t *testing.T) {
 
 		if result != dat.expected {
 			t.Fatalf("Failed to evalute '%s' correct. Got %s, expected %s", dat.input, result, dat.expected)
+		}
+	}
+}
+
+func TestStatesJSON(t *testing.T) {
+	cases := []struct {
+		input    States
+		expected []byte
+	}{
+		{States{}, []byte("[]")},
+		{States{StateDown}, []byte(`["down"]`)},
+		{States{StateUp}, []byte(`["up"]`)},
+		{States{StateUnknown}, []byte(`[""]`)},
+		{States{StateDegraded}, []byte(`["degraded"]`)},
+		{States{StateUp, StateDegraded}, []byte(`["up","degraded"]`)},
+		{States{StateUp, StateUp}, []byte(`["up","up"]`)},
+		{States{StateUp, StateUp, StateUp, StateDown}, []byte(`["up","up","up","down"]`)},
+		{States{StateUnknown, StateDegraded, StateUp}, []byte(`["","degraded","up"]`)},
+	}
+
+	for _, dat := range cases {
+		result, err := json.Marshal(dat.input)
+
+		if err != nil {
+			t.Fatalf("json.Marshall() failed: %s", err.Error())
+		}
+
+		if bytes.Compare(result, dat.expected) != 0 {
+			t.Fatalf("Failed to JSON encode [%s] correct. Got [%s], expected [%s]", dat.input.ColorString(), result, dat.expected)
+		}
+	}
+
+	for _, dat := range cases {
+		var result States
+		err := json.Unmarshal(dat.expected, &result)
+
+		if err != nil {
+			t.Fatalf("json.Unmarshal() failed: %s", err.Error())
+		}
+
+		if !reflect.DeepEqual(result, dat.input) {
+			t.Fatalf("Failed to unmarshal [%s] correct. Got [%s], expected [%s]", dat.expected, result.ColorString(), dat.input.ColorString())
 		}
 	}
 }

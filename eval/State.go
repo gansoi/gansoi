@@ -6,7 +6,7 @@ import (
 
 type (
 	// State denotes the current state of a Check.
-	State uint8
+	State int
 )
 
 const (
