@@ -125,6 +125,7 @@ g.Collection = function(identifier) {
 var checks = new g.Collection('id');
 var nodes = new g.Collection('name');
 var agents = new g.Collection('name');
+var evaluations = new g.Collection('CheckID');
 
 var listChecks = Vue.component('list-checks', {
     data: function() {
@@ -183,6 +184,14 @@ Vue.http.get('/api/checks').then(function(response) {
     });
 });
 
+Vue.http.get('/api/evaluations').then(function(response) {
+    init.add(1);
+    response.body.forEach(function(evaluation) {
+        evaluations.upsert(evaluation);
+        init.done();
+    });
+});
+
 /**
  * Keep live updates from service.
  */
@@ -218,6 +227,9 @@ g.live = function() {
                 break;
             case 'check':
                 checks.log(data);
+                break;
+            case 'evaluation':
+                evaluations.log(data);
                 break;
             default:
                 console.log(data);

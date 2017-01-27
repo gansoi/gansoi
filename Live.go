@@ -42,6 +42,7 @@ func (l *Live) PostClusterApply(leader bool, command database.Command, data inte
 		"*checks.Check":       "check",
 		"*checks.CheckResult": "checkresult",
 		"*node.nodeInfo":      "nodeinfo",
+		"*eval.Evaluation":    "evaluation",
 	}
 
 	// Get the type as a string to avoid importing the generating package.
