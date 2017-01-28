@@ -59,9 +59,48 @@
 <td>{{ check.interval }}</td>
 <td><button class="button red" v-on:click="deleteCheck(this, check.id)">Delete</button></td>
 <td><button class="button" v-on:click="editCheck(check.id)">Edit</button></td>
+<td><button class="button" v-on:click="viewCheck(check.id)">Details</button></td>
 </tr>
 </table>
 <router-link class="button" id="dddd" to="/check/edit/new">Add Check</router-link>
+</div>
+</template>
+
+<template id="template-view-check">
+<div>
+ <h2>{{ id }} Details</h2>
+ <table>
+  <tbody v-if="check">
+   <tr>
+    <td><label>Agent</label></td>
+    <td>{{ check.agent }}</td>
+   </tr>
+   <tr>
+    <td><label>Check Interval</label></td>
+    <td>{{ check.interval }}</td>
+   </tr>
+
+   <tr><th colspan="2">Arguments</th></tr>
+   <tr><td colspan="2"><hr></td></tr>
+   <tr v-for="(value, key) in check.arguments">
+    <td><label>{{ key }}</label></td>
+    <td>{{ value }}</td>
+   </tr>
+
+   <tr><th colspan="2">Evaluation</th></tr>
+   <tr><td colspan="2"><hr></td></tr>
+   <tr v-if="evaluation"><td colspan="2">{{ evaluation.History[0] }}</td></tr>
+
+   <tr><th colspan="2">Latest Results</th></tr>
+   <tr><td colspan="2"><hr></td></tr>
+   <tr v-if="result.error"><td class="red" colspan="2">ERROR: {{ result.error }}</td></tr>
+   <tr v-for="(value, key) in result.results">
+    <td>{{ key }}</td>
+    <td><label>{{ value }}</label></td>
+   </tr>
+
+  </tbody>
+ </table>
 </div>
 </template>
 

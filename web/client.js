@@ -2,6 +2,7 @@ var checks = new g.Collection('id');
 var nodes = new g.Collection('name');
 var agents = new g.Collection('name');
 var evaluations = new g.Collection('CheckID');
+var checkresults = new g.Collection('check_id');
 
 var listChecks = Vue.component('list-checks', {
     data: function() {
@@ -19,6 +20,10 @@ var listChecks = Vue.component('list-checks', {
 
         editCheck: function(id) {
             router.push('/check/edit/' + id);
+        },
+
+        viewCheck: function(id) {
+            router.push('/check/view/' + id);
         }
     },
 
@@ -103,6 +108,46 @@ var editCheck = Vue.component('edit-check', {
     template: '#template-edit-check'
 });
 
+var viewCheck = Vue.component('view-check', {
+    data: function() {
+        return {
+            checks: checks,
+            evaluations: evaluations,
+            checkresults: checkresults,
+        };
+    },
+
+    computed: {
+        id: function() {
+            return this.$route.params.id;
+        },
+
+        check: function() {
+            return checks.get(this.$route.params.id);
+        },
+
+        evaluation: function() {
+            return evaluations.get(this.$route.params.id);
+        },
+
+        result: function() {
+            var result = checkresults.get(this.$route.params.id);
+
+            if (!result) {
+                // Present an "empty" object to satisfy template requirements.
+                return {
+                    error: null,
+                    results: []
+                };
+            }
+
+            return result;
+        }
+    },
+
+    template: '#template-view-check'
+});
+
 var init = g.waitGroup(function() {
     g.live();
 
@@ -142,6 +187,7 @@ const router = new VueRouter({
         { path: '/overview', component: { template: '#template-overview' } },
         { path: '/gansoi', component: listNodes },
         { path: '/checks', component: listChecks },
+        { path: '/check/view/:id', component: viewCheck },
         { path: '/check/edit/:id', component: editCheck }
     ]
 });

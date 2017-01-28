@@ -30,6 +30,7 @@ g.live = function() {
                 nodes.log(data);
                 break;
             case 'checkresult':
+                checkresults.log(data);
                 break;
             case 'check':
                 checks.log(data);
