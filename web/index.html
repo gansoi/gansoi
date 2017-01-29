@@ -57,7 +57,6 @@
    <th>ID</th>
    <th>Agent</th>
    <th>Interval</th>
-   <th colspan="3"></th>
   </tr>
   <tr is="check-line" v-for="check in checks.data" :check="check"></tr>
  </table>
@@ -66,19 +65,19 @@
 </template>
 
 <template id="template-check-line">
-<tr :class="klass">
+<tr class="clickable" :class="klass" v-on:click="viewCheck()">
  <td>{{ check.id }}</td>
  <td>{{ check.agent }}</td>
  <td>{{ check.interval / 1000000000 }}</td>
- <td><button class="button red" v-on:click="deleteCheck(this)">Delete</button></td>
- <td><button class="button" v-on:click="editCheck()">Edit</button></td>
- <td><button class="button" v-on:click="viewCheck()">Details</button></td>
 </tr>
 </template>
 
 <template id="template-view-check">
 <div>
- <h2>{{ id }} Details</h2>
+ <h2>
+  {{ id }} Details
+  <button class="right button" v-on:click="editCheck(this)">Edit</button>
+ </h2>
  <table>
   <tbody v-if="check">
    <tr>
@@ -99,7 +98,7 @@
 
    <tr><th colspan="2">Evaluation</th></tr>
    <tr><td colspan="2"><hr></td></tr>
-   <tr v-if="evaluation"><td colspan="2">{{ evaluation.History[0] }}</td></tr>
+   <tr v-if="evaluation"><td colspan="2" class="state" :class="evaluation.History[0]">{{ evaluation.History[0] }}</td></tr>
 
    <tr><th colspan="2">Latest Results</th></tr>
    <tr><td colspan="2"><hr></td></tr>
@@ -115,63 +114,66 @@
 </template>
 
 <template id="template-edit-check">
-<form>
- <fieldset>
-  <table>
-   <tbody>
-    <tr><th colspan="2">{{ title }}</th></tr>
-    <tr><td colspan="2"><hr></td></tr>
-    <tr>
-     <td><label>Unique Check ID</label></td>
-     <td><input type="text" v-model="check.id"/></td>
-    </tr>
-    <tr>
-     <td><label>Check interval</label></td>
-     <td><input type="number" min="5" max="3600" v-model="check.interval"> (seconds)</td>
-    </tr>
-    <tr>
-     <td><label>Agent</label></td>
-     <td>
-      <select v-model="check.agent">
-       <option v-for="agent in agents">{{ agent.name }}</option>
-      </select>
-     </td>
-    </tr>
+<div>
+ <h2>
+  {{ title }} <button class="right button red" v-on:click="deleteCheck(this)">Delete</button>
+ </h2>
+ <form>
+  <fieldset>
+   <table>
+    <tbody>
+     <tr>
+      <td><label>Unique Check ID</label></td>
+      <td><input type="text" v-model="check.id"/></td>
+     </tr>
+     <tr>
+      <td><label>Check interval</label></td>
+      <td><input type="number" min="5" max="3600" v-model="check.interval"> (seconds)</td>
+     </tr>
+     <tr>
+      <td><label>Agent</label></td>
+      <td>
+       <select v-model="check.agent">
+        <option v-for="agent in agents">{{ agent.name }}</option>
+       </select>
+      </td>
+     </tr>
 
-    <tr v-for="argument in arguments">
-     <td><label>{{ argument.name }}</label></td>
-     <td v-if="argument.type == 'string'"><input type="text" v-model="check.arguments[argument.name]" /> {{ argument.description }}</td>
-     <td v-else-if="argument.type == 'bool'"><input type="checkbox" v-model="check.arguments[argument.name]" /><label>{{ argument.description }}</label></td>
-     <td v-else-if="argument.type == 'int'"><input type="number" v-model="check.arguments[argument.name]" /><label> {{ argument.description }}</label></td>
-     <td v-else>{{ argument.type }} not supported in client</td>
-    </tr>
+     <tr v-for="argument in arguments">
+      <td><label>{{ argument.name }}</label></td>
+      <td v-if="argument.type == 'string'"><input type="text" v-model="check.arguments[argument.name]" /> {{ argument.description }}</td>
+      <td v-else-if="argument.type == 'bool'"><input type="checkbox" v-model="check.arguments[argument.name]" /><label>{{ argument.description }}</label></td>
+      <td v-else-if="argument.type == 'int'"><input type="number" v-model="check.arguments[argument.name]" /><label> {{ argument.description }}</label></td>
+      <td v-else>{{ argument.type }} not supported in client</td>
+     </tr>
 
-    <tr><th colspan="2">Results</th></tr>
-    <tr><td colspan="2"><hr></td></tr>
-    <tr v-if="results.error"><td class="red" colspan="2">ERROR: {{ results.error }}</td></tr>
-    <tr v-for="(value, key) in results.results">
-     <td><label>{{ key }}</label></td>
-     <td>{{ value }}</td>
-    </tr>
+     <tr><th colspan="2">Results</th></tr>
+     <tr><td colspan="2"><hr></td></tr>
+     <tr v-if="results.error"><td class="red" colspan="2">ERROR: {{ results.error }}</td></tr>
+     <tr v-for="(value, key) in results.results">
+      <td><label>{{ key }}</label></td>
+      <td>{{ value }}</td>
+     </tr>
 
-    <tr><th colspan="2">Expressions</th></tr>
-    <tr><td colspan="2"><hr></td></tr>
-    <tr v-for="(expression, index) in check.expressions">
-     <td><label>{{ index }}</label></td>
-     <td>
-      <input type="text" v-model="check.expressions[index]" />
-      <input class="button" type="button" v-on:click="removeExpression(index)" value="Remove" />
-     </td>
-    </tr>
-    <tr>
-     <td colspan="2"><input class="button" type="button" v-on:click="addExpression()" value="Add Expression" /></td>
-    </tr>
-   </tbody>
-  </table>
-  <input class="button" type="button" value="Test" v-on:click="testCheck()" />
-  <input class="button green right" name="add" type="button" value="Add check" v-on:click="addCheck()" />
- </fieldset>
-</form>
+     <tr><th colspan="2">Expressions</th></tr>
+     <tr><td colspan="2"><hr></td></tr>
+     <tr v-for="(expression, index) in check.expressions">
+      <td><label>{{ index }}</label></td>
+      <td>
+       <input type="text" v-model="check.expressions[index]" />
+       <input class="button" type="button" v-on:click="removeExpression(index)" value="Remove" />
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2"><input class="button" type="button" v-on:click="addExpression()" value="Add Expression" /></td>
+     </tr>
+    </tbody>
+   </table>
+   <input class="button" type="button" value="Test" v-on:click="testCheck()" />
+   <input class="button green right" name="add" type="button" value="Add check" v-on:click="addCheck()" />
+  </fieldset>
+ </form>
+</div>
 </template>
 
 <script src="https://unpkg.com/vue@2.1.8/dist/vue.js"></script>

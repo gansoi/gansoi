@@ -39,16 +39,6 @@ Vue.component('check-line', {
     },
 
     methods: {
-        deleteCheck: function(button) {
-            button.disabled = true;
-
-            Vue.http.delete('/api/checks/' + this.check.id);
-        },
-
-        editCheck: function() {
-            router.push('/check/edit/' + this.check.id);
-        },
-
         viewCheck: function() {
             router.push('/check/view/' + this.check.id);
         },
@@ -101,6 +91,13 @@ var editCheck = Vue.component('edit-check', {
     },
 
     methods: {
+        deleteCheck: function(button) {
+            button.disabled = true;
+
+            Vue.http.delete('/api/checks/' + this.$route.params.id);
+            router.push('/checks/');
+        },
+
         addExpression: function() {
             this.check.expressions.push('');
         },
@@ -179,6 +176,12 @@ var viewCheck = Vue.component('view-check', {
             }
 
             return result;
+        }
+    },
+
+    methods: {
+        editCheck: function(button) {
+            router.push('/check/edit/' + this.$route.params.id);
         }
     },
 

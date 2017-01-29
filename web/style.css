@@ -311,3 +311,7 @@ th {
 .state.down {
     background-color: #554646 !important;
 }
+
+.clickable {
+    cursor: pointer;
+}
