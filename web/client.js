@@ -46,6 +46,7 @@ var editCheck = Vue.component('edit-check', {
             title: 'Add check',
             agents: agents.data,
             check: {
+                interval: 30,
                 arguments: {},
                 agent: 'http',
                 id: '',
@@ -78,6 +79,7 @@ var editCheck = Vue.component('edit-check', {
             var check = checks.get(this.$route.params.id);
 
             if (check != undefined) {
+                check.interval /= 1000000000;
                 this.title = "Edit " + this.$route.params.id;
                 this.check = check;
             }
@@ -90,6 +92,7 @@ var editCheck = Vue.component('edit-check', {
         },
 
         addCheck: function() {
+            this.check.interval *= 1000000000;
             this.$http.post('/api/checks', this.check).then(function(response) {
                 router.push('/checks');
             });
