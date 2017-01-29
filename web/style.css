@@ -221,6 +221,10 @@ hr {
     background: #58595a;
 }
 
+th {
+    padding-top: 20px;
+}
+
 .table {
     border-spacing: 0px;
     border-collapse: separate;
