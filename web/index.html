@@ -51,25 +51,29 @@
 
 <template id="template-checks">
 <div>
-<h2>Checks</h2>
-<table class="table">
-    <tr>
-     <th>ID</th>
-     <th>Agent</th>
-     <th>Interval</th>
-     <th colspan="3"></th>
-    </tr>
-<tr v-for="check in checks.data">
-<td>{{ check.id }}</td>
-<td>{{ check.agent }}</td>
-<td>{{ check.interval / 1000000000 }}</td>
-<td><button class="button red" v-on:click="deleteCheck(this, check.id)">Delete</button></td>
-<td><button class="button" v-on:click="editCheck(check.id)">Edit</button></td>
-<td><button class="button" v-on:click="viewCheck(check.id)">Details</button></td>
-</tr>
-</table>
-<router-link class="button" id="dddd" to="/check/edit/new">Add Check</router-link>
+ <h2>Checks</h2>
+ <table class="table">
+  <tr>
+   <th>ID</th>
+   <th>Agent</th>
+   <th>Interval</th>
+   <th colspan="3"></th>
+  </tr>
+  <tr is="check-line" v-for="check in checks.data" :check="check"></tr>
+ </table>
+ <router-link class="button" id="dddd" to="/check/edit/new">Add Check</router-link>
 </div>
+</template>
+
+<template id="template-check-line">
+<tr :class="klass">
+ <td>{{ check.id }}</td>
+ <td>{{ check.agent }}</td>
+ <td>{{ check.interval / 1000000000 }}</td>
+ <td><button class="button red" v-on:click="deleteCheck(this)">Delete</button></td>
+ <td><button class="button" v-on:click="editCheck()">Edit</button></td>
+ <td><button class="button" v-on:click="viewCheck()">Details</button></td>
+</tr>
 </template>
 
 <template id="template-view-check">

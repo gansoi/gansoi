@@ -230,12 +230,15 @@ th {
     border-collapse: separate;
 }
 
-.table td {
+.table tr {
     background-color: #454646;
+}
+
+.table td {
     color: #c6c8c8;
     padding: 0.5rem;
     border-top: 1px solid #616363;
-    border-bottom: 1px solid #333434;
+    border-bottom: 1px solid rgba(0,0,0, 0.25);
 }
 
 .table td:first-child {
@@ -295,4 +298,16 @@ th {
 
 .router-link-active {
     color: #ee0;
+}
+
+.state {
+    background-color: #555646 !important;
+}
+
+.state.up {
+    background-color: #455646 !important;
+}
+
+.state.down {
+    background-color: #554646 !important;
 }

@@ -12,19 +12,6 @@ var listChecks = Vue.component('list-checks', {
     },
 
     methods: {
-        deleteCheck: function(button, id) {
-            button.disabled = true;
-
-            Vue.http.delete('/api/checks/' + id);
-        },
-
-        editCheck: function(id) {
-            router.push('/check/edit/' + id);
-        },
-
-        viewCheck: function(id) {
-            router.push('/check/view/' + id);
-        }
     },
 
     template: '#template-checks'
@@ -40,6 +27,52 @@ var listNodes = Vue.component('list-nodes', {
     template: '#template-nodes'
 });
 
+Vue.component('check-line', {
+    props: {
+        check: {default: {id: 'unkn'}}
+    },
+
+    data: function() {
+        return {
+            evaluations: evaluations
+        };
+    },
+
+    methods: {
+        deleteCheck: function(button) {
+            button.disabled = true;
+
+            Vue.http.delete('/api/checks/' + this.check.id);
+        },
+
+        editCheck: function() {
+            router.push('/check/edit/' + this.check.id);
+        },
+
+        viewCheck: function() {
+            router.push('/check/view/' + this.check.id);
+        },
+    },
+
+    computed: {
+        klass: function() {
+            var e = this.evaluations.get(this.check.id);
+
+            if (!e) {
+                return 'state unknown';
+            }
+
+            if (e.History && e.History.length > 0) {
+                return 'state ' + e.History[0];
+            }
+
+            return 'state unknown';
+        }
+    },
+
+    template: '#template-check-line'
+});
+
 var editCheck = Vue.component('edit-check', {
     data: function() {
         return {
@@ -53,6 +86,7 @@ var editCheck = Vue.component('edit-check', {
                 expressions: []
             },
             results: {results: {}},
+            evaluations: evaluations
         };
     },
 
