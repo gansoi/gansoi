@@ -74,6 +74,14 @@ func main() {
 	}
 	cmdCore.AddCommand(coreInit)
 
+	coreInitRun := &cobra.Command{
+		Use:   "init-and-run",
+		Short: "Initialize a new cluster and start it",
+		Long:  "Initialize a new cluster, an internal CA and start it",
+		Run:   initRunCore,
+	}
+	cmdCore.AddCommand(coreInitRun)
+
 	corePrintCA := &cobra.Command{
 		Use:   "print-ca",
 		Short: "Print the CA root certificate",
@@ -214,6 +222,11 @@ func initCore(cmd *cobra.Command, _ []string) {
 	bailIfError(err)
 
 	info.SetPeers([]string{cluster.DefaultPort(config.BindPrivate)})
+}
+
+func initRunCore(cmd *cobra.Command, arguments []string) {
+	initCore(cmd, arguments)
+	runCore(cmd, arguments)
 }
 
 func joinCore(_ *cobra.Command, arguments []string) {
