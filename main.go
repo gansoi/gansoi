@@ -377,8 +377,14 @@ func runCore(_ *cobra.Command, _ []string) {
 		live.ServeHTTP(c.Writer, c.Request)
 	})
 
-	gopath := os.Getenv("GOPATH")
-	engine.Use(static.Serve("/", static.LocalFile(gopath+"/src/github.com/gansoi/gansoi/web/", true)))
+	webroot := os.Getenv("GANSOI_WEBROOT")
+	if webroot == "" {
+		gopath := os.Getenv("GOPATH")
+
+		webroot = gopath + "/src/github.com/gansoi/gansoi/web/"
+	}
+
+	engine.Use(static.Serve("/", static.LocalFile(webroot, true)))
 
 	s := &http.Server{
 		Addr:           config.Bind(),
