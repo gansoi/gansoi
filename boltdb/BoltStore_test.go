@@ -230,5 +230,53 @@ func TestBoltStoreApply(t *testing.T) {
 	}
 }
 
+func TestDatabaseWriteTo(t *testing.T) {
+	backupPath := path + ".backup"
+
+	db := newTestDb()
+
+	d := data{
+		ID: "bah",
+		A:  "hello",
+	}
+
+	err := db.Save(&d)
+	if err != nil {
+		t.Fatalf("Save() failed: %s", err.Error())
+	}
+
+	f, err := os.OpenFile(backupPath, os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		t.Fatalf("os.Open() failed: %s", err.Error())
+	}
+
+	n, err := db.WriteTo(f)
+	if err != nil {
+		t.Fatalf("WriteTo() failed: %s", err.Error())
+	}
+
+	if n < 1 {
+		t.Fatal("WriteTo() saved too few bytes")
+	}
+
+	db.clean()
+
+	os.Rename(backupPath, path)
+
+	db = newTestDb()
+	defer db.clean()
+
+	var dd data
+
+	err = db.One("ID", "bah", &dd)
+	if err != nil {
+		t.Fatalf("One() failed: %s", err.Error())
+	}
+
+	if d.ID != dd.ID || d.A != dd.A {
+		t.Fatalf("Backup returned wrong data: %v Should be: %v", dd, d)
+	}
+}
+
 // Make sure we implement the needed interface.
 var _ database.Database = (*BoltStore)(nil)

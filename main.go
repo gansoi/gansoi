@@ -363,6 +363,18 @@ func runCore(_ *cobra.Command, _ []string) {
 		c.JSON(http.StatusOK, descriptions)
 	})
 
+	api.GET("/backup", func(c *gin.Context) {
+		t := time.Now()
+		filename := fmt.Sprintf("gansoi-backup-%04d%02d%02d-%02d%02d%02d.db",
+			t.Year(), t.Month(), t.Day(),
+			t.Hour(), t.Minute(), t.Second())
+
+		c.Header("Content-Disposition", "attachment; filename="+filename)
+		c.Header("Content-Type", "application/octet-stream")
+
+		db.WriteTo(c.Writer)
+	})
+
 	notifier, err := notify.NewNotifier(db)
 	if err != nil {
 		logger.Info("main", "Failed to start notifier: %s", err.Error())

@@ -221,3 +221,18 @@ func (d *BoltStore) RegisterLocalListener(listener database.LocalListener) {
 
 	d.listeners = append(d.listeners, listener)
 }
+
+// WriteTo implements io.WriterTo. WriteTo will write a consitent snapshot of
+// the database to w.
+func (d *BoltStore) WriteTo(w io.Writer) (int64, error) {
+	var len int64
+	err := d.Storm().Bolt.View(func(tx *bolt.Tx) error {
+		var err error
+
+		len, err = tx.WriteTo(w)
+
+		return err
+	})
+
+	return len, err
+}
