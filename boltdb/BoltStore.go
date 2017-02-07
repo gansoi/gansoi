@@ -102,7 +102,7 @@ func (d *BoltStore) ProcessLogEntry(entry *database.LogEntry) error {
 		d.listenersLock.RLock()
 
 		for _, listener := range d.listeners {
-			listener.PostLocalApply(command, data, err)
+			go listener.PostLocalApply(command, data, err)
 		}
 
 		d.listenersLock.RUnlock()
