@@ -99,6 +99,9 @@ var editCheck = Vue.component('edit-check', {
         },
 
         addExpression: function() {
+            if (this.check.expressions == null) {
+                this.check.expressions = [];
+            }
             this.check.expressions.push('');
         },
 
