@@ -19,11 +19,6 @@ type (
 )
 
 var (
-	cacheLock sync.RWMutex
-
-	contactsCache = make(map[string]*Contact)
-	groupsCache   = make(map[string]*ContactGroup)
-
 	stateCacheLock sync.RWMutex
 	stateCache     = make(map[string]eval.State)
 )
@@ -38,29 +33,6 @@ func NewNotifier(db database.Database) (*Notifier, error) {
 		db: db,
 	}
 
-	var contacts []Contact
-	var groups []ContactGroup
-
-	err := n.db.All(&contacts, -1, 0, false)
-	if err != database.ErrNotFound && err != nil {
-		return nil, err
-	}
-
-	err = n.db.All(&groups, -1, 0, false)
-	if err != database.ErrNotFound && err != nil {
-		return nil, err
-	}
-
-	cacheLock.Lock()
-	for _, contact := range contacts {
-		contactsCache[contact.ID] = &contact
-	}
-
-	for _, group := range groups {
-		groupsCache[group.ID] = &group
-	}
-	cacheLock.Unlock()
-
 	return n, nil
 }
 
@@ -71,28 +43,6 @@ func (n *Notifier) PostApply(leader bool, command database.Command, data interfa
 	}
 
 	switch data.(type) {
-	case *Contact:
-		c := data.(*Contact)
-
-		cacheLock.Lock()
-		if command == database.CommandSave {
-			contactsCache[c.ID] = c
-		} else if command == database.CommandDelete {
-			delete(contactsCache, c.ID)
-		}
-		cacheLock.Unlock()
-
-	case *ContactGroup:
-		g := data.(*ContactGroup)
-
-		cacheLock.Lock()
-		if command == database.CommandSave {
-			groupsCache[g.ID] = g
-		} else if command == database.CommandDelete {
-			delete(groupsCache, g.ID)
-		}
-		cacheLock.Unlock()
-
 	case *eval.Evaluation:
 		e := n.gotEvaluation(data.(*eval.Evaluation))
 		if e != nil {
@@ -153,21 +103,19 @@ func (n *Notifier) gotEvaluation(e *eval.Evaluation) error {
 
 	targetGroups := check.ContactGroups
 	for _, groupID := range targetGroups {
-		cacheLock.RLock()
-		group, found := groupsCache[groupID]
-		cacheLock.RUnlock()
-
-		if !found {
+		group, err := LoadContactGroup(n.db, groupID)
+		if err != nil {
 			logger.Info("notify", "[%s] ContactGroup not found (%s)", e.CheckID, groupID)
 			continue
 		}
 
-		// FIXME: Handle errors somehow.
-		logger.Info("notify", "[%s] Notifying '%s'", e.CheckID, groupID)
+		contacts, _ := group.GetContacts(n.db)
+		for _, contact := range contacts {
+			stats.CounterInc("notification_sent", 1)
+			logger.Info("notify", "[%s] Notifying '%s' using %s", e.CheckID, contact.ID, contact.Notifier)
 
-		stats.CounterInc("notification_sent", 1)
-
-		go group.Notify(text)
+			go contact.Notify(text)
+		}
 	}
 
 	return nil

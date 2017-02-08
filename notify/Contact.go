@@ -3,6 +3,7 @@ package notify
 import (
 	"encoding/json"
 
+	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/plugins"
 )
 
@@ -14,6 +15,18 @@ type (
 		Arguments json.RawMessage `json:"arguments"`
 	}
 )
+
+// LoadContact will read a contact from db.
+func LoadContact(db database.Database, ID string) (*Contact, error) {
+	var contact Contact
+
+	err := db.One("ID", ID, &contact)
+	if err != nil {
+		return nil, err
+	}
+
+	return &contact, nil
+}
 
 // Notify contacts a Contact about a service change.
 func (c *Contact) Notify(text string) error {

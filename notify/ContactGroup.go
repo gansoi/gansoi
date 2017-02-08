@@ -1,7 +1,7 @@
 package notify
 
 import (
-	"github.com/gansoi/gansoi/logger"
+	"github.com/gansoi/gansoi/database"
 )
 
 type (
@@ -12,21 +12,29 @@ type (
 	}
 )
 
-// Notify contacts a Contact about a service change.
-func (g *ContactGroup) Notify(txt string) error {
-	for _, contactID := range g.Members {
-		cacheLock.RLock()
-		c, found := contactsCache[contactID]
-		cacheLock.RUnlock()
+// LoadContactGroup will read a contact from db.
+func LoadContactGroup(db database.Database, ID string) (*ContactGroup, error) {
+	var group ContactGroup
 
-		if !found {
-			logger.Info("notify", "ContactID '%s' not found", contactID)
-			continue
-		}
-
-		// FIXME: Handle errors somehow.
-		go c.Notify(txt)
+	err := db.One("ID", ID, &group)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	return &group, nil
+}
+
+// GetContacts returns the list of contacts in g.
+func (g *ContactGroup) GetContacts(db database.Database) ([]*Contact, error) {
+	var contacts []*Contact
+	for _, memberID := range g.Members {
+		contact, err := LoadContact(db, memberID)
+		if err != nil {
+			return nil, err
+		}
+
+		contacts = append(contacts, contact)
+	}
+
+	return contacts, nil
 }
