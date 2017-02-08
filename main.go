@@ -313,7 +313,9 @@ func runCore(_ *cobra.Command, _ []string) {
 		// FIXME: Fail in a more helpful manner than panic().
 		panic(err.Error())
 	}
-	eval.NewEvaluator(n, info)
+
+	e := eval.NewEvaluator(n, info)
+	n.RegisterListener(e)
 
 	checks.NewScheduler(n, info.Self(), true)
 

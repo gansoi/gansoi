@@ -33,13 +33,11 @@ func NewEvaluator(db database.Database, peers raft.PeerStore) *Evaluator {
 	p, _ := peers.Peers()
 	e.historyLength = len(p) * 2
 
-	db.RegisterListener(e)
-
 	return e
 }
 
 // evaluate1 will evalute a check result from a single node.
-func (e *Evaluator) evaluate1(checkResult *checks.CheckResult) error {
+func (e *Evaluator) evaluate1(checkResult *checks.CheckResult) (*PartialEvaluation, error) {
 	pe := PartialEvaluation{}
 	pe.ID = checkResult.CheckID + ":::" + checkResult.Node
 
@@ -74,15 +72,13 @@ func (e *Evaluator) evaluate1(checkResult *checks.CheckResult) error {
 		pe.State = state
 	}
 
-	err = e.db.Save(&pe)
-
-	return err
+	return &pe, e.db.Save(&pe)
 }
 
 // evaluate2 will evalute if a given check should be considered up or down when
 // evaluating the result from all nodes.
 // This should only be done on the leader.
-func (e *Evaluator) evaluate2(n *PartialEvaluation) error {
+func (e *Evaluator) evaluate2(n *PartialEvaluation) (*Evaluation, error) {
 	var eval Evaluation
 
 	// FIXME: Locking.
@@ -98,7 +94,7 @@ func (e *Evaluator) evaluate2(n *PartialEvaluation) error {
 	check := checks.Check{}
 	err = e.db.One("ID", n.CheckID, &check)
 	if err != nil {
-		return fmt.Errorf("Got result from unknown check [%s]", n.CheckID)
+		return nil, fmt.Errorf("Got result from unknown check [%s]", n.CheckID)
 	}
 
 	state := StateUnknown
@@ -143,7 +139,7 @@ func (e *Evaluator) evaluate2(n *PartialEvaluation) error {
 		eval.End = eval.Start
 	}
 
-	return e.db.Save(&eval)
+	return &eval, e.db.Save(&eval)
 }
 
 // PostApply implements databse.Listener.
