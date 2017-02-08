@@ -9,13 +9,12 @@ import (
 	"github.com/gansoi/gansoi/checks"
 	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/logger"
-	"github.com/gansoi/gansoi/node"
 )
 
 type (
 	// Evaluator will evaluate check results from all nodes on the leader node.
 	Evaluator struct {
-		node          *node.Node
+		db            database.Database
 		peers         raft.PeerStore
 		historyLength int
 	}
@@ -23,9 +22,9 @@ type (
 
 // NewEvaluator will instantiate a new Evaluator listening to cluster changes,
 // and evaluating results as they arrive.
-func NewEvaluator(n *node.Node, peers raft.PeerStore) *Evaluator {
+func NewEvaluator(db database.Database, peers raft.PeerStore) *Evaluator {
 	e := &Evaluator{
-		node:  n,
+		db:    db,
 		peers: peers,
 	}
 
@@ -34,7 +33,7 @@ func NewEvaluator(n *node.Node, peers raft.PeerStore) *Evaluator {
 	p, _ := peers.Peers()
 	e.historyLength = len(p) * 2
 
-	n.RegisterListener(e)
+	db.RegisterListener(e)
 
 	return e
 }
@@ -53,7 +52,7 @@ func (e *Evaluator) evaluate1(checkResult *checks.CheckResult) error {
 		state = StateUp
 	}
 
-	err := e.node.One("ID", pe.ID, &pe)
+	err := e.db.One("ID", pe.ID, &pe)
 	if err != nil {
 		// None was found. Fill out new.
 		pe.CheckID = checkResult.CheckID
@@ -75,7 +74,7 @@ func (e *Evaluator) evaluate1(checkResult *checks.CheckResult) error {
 		pe.State = state
 	}
 
-	err = e.node.Save(&pe)
+	err = e.db.Save(&pe)
 
 	return err
 }
@@ -88,7 +87,7 @@ func (e *Evaluator) evaluate2(n *PartialEvaluation) error {
 
 	// FIXME: Locking.
 
-	err := e.node.One("CheckID", n.CheckID, &eval)
+	err := e.db.One("CheckID", n.CheckID, &eval)
 	if err != nil {
 		// Evaluation is unknown. Start new.
 		eval.CheckID = n.CheckID
@@ -97,7 +96,7 @@ func (e *Evaluator) evaluate2(n *PartialEvaluation) error {
 	}
 
 	check := checks.Check{}
-	err = e.node.One("ID", n.CheckID, &check)
+	err = e.db.One("ID", n.CheckID, &check)
 	if err != nil {
 		return fmt.Errorf("Got result from unknown check [%s]", n.CheckID)
 	}
@@ -111,7 +110,7 @@ func (e *Evaluator) evaluate2(n *PartialEvaluation) error {
 		ID := n.CheckID + ":::" + nodeID
 
 		var pe PartialEvaluation
-		err = e.node.One("ID", ID, &pe)
+		err = e.db.One("ID", ID, &pe)
 		if err != nil {
 			// Not all nodes have reported yet, abort.
 			break
@@ -144,7 +143,7 @@ func (e *Evaluator) evaluate2(n *PartialEvaluation) error {
 		eval.End = eval.Start
 	}
 
-	return e.node.Save(&eval)
+	return e.db.Save(&eval)
 }
 
 // PostApply implements databse.Listener.
