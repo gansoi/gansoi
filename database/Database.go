@@ -15,6 +15,9 @@ type (
 
 		// All lists all kinds of a type.
 		All(to interface{}, limit int, skip int, reverse bool) error
+
+		// RegisterListener adds a new listener for changes.
+		RegisterListener(listener Listener)
 	}
 )
 

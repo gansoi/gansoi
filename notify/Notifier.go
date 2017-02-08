@@ -64,8 +64,8 @@ func NewNotifier(db database.Database) (*Notifier, error) {
 	return n, nil
 }
 
-// PostClusterApply implements database.ClusterListener.
-func (n *Notifier) PostClusterApply(leader bool, command database.Command, data interface{}, err error) {
+// PostApply implements database.Listener.
+func (n *Notifier) PostApply(leader bool, command database.Command, data interface{}, err error) {
 	if !leader {
 		return
 	}

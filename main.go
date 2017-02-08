@@ -379,10 +379,10 @@ func runCore(_ *cobra.Command, _ []string) {
 	if err != nil {
 		logger.Info("main", "Failed to start notifier: %s", err.Error())
 	}
-	n.RegisterClusterListener(notifier)
+	n.RegisterListener(notifier)
 
 	live := NewLive()
-	n.RegisterClusterListener(live)
+	n.RegisterListener(live)
 
 	// Provide a websocket for clients to keep updated.
 	api.GET("/live", func(c *gin.Context) {

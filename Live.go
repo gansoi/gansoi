@@ -35,8 +35,8 @@ func NewLive() *Live {
 	}
 }
 
-// PostClusterApply implements node.Listener.
-func (l *Live) PostClusterApply(leader bool, command database.Command, data interface{}, err error) {
+// PostApply implements database.Listener.
+func (l *Live) PostApply(leader bool, command database.Command, data interface{}, err error) {
 	// Interesting events for now.
 	m := map[string]string{
 		"*checks.Check":       "check",

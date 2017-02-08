@@ -28,7 +28,7 @@ type (
 		leader        bool
 		basePath      string
 		listenersLock sync.RWMutex
-		listeners     []database.ClusterListener
+		listeners     []database.Listener
 		client        *http.Client
 	}
 
@@ -53,7 +53,7 @@ func init() {
 }
 
 // NewNode will initialize a new node.
-func NewNode(stream *HTTPStream, datadir string, db database.LocalDatabase, fsm raft.FSM, peers *cluster.Info, pair []tls.Certificate, coreCA *ca.CA) (*Node, error) {
+func NewNode(stream *HTTPStream, datadir string, db database.Database, fsm raft.FSM, peers *cluster.Info, pair []tls.Certificate, coreCA *ca.CA) (*Node, error) {
 	started := time.Now()
 
 	tr := &http.Transport{
@@ -70,7 +70,7 @@ func NewNode(stream *HTTPStream, datadir string, db database.LocalDatabase, fsm 
 		client: &http.Client{Transport: tr},
 	}
 
-	db.RegisterLocalListener(n)
+	db.RegisterListener(n)
 
 	// Raft config.
 	conf := raft.DefaultConfig()
@@ -239,21 +239,23 @@ func (n *Node) Delete(data interface{}) error {
 	return n.apply(entry)
 }
 
-// RegisterClusterListener will register a listener for new changes to the database.
-func (n *Node) RegisterClusterListener(listener database.ClusterListener) {
+// RegisterListener will register a listener for new changes to the database.
+func (n *Node) RegisterListener(listener database.Listener) {
 	n.listenersLock.Lock()
 	defer n.listenersLock.Unlock()
 
 	n.listeners = append(n.listeners, listener)
 }
 
-// PostLocalApply satisfies the database.ClusterDatabase interface.
-func (n *Node) PostLocalApply(command database.Command, data interface{}, err error) {
+// PostApply satisfies the database.Listener interface.
+func (n *Node) PostApply(_ bool, command database.Command, data interface{}, err error) {
 	n.listenersLock.RLock()
 	defer n.listenersLock.RUnlock()
 
 	for _, listener := range n.listeners {
-		go listener.PostClusterApply(n.leader, command, data, err)
+		// We ignore the leader argument from caller. The caller is most likely
+		// a local database that is unaware of raft leadership.
+		go listener.PostApply(n.leader, command, data, err)
 	}
 }
 

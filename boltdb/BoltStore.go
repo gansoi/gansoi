@@ -19,12 +19,12 @@ import (
 
 type (
 	// BoltStore is the lowest level of the gansoi database, it represent the
-	// on-disk database. BoltStore implements raft.FSM and database.LocalDatabase.
+	// on-disk database. BoltStore implements raft.FSM and database.Database.
 	BoltStore struct {
 		dbMutex       sync.RWMutex
 		db            *storm.DB
 		listenersLock sync.RWMutex
-		listeners     []database.LocalListener
+		listeners     []database.Listener
 	}
 )
 
@@ -102,7 +102,7 @@ func (d *BoltStore) ProcessLogEntry(entry *database.LogEntry) error {
 		d.listenersLock.RLock()
 
 		for _, listener := range d.listeners {
-			go listener.PostLocalApply(command, data, err)
+			go listener.PostApply(false, command, data, err)
 		}
 
 		d.listenersLock.RUnlock()
@@ -214,8 +214,8 @@ func (d *BoltStore) All(to interface{}, limit int, skip int, reverse bool) error
 	return err
 }
 
-// RegisterLocalListener implements database.LocalDatabase.
-func (d *BoltStore) RegisterLocalListener(listener database.LocalListener) {
+// RegisterListener implements database.Database.
+func (d *BoltStore) RegisterListener(listener database.Listener) {
 	d.listenersLock.Lock()
 	defer d.listenersLock.Unlock()
 

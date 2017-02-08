@@ -34,7 +34,7 @@ func NewEvaluator(n *node.Node, peers raft.PeerStore) *Evaluator {
 	p, _ := peers.Peers()
 	e.historyLength = len(p) * 2
 
-	n.RegisterClusterListener(e)
+	n.RegisterListener(e)
 
 	return e
 }
@@ -147,8 +147,8 @@ func (e *Evaluator) evaluate2(n *PartialEvaluation) error {
 	return e.node.Save(&eval)
 }
 
-// PostClusterApply implements databse.ClusterListener.
-func (e *Evaluator) PostClusterApply(leader bool, command database.Command, data interface{}, err error) {
+// PostApply implements databse.Listener.
+func (e *Evaluator) PostApply(leader bool, command database.Command, data interface{}, err error) {
 	// If we're not the leader, we abort. Only the leader should evaluate
 	// check results.
 	if !leader {
