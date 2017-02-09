@@ -1,5 +1,6 @@
 /**
  * Keep live updates from service.
+ * @constructor
  */
 g.live = function() {
     var socket;
@@ -25,21 +26,8 @@ g.live = function() {
     var onmessage = function(event) {
         var data = JSON.parse(event.data);
 
-        switch (data.type) {
-            case 'nodeinfo':
-                nodes.log(data);
-                break;
-            case 'checkresult':
-                checkresults.log(data);
-                break;
-            case 'check':
-                checks.log(data);
-                break;
-            case 'evaluation':
-                evaluations.log(data);
-                break;
-            default:
-                console.log(data);
+        if (subscriptions.hasOwnProperty(data.type)) {
+            subscriptions[data.type].log(data);
         }
     };
 
@@ -56,4 +44,20 @@ g.live = function() {
 
     // Open the connection right away.
     open();
+
+    /**
+     * @type {Object.<string, g.Collection>}
+     */
+    var subscriptions = {};
+
+    /**
+     * Subscribe a collection.
+     * @param {!string} id The type id to subscribe to.
+     * @param {!g.Collection} collection The collection to update.
+     */
+    this.subscribe = function(id, collection) {
+        subscriptions[id] = collection;
+    };
+
+    return this;
 };

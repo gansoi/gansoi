@@ -192,7 +192,12 @@ var viewCheck = Vue.component('view-check', {
 });
 
 var init = g.waitGroup(function() {
-    g.live();
+    var live = g.live();
+
+    live.subscribe('nodeinfo', nodes);
+    live.subscribe('checkresult', checkresults);
+    live.subscribe('check', checks);
+    live.subscribe('evaluation', evaluations);
 
     const app = new Vue({
         el: '#app',
