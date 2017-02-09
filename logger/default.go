@@ -6,25 +6,26 @@ import (
 )
 
 var (
-	defaultLogger = New(os.Getenv("DEBUG"))
+	debugLogger = New(os.Stdout, Green, os.Getenv("DEBUG"))
+	infoLogger  = New(os.Stderr, Yellow, "*")
 )
 
-// Info will log something for the end user using the default logger.
+// Info will log something for the end user to stderr.
 func Info(pkg string, format string, args ...interface{}) {
-	defaultLogger.Info(pkg, format, args...)
+	infoLogger.Log(pkg, format, args...)
 }
 
-// Debug will log pure debug information using the default logger.
+// Debug will log pure debug information to stderr.
 func Debug(pkg string, format string, args ...interface{}) {
-	defaultLogger.Debug(pkg, format, args...)
+	debugLogger.Log(pkg, format, args...)
 }
 
-// InfoLogger will return a log.Logger from the default logger.
+// InfoLogger will return a log.Logger.
 func InfoLogger(pkg string) *log.Logger {
-	return defaultLogger.InfoLogger(pkg)
+	return infoLogger.Logger(pkg)
 }
 
-// DebugLogger will return a log.Logger from the default logger.
+// DebugLogger will return a log.Logger.
 func DebugLogger(pkg string) *log.Logger {
-	return defaultLogger.DebugLogger(pkg)
+	return debugLogger.Logger(pkg)
 }

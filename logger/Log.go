@@ -4,30 +4,32 @@ package logger
 // https://dave.cheney.net/2015/11/05/lets-talk-about-logging
 
 import (
+	"io"
 	"io/ioutil"
 	"log"
-	"os"
 	"strings"
 )
 
 type (
-	// Log is for printing debug logs.
+	// Log is for printing logs. Well, duh :)
 	Log struct {
 		logger       *log.Logger
 		positiveList map[string]bool
 		printAll     bool
+		color        string
 	}
 )
 
 // New will return a new logger.
-func New(debug string) *Log {
+func New(w io.Writer, color string, packages string) *Log {
 	l := &Log{
-		logger:       log.New(os.Stdout, "", log.Ldate|log.Lmicroseconds),
+		color:        color,
+		logger:       log.New(w, "", log.Ldate|log.Lmicroseconds),
 		positiveList: make(map[string]bool),
 		printAll:     false,
 	}
 
-	positives := strings.Split(debug, ",")
+	positives := strings.Split(packages, ",")
 	for _, positive := range positives {
 		if positive == "*" {
 			l.printAll = true
@@ -39,29 +41,19 @@ func New(debug string) *Log {
 	return l
 }
 
-// Info will log something that could be of concern of end users.
-func (l *Log) Info(pkg string, format string, args ...interface{}) {
-	l.Printf(pkg, "\033[33m"+format+"\033[0m", args...)
-}
-
-// Debug will log pure debug information for developers.
-func (l *Log) Debug(pkg string, format string, args ...interface{}) {
+// Log will log a message according to format.
+func (l *Log) Log(pkg string, format string, args ...interface{}) {
 	_, print := l.positiveList[pkg]
 	if print || l.printAll {
-		l.Printf(pkg, "\033[32m"+format+"\033[0m", args...)
+		l.Printf(pkg, l.color+format+Reset, args...)
 	}
 }
 
-// InfoLogger will return a log.Logger for info messages.
-func (l *Log) InfoLogger(pkg string) *log.Logger {
-	return log.New(l, "\033[35m"+pkg+"\033[0m: \033[33m", 0)
-}
-
-// DebugLogger will return a log.Logger for debug messages.
-func (l *Log) DebugLogger(pkg string) *log.Logger {
+// Logger will return a log.Logger.
+func (l *Log) Logger(pkg string) *log.Logger {
 	_, print := l.positiveList[pkg]
 	if print || l.printAll {
-		return log.New(l, "\033[35m"+pkg+"\033[0m: \033[32m", 0)
+		return log.New(l, Purple+pkg+" "+l.color, 0)
 	}
 
 	return log.New(ioutil.Discard, "", 0)
@@ -69,14 +61,14 @@ func (l *Log) DebugLogger(pkg string) *log.Logger {
 
 // Printf will print a log entry according to format.
 func (l *Log) Printf(pkg string, format string, args ...interface{}) {
-	l.logger.Printf("\033[35m"+pkg+"\033[0m: "+format+"\n", args...)
+	l.logger.Printf(Purple+pkg+Reset+" "+format+"\n", args...)
 }
 
 // Write implements io.Writer for log.New().
 func (l *Log) Write(p []byte) (n int, err error) {
 	str := strings.TrimSpace(string(p))
 
-	l.logger.Printf("%s\033[0m\n", str)
+	l.logger.Printf("%s"+Reset+"\n", str)
 
 	return len(p), nil
 }
