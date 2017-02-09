@@ -11,6 +11,7 @@
          <router-link class="button" id="overview" to="/overview">Overview</router-link>
          <router-link class="button" id="gansoi" to="/gansoi">Gansoi</router-link>
          <router-link class="button" id="checks" to="/checks">Checks</router-link>
+         <router-link class="button" id="contacts" to="/contacts">Contacts</router-link>
         </div>
       <router-view></router-view>
     </div>
@@ -171,6 +172,65 @@
    </table>
    <input class="button" type="button" value="Test" v-on:click="testCheck()" />
    <input class="button green right" name="add" type="button" value="Add check" v-on:click="addCheck()" />
+  </fieldset>
+ </form>
+</div>
+</template>
+
+<template id="template-contacts">
+<div>
+ <h2>Contacts</h2>
+ <table class="table">
+  <tr>
+   <th>ID</th>
+   <th>Nofifier</th>
+  </tr>
+  <tr is="contact-line" v-for="contact in contacts.data" :contact="contact"></tr>
+ </table>
+ <router-link class="button" to="/contact/edit/new">Add Contact</router-link>
+</div>
+</template>
+
+<template id="template-contact-line">
+<tr class="clickable" v-on:click="view()">
+ <td>{{ contact.id }}</td>
+ <td>{{ contact.notifier }}</td>
+</tr>
+</template>
+
+<template id="template-edit-contact">
+<div>
+ <h2>
+  {{ title }} <button class="right button red" v-on:click="deleteContact(this)">Delete</button>
+ </h2>
+ <form>
+  <fieldset>
+   <table>
+    <tbody>
+     <tr>
+      <td><label>Unique Contact ID</label></td>
+      <td><input type="text" v-model="contact.id"/></td>
+     </tr>
+     <tr>
+      <td><label>Notifier</label></td>
+      <td>
+       <select v-model="contact.notifier">
+           <option v-for="notifier in notifiers">{{ notifier.name }}</option>
+       </select>
+      </td>
+     </tr>
+
+     <tr v-for="argument in arguments">
+      <td><label>{{ argument.name }}</label></td>
+      <td v-if="argument.type == 'string'"><input type="text" v-model="contact.arguments[argument.name]" /> {{ argument.description }}</td>
+      <td v-else-if="argument.type == 'bool'"><input type="checkbox" v-model="contact.arguments[argument.name]" /><label>{{ argument.description }}</label></td>
+      <td v-else-if="argument.type == 'int'"><input type="number" v-model="contact.arguments[argument.name]" /><label> {{ argument.description }}</label></td>
+      <td v-else>{{ argument.type }} not supported in client</td>
+     </tr>
+
+    </tbody>
+   </table>
+   <input class="button green right" name="add" type="button" value="Save Contact" v-on:click="saveContact()" />
   </fieldset>
  </form>
 </div>

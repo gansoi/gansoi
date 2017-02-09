@@ -43,6 +43,7 @@ func (l *Live) PostApply(leader bool, command database.Command, data interface{}
 		"*checks.CheckResult": "checkresult",
 		"*node.nodeInfo":      "nodeinfo",
 		"*eval.Evaluation":    "evaluation",
+		"*notify.Contact":     "contact",
 	}
 
 	// Get the type as a string to avoid importing the generating package.
