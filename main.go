@@ -365,6 +365,12 @@ func runCore(_ *cobra.Command, _ []string) {
 		c.JSON(http.StatusOK, descriptions)
 	})
 
+	api.GET("/notifiers", func(c *gin.Context) {
+		descriptions := plugins.ListNotifiers()
+
+		c.JSON(http.StatusOK, descriptions)
+	})
+
 	api.GET("/backup", func(c *gin.Context) {
 		t := time.Now()
 		filename := fmt.Sprintf("gansoi-backup-%04d%02d%02d-%02d%02d%02d.db",
