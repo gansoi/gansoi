@@ -216,7 +216,7 @@ Vue.component('contact-line', {
     },
 
     template: '#template-contact-line'
-})
+});
 
 var editContact = Vue.component('edit-contact', {
     data: function() {
