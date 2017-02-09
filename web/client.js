@@ -295,8 +295,8 @@ var viewContact = Vue.component('view-contact', {
     },
 
     methods: {
-        editCheck: function(button) {
-            router.push('/check/edit/' + this.$route.params.id);
+        editContact: function(button) {
+            router.push('/contact/edit/' + this.$route.params.id);
         }
     },
 

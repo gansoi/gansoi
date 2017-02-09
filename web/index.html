@@ -198,6 +198,32 @@
 </tr>
 </template>
 
+<template id="template-view-contact">
+<div>
+ <h2>
+  {{ id }} Details
+  <button class="right button" v-on:click="editContact(this)">Edit</button>
+ </h2>
+ <table>
+  <tbody v-if="contact">
+
+   <tr>
+    <td><label>Notifier</label></td>
+    <td>{{ contact.notifier }}</td>
+   </tr>
+
+   <tr><th colspan="2">Arguments</th></tr>
+   <tr><td colspan="2"><hr></td></tr>
+   <tr v-for="(value, key) in contact.arguments">
+    <td><label>{{ key }}</label></td>
+    <td>{{ value }}</td>
+   </tr>
+
+  </tbody>
+ </table>
+</div>
+</template>
+
 <template id="template-edit-contact">
 <div>
  <h2>
