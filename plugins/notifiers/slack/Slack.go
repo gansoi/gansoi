@@ -13,9 +13,9 @@ type (
 	// Slack will notify Slack using an incoming webhook.
 	// Please see: https://api.slack.com/incoming-webhooks
 	Slack struct {
-		Username string `json:"username,omitempty"`
-		URL      string `json:"url,omitempty"`
-		Channel  string `json:"channel,omitempty"`
+		Username string `json:"username"`
+		URL      string `json:"url"`
+		Channel  string `json:"channel"`
 	}
 
 	field struct {

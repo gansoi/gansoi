@@ -39,10 +39,12 @@ func NewLive() *Live {
 func (l *Live) PostApply(leader bool, command database.Command, data interface{}, err error) {
 	// Interesting events for now.
 	m := map[string]string{
-		"*checks.Check":       "check",
-		"*checks.CheckResult": "checkresult",
-		"*node.nodeInfo":      "nodeinfo",
-		"*eval.Evaluation":    "evaluation",
+		"*checks.Check":        "check",
+		"*checks.CheckResult":  "checkresult",
+		"*node.nodeInfo":       "nodeinfo",
+		"*eval.Evaluation":     "evaluation",
+		"*notify.Contact":      "contact",
+		"*notify.ContactGroup": "contactgroup",
 	}
 
 	// Get the type as a string to avoid importing the generating package.

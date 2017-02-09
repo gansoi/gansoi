@@ -11,6 +11,8 @@
          <router-link class="button" id="overview" to="/overview">Overview</router-link>
          <router-link class="button" id="gansoi" to="/gansoi">Gansoi</router-link>
          <router-link class="button" id="checks" to="/checks">Checks</router-link>
+         <router-link class="button" id="contacts" to="/contacts">Contacts</router-link>
+         <router-link class="button" id="contactgroups" to="/contactgroups">Contact Groups</router-link>
         </div>
       <router-view></router-view>
     </div>
@@ -173,6 +175,155 @@
    <input class="button green right" name="add" type="button" value="Add check" v-on:click="addCheck()" />
   </fieldset>
  </form>
+</div>
+</template>
+
+<template id="template-contacts">
+<div>
+ <h2>Contacts</h2>
+ <table class="table">
+  <tr>
+   <th>ID</th>
+   <th>Nofifier</th>
+  </tr>
+  <tr is="contact-line" v-for="contact in contacts.data" :contact="contact"></tr>
+ </table>
+ <router-link class="button" to="/contact/edit/new">Add Contact</router-link>
+</div>
+</template>
+
+<template id="template-contact-line">
+<tr class="clickable" v-on:click="view()">
+ <td>{{ contact.id }}</td>
+ <td>{{ contact.notifier }}</td>
+</tr>
+</template>
+
+<template id="template-view-contact">
+<div>
+ <h2>
+  {{ id }} Details
+  <button class="right button" v-on:click="editContact(this)">Edit</button>
+ </h2>
+ <table>
+  <tbody v-if="contact">
+
+   <tr>
+    <td><label>Notifier</label></td>
+    <td>{{ contact.notifier }}</td>
+   </tr>
+
+   <tr><th colspan="2">Arguments</th></tr>
+   <tr><td colspan="2"><hr></td></tr>
+   <tr v-for="(value, key) in contact.arguments">
+    <td><label>{{ key }}</label></td>
+    <td>{{ value }}</td>
+   </tr>
+
+  </tbody>
+ </table>
+</div>
+</template>
+
+<template id="template-edit-contact">
+<div>
+ <h2>
+  {{ title }} <button class="right button red" v-on:click="deleteContact(this)">Delete</button>
+ </h2>
+ <form>
+  <fieldset>
+   <table>
+    <tbody>
+     <tr>
+      <td><label>Unique Contact ID</label></td>
+      <td><input type="text" v-model="contact.id"/></td>
+     </tr>
+     <tr>
+      <td><label>Notifier</label></td>
+      <td>
+       <select v-model="contact.notifier">
+           <option v-for="notifier in notifiers">{{ notifier.name }}</option>
+       </select>
+      </td>
+     </tr>
+
+     <tr v-for="argument in arguments">
+      <td><label>{{ argument.name }}</label></td>
+      <td v-if="argument.type == 'string'"><input type="text" v-model="contact.arguments[argument.name]" /> {{ argument.description }}</td>
+      <td v-else-if="argument.type == 'bool'"><input type="checkbox" v-model="contact.arguments[argument.name]" /><label>{{ argument.description }}</label></td>
+      <td v-else-if="argument.type == 'int'"><input type="number" v-model="contact.arguments[argument.name]" /><label> {{ argument.description }}</label></td>
+      <td v-else>{{ argument.type }} not supported in client</td>
+     </tr>
+
+    </tbody>
+   </table>
+   <input class="button green right" name="add" type="button" value="Save Contact" v-on:click="saveContact()" />
+  </fieldset>
+ </form>
+</div>
+</template>
+
+<template id="template-contactgroups">
+<div>
+ <h2>Contact Groups</h2>
+ <table class="table">
+  <tr>
+   <th>ID</th>
+  </tr>
+  <tr is="contactgroup-line" v-for="contactgroup in contactgroups.data" :contactgroup="contactgroup"></tr>
+ </table>
+ <router-link class="button" to="/contactgroup/edit/new">Add Group</router-link>
+</div>
+</template>
+
+<template id="template-contactgroup-line">
+<tr class="clickable" v-on:click="view()">
+ <td>{{ contactgroup.id }}</td>
+</tr>
+</template>
+
+<template id="template-edit-contactgroup">
+<div>
+ <h2>
+  {{ title }} <button class="right button red" v-on:click="deleteContactgroup(this)">Delete</button>
+ </h2>
+ <form>
+  <fieldset>
+   <table>
+    <tbody>
+
+     <tr>
+      <td><label>Unique Contact Group ID</label></td>
+      <td><input type="text" v-model="contactgroup.id"/></td>
+     </tr>
+
+     <tr>
+      <td><label>Members</label></td>
+      <td>
+       <select v-model="contactgroup.members" multiple>
+           <option v-for="contact in contacts.data">{{ contact.id }}</option>
+       </select>
+      </td>
+     </tr>
+
+    </tbody>
+   </table>
+   <input class="button green right" name="add" type="button" value="Save Contact Group" v-on:click="saveContactgroup()" />
+  </fieldset>
+ </form>
+</div>
+</template>
+
+<template id="template-view-contactgroup">
+<div>
+ <h2>
+  {{ id }} Details
+  <button class="right button" v-on:click="editContactgroup(this)">Edit</button>
+ </h2>
+ <h3>Members</h3>
+ <ul v-for="contact in contactgroup.members">
+  <li>{{ contact }}</li>
+ </ul>
 </div>
 </template>
 

@@ -33,3 +33,17 @@ func RegisterNotifier(name string, notifier interface{}) {
 func GetNotifier(name string) Notifier {
 	return reflect.New(notifiers[name]).Interface().(Notifier)
 }
+
+// ListNotifiers will return a list of all agents.
+func ListNotifiers() []PluginDescription {
+	list := make([]PluginDescription, 0, len(agents))
+
+	for name, typ := range notifiers {
+		list = append(list, PluginDescription{
+			Name:      name,
+			Arguments: getArguments(typ),
+		})
+	}
+
+	return list
+}
