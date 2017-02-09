@@ -297,6 +297,15 @@
       <td><input type="text" v-model="contactgroup.id"/></td>
      </tr>
 
+     <tr>
+      <td><label>Members</label></td>
+      <td>
+       <select v-model="contactgroup.members" multiple>
+           <option v-for="contact in contacts.data">{{ contact.id }}</option>
+       </select>
+      </td>
+     </tr>
+
     </tbody>
    </table>
    <input class="button green right" name="add" type="button" value="Save Contact Group" v-on:click="saveContactgroup()" />
@@ -311,6 +320,10 @@
   {{ id }} Details
   <button class="right button" v-on:click="editContactgroup(this)">Edit</button>
  </h2>
+ <h3>Members</h3>
+ <ul v-for="contact in contactgroup.members">
+  <li>{{ contact }}</li>
+ </ul>
 </div>
 </template>
 

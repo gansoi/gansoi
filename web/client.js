@@ -334,7 +334,9 @@ var editContactgroup = Vue.component('edit-contactgroup', {
             title: 'Add Contact Group',
             contactgroup: {
                 id: '',
+                members: [],
             },
+            contacts: contacts,
         };
     },
 
@@ -378,7 +380,8 @@ var editContactgroup = Vue.component('edit-contactgroup', {
 var viewContactgroup = Vue.component('view-contactgroup', {
     data: function() {
         return {
-            contactgroups: contactgroups
+            contactgroups: contactgroups,
+            contacts: contacts,
         };
     },
 
