@@ -1,0 +1,9 @@
+version: "2"
+
+services:
+    gansoi:
+        build: .
+        image: abrander/gansoi
+        ports:
+            - "443/tcp:443/tcp" # https
+            - "443/udp:443/udp" # http2 encrypted
