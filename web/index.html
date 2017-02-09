@@ -12,6 +12,7 @@
          <router-link class="button" id="gansoi" to="/gansoi">Gansoi</router-link>
          <router-link class="button" id="checks" to="/checks">Checks</router-link>
          <router-link class="button" id="contacts" to="/contacts">Contacts</router-link>
+         <router-link class="button" id="contactgroups" to="/contactgroups">Contact Groups</router-link>
         </div>
       <router-view></router-view>
     </div>
@@ -259,6 +260,57 @@
    <input class="button green right" name="add" type="button" value="Save Contact" v-on:click="saveContact()" />
   </fieldset>
  </form>
+</div>
+</template>
+
+<template id="template-contactgroups">
+<div>
+ <h2>Contact Groups</h2>
+ <table class="table">
+  <tr>
+   <th>ID</th>
+  </tr>
+  <tr is="contactgroup-line" v-for="contactgroup in contactgroups.data" :contactgroup="contactgroup"></tr>
+ </table>
+ <router-link class="button" to="/contactgroup/edit/new">Add Group</router-link>
+</div>
+</template>
+
+<template id="template-contactgroup-line">
+<tr class="clickable" v-on:click="view()">
+ <td>{{ contactgroup.id }}</td>
+</tr>
+</template>
+
+<template id="template-edit-contactgroup">
+<div>
+ <h2>
+  {{ title }} <button class="right button red" v-on:click="deleteContactgroup(this)">Delete</button>
+ </h2>
+ <form>
+  <fieldset>
+   <table>
+    <tbody>
+
+     <tr>
+      <td><label>Unique Contact Group ID</label></td>
+      <td><input type="text" v-model="contactgroup.id"/></td>
+     </tr>
+
+    </tbody>
+   </table>
+   <input class="button green right" name="add" type="button" value="Save Contact Group" v-on:click="saveContactgroup()" />
+  </fieldset>
+ </form>
+</div>
+</template>
+
+<template id="template-view-contactgroup">
+<div>
+ <h2>
+  {{ id }} Details
+  <button class="right button" v-on:click="editContactgroup(this)">Edit</button>
+ </h2>
 </div>
 </template>
 
