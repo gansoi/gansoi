@@ -11,7 +11,7 @@ import (
 type (
 	// Info stores the current list of peers.
 	Info struct {
-		lock         sync.RWMutex
+		sync.RWMutex
 		path         string
 		SelfName     string   `json:"self"`
 		PeerList     []string `json:"peers"`
@@ -37,9 +37,9 @@ func NewInfo(path string) *Info {
 
 // Save will trigger a save.
 func (c *Info) Save() error {
-	c.lock.RLock()
+	c.RLock()
 	b, err := json.MarshalIndent(c, "", "\t")
-	c.lock.RUnlock()
+	c.RUnlock()
 	if err != nil {
 		return err
 	}
@@ -54,36 +54,36 @@ func (c *Info) Load() error {
 		return err
 	}
 
-	c.lock.Lock()
+	c.Lock()
 	err = json.Unmarshal(b, c)
-	c.lock.Unlock()
+	c.Unlock()
 
 	return err
 }
 
 // Peers returns the list of known peers.
 func (c *Info) Peers() ([]string, error) {
-	c.lock.RLock()
+	c.RLock()
 	peers := c.PeerList
-	c.lock.RUnlock()
+	c.RUnlock()
 
 	return peers, nil
 }
 
 // SetPeers updates the list of peers.
 func (c *Info) SetPeers(peers []string) error {
-	c.lock.Lock()
+	c.Lock()
 	c.PeerList = peers
-	c.lock.Unlock()
+	c.Unlock()
 
 	return c.Save()
 }
 
 // Self will return our own name as set by SetSelf().
 func (c *Info) Self() string {
-	c.lock.RLock()
+	c.RLock()
 	self := c.SelfName
-	c.lock.RUnlock()
+	c.RUnlock()
 
 	return self
 }
@@ -103,9 +103,9 @@ func (c *Info) IP() net.IP {
 
 // SetSelf will set our own node name.
 func (c *Info) SetSelf(self string) error {
-	c.lock.Lock()
+	c.Lock()
 	c.SelfName = self
-	c.lock.Unlock()
+	c.Unlock()
 
 	return c.Save()
 }
