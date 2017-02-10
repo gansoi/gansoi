@@ -25,7 +25,6 @@ type (
 
 var (
 	check = checks.Check{
-		ID:        "test",
 		AgentID:   "mock",
 		Interval:  time.Second,
 		Arguments: json.RawMessage("{}"),
@@ -44,6 +43,8 @@ func (m *mockAgent) Check(result plugins.AgentResult) error {
 
 func init() {
 	plugins.RegisterAgent("mock", mockAgent{})
+
+	check.ID = "test"
 }
 
 func (p *peerStore) SetPeers(peers []string) error {
