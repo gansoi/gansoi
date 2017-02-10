@@ -8,23 +8,26 @@ import (
 
 	"github.com/Knetic/govaluate"
 
+	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/plugins"
 )
 
 type (
 	// Check defines a check to be conducted by Gansoi.
 	Check struct {
-		ID            string          `json:"id"`
-		AgentID       string          `json:"agent"`
-		Interval      time.Duration   `json:"interval"`
-		Arguments     json.RawMessage `json:"arguments"`
-		Agent         plugins.Agent   `json:"-"`
-		Expressions   []string        `json:"expressions"`
-		ContactGroups []string        `json:"contactgroups"`
+		database.Object `storm:"inline"`
+		Name            string          `json:"name"`
+		AgentID         string          `json:"agent"`
+		Interval        time.Duration   `json:"interval"`
+		Arguments       json.RawMessage `json:"arguments"`
+		Agent           plugins.Agent   `json:"-"`
+		Expressions     []string        `json:"expressions"`
+		ContactGroups   []string        `json:"contactgroups"`
 	}
 
 	checkProxy struct {
-		ID            string          `json:"id"`
+		database.Object
+		Name          string          `json:"name"`
 		AgentID       string          `json:"agent"`
 		Interval      time.Duration   `json:"interval"`
 		Node          string          `json:"node"`
@@ -44,6 +47,7 @@ func (c *Check) UnmarshalJSON(data []byte) error {
 	}
 
 	c.ID = proxy.ID
+	c.Name = proxy.Name
 	c.AgentID = proxy.AgentID
 	c.Interval = proxy.Interval
 	c.Arguments = proxy.Arguments

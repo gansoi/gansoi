@@ -57,6 +57,7 @@
  <table class="table">
   <tr>
    <th>ID</th>
+   <th>Name</th>
    <th>Agent</th>
    <th>Interval</th>
   </tr>
@@ -69,6 +70,7 @@
 <template id="template-check-line">
 <tr class="clickable" :class="klass" v-on:click="viewCheck()">
  <td>{{ check.id }}</td>
+ <td>{{ check.name }}</td>
  <td>{{ check.agent }}</td>
  <td>{{ check.interval / 1000000000 }}</td>
 </tr>
@@ -82,6 +84,10 @@
  </h2>
  <table>
   <tbody v-if="check">
+   <tr>
+    <td><label>Name</label></td>
+    <td>{{ check.name }}</td>
+   </tr>
    <tr>
     <td><label>Agent</label></td>
     <td>{{ check.agent }}</td>
@@ -131,8 +137,8 @@
    <table>
     <tbody>
      <tr>
-      <td><label>Unique Check ID</label></td>
-      <td><input type="text" v-model="check.id"/></td>
+      <td><label>Check Name</label></td>
+      <td><input type="text" v-model="check.name"/></td>
      </tr>
      <tr>
       <td><label>Check interval</label></td>

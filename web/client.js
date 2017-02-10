@@ -32,7 +32,7 @@ var listNodes = Vue.component('list-nodes', {
 
 Vue.component('check-line', {
     props: {
-        check: {default: {id: 'unkn'}}
+        check: {default: {id: 'unkn', name: ''}}
     },
 
     data: function() {
@@ -78,6 +78,7 @@ var editCheck = Vue.component('edit-check', {
                 arguments: {},
                 agent: 'http',
                 id: '',
+                name: '',
                 expressions: []
             },
             results: {results: {}},
