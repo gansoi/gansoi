@@ -426,48 +426,48 @@ init.add(1);
 Vue.http.get('/api/agents').then(function(response) {
     response.body.forEach(function(check) {
         agents.upsert(check);
-        init.done();
     });
+    init.done();
 });
 
 init.add(1);
 Vue.http.get('/api/notifiers').then(function(response) {
     response.body.forEach(function(check) {
         notifiers.upsert(check);
-        init.done();
     });
+    init.done();
 });
 
 init.add(1);
 Vue.http.get('/api/checks').then(function(response) {
     response.body.forEach(function(check) {
         checks.upsert(check);
-        init.done();
     });
+    init.done();
 });
 
 init.add(1);
 Vue.http.get('/api/evaluations').then(function(response) {
     response.body.forEach(function(evaluation) {
         evaluations.upsert(evaluation);
-        init.done();
     });
+    init.done();
 });
 
 init.add(1);
 Vue.http.get('/api/contacts').then(function(response) {
     response.body.forEach(function(contact) {
         contacts.upsert(contact);
-        init.done();
     });
+    init.done();
 });
 
 init.add(1);
 Vue.http.get('/api/contactgroups').then(function(response) {
     response.body.forEach(function(group) {
         contactgroups.upsert(group);
-        init.done();
     });
+    init.done();
 });
 
 const router = new VueRouter({
