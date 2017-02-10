@@ -177,6 +177,11 @@ func (d *BoltStore) Restore(source io.ReadCloser) error {
 
 // Save will save an object to the database.
 func (d *BoltStore) Save(data interface{}) error {
+	idsetter, ok := data.(database.IDSetter)
+	if ok {
+		idsetter.SetID()
+	}
+
 	d.dbMutex.RLock()
 	defer d.dbMutex.RUnlock()
 

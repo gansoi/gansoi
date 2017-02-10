@@ -211,6 +211,11 @@ func (n *Node) apply(entry *database.LogEntry) error {
 func (n *Node) Save(data interface{}) error {
 	stats.CounterInc("node_save", 1)
 
+	idsetter, ok := data.(database.IDSetter)
+	if ok {
+		idsetter.SetID()
+	}
+
 	entry := database.NewLogEntry(database.CommandSave, data)
 
 	return n.apply(entry)
