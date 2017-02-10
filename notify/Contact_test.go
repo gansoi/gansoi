@@ -8,10 +8,10 @@ import (
 
 func TestContactNotify(t *testing.T) {
 	c := Contact{
-		ID:        "test",
 		Notifier:  "mockagent",
 		Arguments: json.RawMessage(`{"PleaseReturn": ""}`),
 	}
+	c.ID = "test"
 
 	err := c.Notify("some message again")
 	if err != nil {
@@ -54,10 +54,10 @@ func TestLoadContact(t *testing.T) {
 	defer db.Close()
 
 	c1 := &Contact{
-		ID:        "buh",
 		Notifier:  "none",
 		Arguments: json.RawMessage("{}"),
 	}
+	c1.ID = "buh"
 
 	db.Save(c1)
 	c2, err := LoadContact(db, "buh")

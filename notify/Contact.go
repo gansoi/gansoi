@@ -10,9 +10,10 @@ import (
 type (
 	// Contact is a person or service capable of receiving notifications.
 	Contact struct {
-		ID        string          `json:"id"`
-		Notifier  string          `json:"notifier"`
-		Arguments json.RawMessage `json:"arguments"`
+		database.Object `storm:"inline"`
+		Name            string          `json:"name"`
+		Notifier        string          `json:"notifier"`
+		Arguments       json.RawMessage `json:"arguments"`
 	}
 )
 

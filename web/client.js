@@ -210,7 +210,7 @@ var listContacts = Vue.component('list-contacts', {
 
 Vue.component('contact-line', {
     props: {
-        contact: {default: {id: 'unkn'}}
+        contact: {default: {id: 'unkn', name: ''}}
     },
 
     methods: {
@@ -229,6 +229,7 @@ var editContact = Vue.component('edit-contact', {
             notifiers: notifiers.data,
             contact: {
                 id: '',
+                name: '',
                 notifier: 'slack',
                 arguments: {},
             },

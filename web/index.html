@@ -205,6 +205,7 @@
  <table class="table">
   <tr>
    <th>ID</th>
+   <th>Name</th>
    <th>Nofifier</th>
   </tr>
   <tr is="contact-line" v-for="contact in contacts.data" :contact="contact"></tr>
@@ -216,6 +217,7 @@
 <template id="template-contact-line">
 <tr class="clickable" v-on:click="view()">
  <td>{{ contact.id }}</td>
+ <td>{{ contact.name }}</td>
  <td>{{ contact.notifier }}</td>
 </tr>
 </template>
@@ -228,6 +230,11 @@
  </h2>
  <table>
   <tbody v-if="contact">
+
+   <tr>
+    <td><label>Name</label></td>
+    <td>{{ contact.name }}</td>
+   </tr>
 
    <tr>
     <td><label>Notifier</label></td>
@@ -256,8 +263,8 @@
    <table>
     <tbody>
      <tr>
-      <td><label>Unique Contact ID</label></td>
-      <td><input type="text" v-model="contact.id"/></td>
+      <td><label>Name</label></td>
+      <td><input type="text" v-model="contact.name"/></td>
      </tr>
      <tr>
       <td><label>Notifier</label></td>
