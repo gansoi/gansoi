@@ -420,48 +420,48 @@ var init = g.waitGroup(function() {
     });
 });
 
+init.add(1);
 Vue.http.get('/api/agents').then(function(response) {
-    init.add(1);
     response.body.forEach(function(check) {
         agents.upsert(check);
         init.done();
     });
 });
 
+init.add(1);
 Vue.http.get('/api/notifiers').then(function(response) {
-    init.add(1);
     response.body.forEach(function(check) {
         notifiers.upsert(check);
         init.done();
     });
 });
 
+init.add(1);
 Vue.http.get('/api/checks').then(function(response) {
-    init.add(1);
     response.body.forEach(function(check) {
         checks.upsert(check);
         init.done();
     });
 });
 
+init.add(1);
 Vue.http.get('/api/evaluations').then(function(response) {
-    init.add(1);
     response.body.forEach(function(evaluation) {
         evaluations.upsert(evaluation);
         init.done();
     });
 });
 
+init.add(1);
 Vue.http.get('/api/contacts').then(function(response) {
-    init.add(1);
     response.body.forEach(function(contact) {
         contacts.upsert(contact);
         init.done();
     });
 });
 
+init.add(1);
 Vue.http.get('/api/contactgroups').then(function(response) {
-    init.add(1);
     response.body.forEach(function(group) {
         contactgroups.upsert(group);
         init.done();
