@@ -71,8 +71,10 @@ var editCheck = Vue.component('edit-check', {
         return {
             title: 'Add check',
             agents: agents.data,
+            contactgroups: contactgroups,
             check: {
                 interval: 30,
+                contactgroups: [],
                 arguments: {},
                 agent: 'http',
                 id: '',
