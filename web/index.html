@@ -107,7 +107,7 @@
    <tr><th colspan="2">Contact Groups</th></tr>
    <tr><td colspan="2"><hr></td></tr>
    <tr v-for="groupid in check.contactgroups">
-    <td colspan="2">{{ groupid }}</td>
+    <td colspan="2"><g-contactgroup :id="groupid" /></td>
    </tr>
 
    <tr><th colspan="2">Evaluation</th></tr>
@@ -165,7 +165,7 @@
       <td><label>Contact Groups</label></td>
       <td>
        <select v-model="check.contactgroups" multiple>
-        <option v-for="contactgroup in contactgroups.data">{{ contactgroup.id }}</option>
+        <option v-for="contactgroup in contactgroups.data" :value="contactgroup.id">{{ contactgroup.name }}</option>
        </select>
       </td>
      </tr>
@@ -331,7 +331,7 @@
       <td><label>Members</label></td>
       <td>
        <select v-model="contactgroup.members" multiple>
-           <option v-for="contact in contacts.data">{{ contact.id }}</option>
+           <option v-for="contact in contacts.data" :value="contact.id">{{ contact.name }}</option>
        </select>
       </td>
      </tr>
@@ -353,9 +353,21 @@
  <h3>Name: {{ contactgroup.name }}</h3>
  <h3>Members:</h3>
  <ul v-for="contact in contactgroup.members">
-  <li>{{ contact }}</li>
+  <li><g-contact :id="contact"/></li>
  </ul>
 </div>
+</template>
+
+<template id="template-g-contact">
+ <span v-on:click="view()" class="clickable">
+  {{ contact.name }}
+ </span>
+</template>
+
+<template id="template-g-contactgroup">
+ <span v-on:click="view()" class="clickable">
+  {{ contactgroup.name }}
+ </span>
 </template>
 
 <script src="https://unpkg.com/vue@2.1.8/dist/vue.js"></script>

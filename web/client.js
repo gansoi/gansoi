@@ -409,6 +409,42 @@ var viewContactgroup = Vue.component('view-contactgroup', {
     template: '#template-view-contactgroup'
 });
 
+Vue.component('g-contact', {
+    props: ['id'],
+
+    computed: {
+        contact: function() {
+            return contacts.get(this.id);
+        },
+    },
+
+    methods: {
+        view: function() {
+            router.push('/contact/view/' + this.id);
+        },
+    },
+
+    template: '#template-g-contact'
+});
+
+Vue.component('g-contactgroup', {
+    props: ['id'],
+
+    computed: {
+        contactgroup: function() {
+            return contactgroups.get(this.id);
+        },
+    },
+
+    methods: {
+        view: function() {
+            router.push('/contactgroup/view/' + this.id);
+        },
+    },
+
+    template: '#template-g-contactgroup'
+});
+
 var init = g.waitGroup(function() {
     var live = g.live();
 
