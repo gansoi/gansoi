@@ -7,8 +7,9 @@ import (
 type (
 	// ContactGroup is a group of contacts.
 	ContactGroup struct {
-		ID      string   `json:"id"`
-		Members []string `json:"members"`
+		database.Object `storm:"inline"`
+		Name            string   `json:"name"`
+		Members         []string `json:"members"`
 	}
 )
 

@@ -27,9 +27,9 @@ func TestLoadContactGroup(t *testing.T) {
 	defer db.Close()
 
 	g1 := &ContactGroup{
-		ID:      "buh",
 		Members: nil,
 	}
+	g1.ID = "buh"
 
 	err := db.Save(g1)
 	if err != nil {
@@ -54,9 +54,8 @@ func TestGetContacts(t *testing.T) {
 	db := newDB(t)
 	defer db.Close()
 
-	g := &ContactGroup{
-		ID: "buh",
-	}
+	g := &ContactGroup{}
+	g.ID = "buh"
 
 	contacts, err := g.GetContacts(db)
 	if err != nil {

@@ -297,6 +297,7 @@
  <table class="table">
   <tr>
    <th>ID</th>
+   <th>Name</th>
   </tr>
   <tr is="contactgroup-line" v-for="contactgroup in contactgroups.data" :contactgroup="contactgroup"></tr>
  </table>
@@ -307,6 +308,7 @@
 <template id="template-contactgroup-line">
 <tr class="clickable" v-on:click="view()">
  <td>{{ contactgroup.id }}</td>
+ <td>{{ contactgroup.name }}</td>
 </tr>
 </template>
 
@@ -321,8 +323,8 @@
     <tbody>
 
      <tr>
-      <td><label>Unique Contact Group ID</label></td>
-      <td><input type="text" v-model="contactgroup.id"/></td>
+      <td><label>Name</label></td>
+      <td><input type="text" v-model="contactgroup.name"/></td>
      </tr>
 
      <tr>
@@ -348,7 +350,8 @@
   {{ id }} Details
   <button class="right button" v-on:click="editContactgroup(this)">Edit</button>
  </h2>
- <h3>Members</h3>
+ <h3>Name: {{ contactgroup.name }}</h3>
+ <h3>Members:</h3>
  <ul v-for="contact in contactgroup.members">
   <li>{{ contact }}</li>
  </ul>

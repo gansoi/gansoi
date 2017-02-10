@@ -320,7 +320,7 @@ var listContactgroups = Vue.component('list-contactgroups', {
 
 Vue.component('contactgroup-line', {
     props: {
-        contactgroup: {default: {id: 'unkn'}}
+        contactgroup: {default: {id: 'unkn', name: ''}}
     },
 
     methods: {
@@ -338,6 +338,7 @@ var editContactgroup = Vue.component('edit-contactgroup', {
             title: 'Add Contact Group',
             contactgroup: {
                 id: '',
+                name: '',
                 members: [],
             },
             contacts: contacts,
