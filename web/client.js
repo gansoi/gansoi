@@ -35,12 +35,6 @@ Vue.component('check-line', {
         check: {default: {id: 'unkn', name: ''}}
     },
 
-    data: function() {
-        return {
-            evaluations: evaluations
-        };
-    },
-
     methods: {
         viewCheck: function() {
             router.push('/check/view/' + this.check.id);
@@ -48,8 +42,12 @@ Vue.component('check-line', {
     },
 
     computed: {
+        evaluation: function() {
+            return evaluations.get(this.check.id);
+        },
+
         klass: function() {
-            var e = this.evaluations.get(this.check.id);
+            var e = this.evaluation;
 
             if (!e) {
                 return 'state unknown';
@@ -445,6 +443,43 @@ Vue.component('g-contactgroup', {
     template: '#template-g-contactgroup'
 });
 
+Vue.component('g-time', {
+    props: ['time'],
+
+    computed: {
+        timestamp: function() {
+            if (!this.time) {
+                return '-';
+            }
+
+            const d = new Date(this.time);
+
+            return d.toISOString();
+        }
+    },
+
+    template: '<span>{{ timestamp }}</span>'
+});
+
+Vue.component('g-time-since', {
+    props: ['time'],
+
+    computed: {
+        elapsed: function() {
+            if (!this.time) {
+                return '-';
+            }
+
+            const timestamp = new Date(this.time);
+            const duration = this.$root.now.getTime() - timestamp.getTime();
+
+            return g.durationToText(duration);
+        },
+    },
+
+    template: '<span>{{ elapsed }}</span>'
+});
+
 var init = g.waitGroup(function() {
     var live = g.live();
 
@@ -456,7 +491,26 @@ var init = g.waitGroup(function() {
     live.subscribe('contactgroup', contactgroups);
 
     const app = new Vue({
+        data: {
+                // We add a "now" property to the root element to only have
+                // one global ever-updating clock.
+                now: new Date()
+        },
+
+        methods: {
+            updateNow: function() {
+                this.now = new Date();
+            },
+        },
+
+        created: function() {
+            // For now we ignore clearInterval() - but if needed, it can be
+            // added to beforeDestroy. Maybe this is updating too often...
+            setInterval(this.updateNow, 100);
+        },
+
         el: '#app',
+
         router: router
     });
 });

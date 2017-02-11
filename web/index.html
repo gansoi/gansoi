@@ -40,7 +40,7 @@
  </tr>
  <tr v-for="node in nodes.data">
  <td>{{ node.name }}</td>
- <td>{{ node.started }}</td>
+ <td><g-time :time="node.started"></g-time></td>
  <td>{{ node.raft.state }}</td>
  <td>{{ node.raft.last_contact }}</td>
  <td>{{ node.raft.applied_index }}</td>
@@ -60,6 +60,7 @@
    <th>Name</th>
    <th>Agent</th>
    <th>Interval</th>
+   <th>Age</th>
   </tr>
   <tr is="check-line" v-for="check in checks.data" :check="check"></tr>
  </table>
@@ -73,6 +74,7 @@
  <td>{{ check.name }}</td>
  <td>{{ check.agent }}</td>
  <td>{{ check.interval / 1000000000 }}</td>
+ <td><g-time-since :time="evaluation.End"></g-time-since></td>
 </tr>
 </template>
 
@@ -113,9 +115,12 @@
    <tr><th colspan="2">Evaluation</th></tr>
    <tr><td colspan="2"><hr></td></tr>
    <tr v-if="evaluation"><td colspan="2" class="state" :class="evaluation.History[0]">{{ evaluation.History[0] }}</td></tr>
+   <tr v-if="evaluation"><td>Since</td><td><g-time :time="evaluation.Start"></g-time> (<g-time-since :time="evaluation.Start"></g-time-since> ago)</td></tr>
+   <tr v-if="evaluation"><td>Last Evaluation</td><td><g-time :time="evaluation.End"></g-time> (<g-time-since :time="evaluation.End"></g-time-since> ago)</td></tr>
 
    <tr><th colspan="2">Latest Results</th></tr>
    <tr><td colspan="2"><hr></td></tr>
+   <tr><td>Last Evaluation</td><td><g-time :time="result.timestamp"></g-time> (<g-time-since :time="result.timestamp"></g-time-since> ago)</td></tr>
    <tr v-if="result.error"><td class="red" colspan="2">ERROR: {{ result.error }}</td></tr>
    <tr v-for="(value, key) in result.results">
     <td>{{ key }}</td>
