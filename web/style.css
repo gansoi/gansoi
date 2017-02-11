@@ -315,3 +315,8 @@ th {
 .clickable {
     cursor: pointer;
 }
+
+select:hover, .button:hover, .clickable:hover {
+    /* THis is a hack to allow the element to regain its normal bakground */
+    background-image: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.1));
+}
