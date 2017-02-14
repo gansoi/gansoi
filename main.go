@@ -360,6 +360,23 @@ func runCore(_ *cobra.Command, _ []string) {
 		c.JSON(http.StatusOK, checkResult)
 	})
 
+	api.POST("/testcontact", func(c *gin.Context) {
+		var contact notify.Contact
+		e := c.BindJSON(&contact)
+		if e != nil {
+			c.AbortWithError(http.StatusBadRequest, e)
+			return
+		}
+
+		e = contact.Notify(fmt.Sprintf("Test sent at %s", time.Now().String()))
+		if e != nil {
+			c.JSON(http.StatusBadGateway, e.Error())
+			return
+		}
+
+		c.JSON(http.StatusOK, nil)
+	})
+
 	api.GET("/agents", func(c *gin.Context) {
 		descriptions := plugins.ListAgents()
 

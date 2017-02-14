@@ -231,6 +231,7 @@ var editContact = Vue.component('edit-contact', {
                 notifier: 'slack',
                 arguments: {},
             },
+            error: '',
         };
     },
 
@@ -261,6 +262,20 @@ var editContact = Vue.component('edit-contact', {
             }
         },
 
+        testContact: function(button) {
+            button.disabled = true;
+
+            this.$http.post('/api/testcontact', this.contact).then(function(response) {
+                button.enabled = true;
+
+                this.error = '';
+            }, function(response) {
+                button.enabled = true;
+
+                this.error = response.body;
+            });
+        },
+
         saveContact: function() {
             this.$http.post('/api/contacts', this.contact).then(function(response) {
                 router.push('/contacts');
@@ -283,7 +298,8 @@ var editContact = Vue.component('edit-contact', {
 var viewContact = Vue.component('view-contact', {
     data: function() {
         return {
-            contacts: contacts
+            contacts: contacts,
+            error: '',
         };
     },
 
@@ -300,6 +316,20 @@ var viewContact = Vue.component('view-contact', {
     methods: {
         editContact: function(button) {
             router.push('/contact/edit/' + this.$route.params.id);
+        },
+
+        testContact: function(button) {
+            button.disabled = true;
+
+            this.$http.post('/api/testcontact', this.contact).then(function(response) {
+                button.enabled = true;
+
+                this.error = '';
+            }, function(response) {
+                button.enabled = true;
+
+                this.error = response.body;
+            });
         }
     },
 

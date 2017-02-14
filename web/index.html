@@ -255,6 +255,8 @@
 
   </tbody>
  </table>
+ <div v-if="error" class="red">ERROR: {{ error }}</div>
+ <input class="button" type="button" value="Test" v-on:click="testContact(this)" />
 </div>
 </template>
 
@@ -290,6 +292,8 @@
 
     </tbody>
    </table>
+   <div v-if="error" class="red">ERROR: {{ error }}</div>
+   <input class="button" type="button" value="Test" v-on:click="testContact(this)" />
    <input class="button green right" name="add" type="button" value="Save Contact" v-on:click="saveContact()" />
   </fieldset>
  </form>
