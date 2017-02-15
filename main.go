@@ -24,6 +24,7 @@ import (
 	"github.com/gansoi/gansoi/boltdb"
 	"github.com/gansoi/gansoi/checks"
 	"github.com/gansoi/gansoi/cluster"
+	"github.com/gansoi/gansoi/config"
 	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/eval"
 	"github.com/gansoi/gansoi/logger"
@@ -36,6 +37,10 @@ import (
 	_ "github.com/gansoi/gansoi/plugins/agents/tcpport"
 	_ "github.com/gansoi/gansoi/plugins/notifiers/console"
 	_ "github.com/gansoi/gansoi/plugins/notifiers/slack"
+)
+
+var (
+	configFile = config.DefaultPath
 )
 
 func init() {
@@ -64,7 +69,7 @@ func main() {
 	}
 	cmdCore.PersistentFlags().StringVar(&configFile,
 		"config",
-		configFile,
+		config.DefaultPath,
 		"The configuration file to use.")
 
 	coreInit := &cobra.Command{
@@ -192,22 +197,22 @@ func runCheck(printSummary bool, arguments []string) {
 	}
 }
 
-func loadConfig() *Configuration {
-	var config Configuration
-	config.SetDefaults()
-	err := config.LoadFromFile(configFile)
+func loadConfig() *config.Configuration {
+	var conf config.Configuration
+	conf.SetDefaults()
+	err := conf.LoadFromFile(configFile)
 	if err != nil {
 		logger.Info("main", "Failed to read configuration file at %s: %s", configFile, err.Error())
 		os.Exit(1)
 	}
 
-	return &config
+	return &conf
 }
 
-func openDatabase(config *Configuration) *boltdb.BoltStore {
-	db, err := boltdb.NewBoltStore(path.Join(config.DataDir, "gansoi.db"))
+func openDatabase(conf *config.Configuration) *boltdb.BoltStore {
+	db, err := boltdb.NewBoltStore(path.Join(conf.DataDir, "gansoi.db"))
 	if err != nil {
-		logger.Info("main", "failed to open database in %s: %s", config.DataDir, err.Error())
+		logger.Info("main", "failed to open database in %s: %s", conf.DataDir, err.Error())
 		os.Exit(1)
 	}
 
@@ -215,14 +220,14 @@ func openDatabase(config *Configuration) *boltdb.BoltStore {
 }
 
 func initCore(cmd *cobra.Command, _ []string) {
-	config := loadConfig()
-	info := cluster.NewInfo(path.Join(config.DataDir, "cluster.json"))
+	conf := loadConfig()
+	info := cluster.NewInfo(path.Join(conf.DataDir, "cluster.json"))
 	core := cluster.NewCore(info)
 
 	err := core.Bootstrap()
 	bailIfError(err)
 
-	info.SetPeers([]string{cluster.DefaultPort(config.BindPrivate)})
+	info.SetPeers([]string{cluster.DefaultPort(conf.Bind)})
 }
 
 func initRunCore(cmd *cobra.Command, arguments []string) {
@@ -231,8 +236,8 @@ func initRunCore(cmd *cobra.Command, arguments []string) {
 }
 
 func joinCore(_ *cobra.Command, arguments []string) {
-	config := loadConfig()
-	info := cluster.NewInfo(path.Join(config.DataDir, "cluster.json"))
+	conf := loadConfig()
+	info := cluster.NewInfo(path.Join(conf.DataDir, "cluster.json"))
 	core := cluster.NewCore(info)
 
 	// Check that we have all arguments.
@@ -257,20 +262,20 @@ func joinCore(_ *cobra.Command, arguments []string) {
 	hash := parts[0]
 	token := parts[1]
 
-	err := core.Join(arguments[0], hash, token, config.BindPrivate)
+	err := core.Join(arguments[0], hash, token, conf.Bind)
 	bailIfError(err)
 }
 
 func printCa(_ *cobra.Command, _ []string) {
-	config := loadConfig()
-	info := cluster.NewInfo(path.Join(config.DataDir, "cluster.json"))
+	conf := loadConfig()
+	info := cluster.NewInfo(path.Join(conf.DataDir, "cluster.json"))
 
 	fmt.Printf("%s", info.CACert)
 }
 
 func printToken(_ *cobra.Command, _ []string) {
-	config := loadConfig()
-	info := cluster.NewInfo(path.Join(config.DataDir, "cluster.json"))
+	conf := loadConfig()
+	info := cluster.NewInfo(path.Join(conf.DataDir, "cluster.json"))
 
 	hash := sha256.Sum256(info.CACert)
 
@@ -282,12 +287,12 @@ func printToken(_ *cobra.Command, _ []string) {
 }
 
 func runCore(_ *cobra.Command, _ []string) {
-	config := loadConfig()
-	db := openDatabase(config)
-	info := cluster.NewInfo(path.Join(config.DataDir, "cluster.json"))
+	conf := loadConfig()
+	db := openDatabase(conf)
+	info := cluster.NewInfo(path.Join(conf.DataDir, "cluster.json"))
 	core := cluster.NewCore(info)
 
-	self := cluster.DefaultPort(config.BindPrivate)
+	self := cluster.DefaultPort(conf.Bind)
 	info.SetSelf(self)
 
 	pair, err := core.Start()
@@ -297,7 +302,7 @@ func runCore(_ *cobra.Command, _ []string) {
 	internal.Use(gin.Logger())
 
 	server := &http.Server{
-		Addr: cluster.DefaultPort(config.BindPrivate),
+		Addr: cluster.DefaultPort(conf.Bind),
 		TLSConfig: &tls.Config{
 			Certificates: pair,
 			ClientCAs:    core.CA().CertPool(),
@@ -308,8 +313,8 @@ func runCore(_ *cobra.Command, _ []string) {
 
 	go server.ListenAndServeTLS("", "")
 
-	stream, _ := node.NewHTTPStream(config.BindPrivate, pair, core.CA())
-	n, err := node.NewNode(stream, config.DataDir, db, db, info, pair, core.CA())
+	stream, _ := node.NewHTTPStream(conf.Bind, pair, core.CA())
+	n, err := node.NewNode(stream, conf.DataDir, db, db, info, pair, core.CA())
 	if err != nil {
 		// FIXME: Fail in a more helpful manner than panic().
 		panic(err.Error())
@@ -328,9 +333,9 @@ func runCore(_ *cobra.Command, _ []string) {
 
 	api := engine.Group("/api")
 
-	if config.Login != "" && config.Password != "" {
+	if conf.HTTP.Login != "" && conf.HTTP.Password != "" {
 		api.Use(gin.BasicAuth(gin.Accounts{
-			config.Login: config.Password,
+			conf.HTTP.Login: conf.HTTP.Password,
 		}))
 	}
 
@@ -425,23 +430,22 @@ func runCore(_ *cobra.Command, _ []string) {
 	engine.Use(static.Serve("/", static.LocalFile(webroot, true)))
 
 	s := &http.Server{
-		Addr:           config.Bind(),
+		Addr:           conf.HTTP.Bind(),
 		Handler:        engine,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	logger.Info("main", "Binding public interface to %s", config.Bind())
+	logger.Info("main", "Binding public interface to %s", conf.HTTP.Bind())
 
-	if config.TLS() {
+	if conf.HTTP.TLS() {
 		var tlsConfig tls.Config
 
-		// if letsencrypt is enabled, put a GetCertificate function into tlsConfig
-		if config.LetsEncrypt {
+		if conf.HTTP.CertPath == "" || conf.HTTP.KeyPath == "" {
 			var lManager letsencrypt.Manager
 
-			cacheFile := path.Join(config.DataDir, "letsencrypt.cache")
+			cacheFile := path.Join(conf.DataDir, "letsencrypt.cache")
 
 			if err = lManager.CacheFile(cacheFile); err != nil {
 				logger.Info("main", "Failed to open Letsencrypt cachefile at %s: %s", cacheFile, err.Error())
@@ -449,7 +453,7 @@ func runCore(_ *cobra.Command, _ []string) {
 			}
 
 			// ensure we dont ask for random certificates
-			lManager.SetHosts(config.Hostnames())
+			lManager.SetHosts(conf.HTTP.Hostnames())
 
 			tlsConfig.GetCertificate = lManager.GetCertificate
 		}
@@ -457,13 +461,13 @@ func runCore(_ *cobra.Command, _ []string) {
 		s.TLSConfig = &tlsConfig
 
 		// if GetCertificate was set earlier - ListenAndServeTLS silently ignores cert and key
-		err = s.ListenAndServeTLS(config.Cert, config.Key)
+		err = s.ListenAndServeTLS(conf.HTTP.CertPath, conf.HTTP.KeyPath)
 	} else {
 		err = s.ListenAndServe()
 	}
 
 	if err != nil {
-		logger.Info("main", "Bind to %s failed: %s", config.Bind(), err.Error())
+		logger.Info("main", "Bind to %s failed: %s", conf.HTTP.Bind(), err.Error())
 		os.Exit(1)
 	}
 }

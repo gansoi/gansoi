@@ -99,27 +99,33 @@ o+7hG62xVvzquorK1CB0MKx92GIyGtk0319Ta0bt6oWwe/MoLtslgcYbjk8UdN5P
 EOF
 
 cat >/tmp/gansoi-dev/node1.conf <<EOF
-private = "127.0.0.1:4934"
-public = "https://node1.gansoi-dev.com:9002"
+bind = "127.0.0.1:4934"
+datadir = "/tmp/gansoi-dev/node1-data"
+
+[http]
+url = "https://node1.gansoi-dev.com:9002"
 cert = "/tmp/gansoi-dev/cert.pem"
 key = "/tmp/gansoi-dev/key.pem"
-datadir = "/tmp/gansoi-dev/node1-data"
 EOF
 
 cat >/tmp/gansoi-dev/node2.conf <<EOF
-private = "127.0.0.2:4934"
-public = "https://node2.gansoi-dev.com:9002"
+bind = "127.0.0.2:4934"
+datadir = "/tmp/gansoi-dev/node2-data"
+
+[http]
+url = "https://node2.gansoi-dev.com:9002"
 cert = "/tmp/gansoi-dev/cert.pem"
 key = "/tmp/gansoi-dev/key.pem"
-datadir = "/tmp/gansoi-dev/node2-data"
 EOF
 
 cat >/tmp/gansoi-dev/node3.conf <<EOF
-private = "127.0.0.3:4934"
-public = "https://node3.gansoi-dev.com:9002"
+bind = "127.0.0.3:4934"
+datadir = "/tmp/gansoi-dev/node3-data"
+
+[http]
+url = "https://node3.gansoi-dev.com:9002"
 cert = "/tmp/gansoi-dev/cert.pem"
 key = "/tmp/gansoi-dev/key.pem"
-datadir = "/tmp/gansoi-dev/node3-data"
 EOF
 
 mkdir /tmp/gansoi-dev/node1-data
@@ -129,7 +135,7 @@ mkdir /tmp/gansoi-dev/node3-data
 export DEBUG=*
 
 ./gansoi core --config /tmp/gansoi-dev/node1.conf init
-TOKEN=$(./gansoi core --config /tmp/gansoi-dev/node1.conf print-token)
+TOKEN=$(./gansoi core --config /tmp/gansoi-dev/node1.conf print-token 2>/dev/null)
 
 # Start first server
 tmux new-session -d './gansoi core --config /tmp/gansoi-dev/node1.conf; netstat -lnpt ; sleep 10'
