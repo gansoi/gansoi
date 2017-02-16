@@ -220,6 +220,20 @@ Vue.component('contact-line', {
     template: '#template-contact-line'
 });
 
+var testContact = function(button) {
+    button.disabled = true;
+
+    this.$http.post('/api/testcontact', this.contact).then(function(response) {
+        button.enabled = true;
+
+        this.error = '';
+    }, function(response) {
+        button.enabled = true;
+
+        this.error = response.body;
+    });
+};
+
 var editContact = Vue.component('edit-contact', {
     data: function() {
         return {
@@ -262,19 +276,7 @@ var editContact = Vue.component('edit-contact', {
             }
         },
 
-        testContact: function(button) {
-            button.disabled = true;
-
-            this.$http.post('/api/testcontact', this.contact).then(function(response) {
-                button.enabled = true;
-
-                this.error = '';
-            }, function(response) {
-                button.enabled = true;
-
-                this.error = response.body;
-            });
-        },
+        testContact: testContact,
 
         saveContact: function() {
             this.$http.post('/api/contacts', this.contact).then(function(response) {
@@ -318,19 +320,7 @@ var viewContact = Vue.component('view-contact', {
             router.push('/contact/edit/' + this.$route.params.id);
         },
 
-        testContact: function(button) {
-            button.disabled = true;
-
-            this.$http.post('/api/testcontact', this.contact).then(function(response) {
-                button.enabled = true;
-
-                this.error = '';
-            }, function(response) {
-                button.enabled = true;
-
-                this.error = response.body;
-            });
-        }
+        testContact: testContact
     },
 
     template: '#template-view-contact'
