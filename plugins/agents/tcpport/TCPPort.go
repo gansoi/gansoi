@@ -27,12 +27,9 @@ func (t *TCPPort) Check(result plugins.AgentResult) error {
 	// Measure the duration. This is the only check we for for now.
 	result.AddValue("ConnectDuration", ms(time.Now().Sub(start)))
 
-	// It doesn't make sense to measure close timing. Go returns without error
-	// before the remote end acks.
-	err = conn.Close()
-	if err != nil {
-		return err
-	}
+	// No need to check for errors here, it is not an error if the remote end
+	// already closed the connection.
+	conn.Close()
 
 	return nil
 }
