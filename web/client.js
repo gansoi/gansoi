@@ -545,53 +545,28 @@ var init = g.waitGroup(function() {
     });
 });
 
-init.add(1);
-Vue.http.get('/api/agents').then(function(response) {
-    response.body.forEach(function(check) {
-        agents.upsert(check);
+/**
+ * Seed a collection from a REST endpoint.
+ * @param {!g.waitGroup} wg The waitgroup to use.
+ * @param {!string} uri The URI to request.
+ * @param {!g.Collection} collection The collection to update.
+ */
+var restFetch = function(wg, uri, collection) {
+    wg.add(1);
+    Vue.http.get(uri).then(function(response) {
+        response.body.forEach(function(check) {
+            collection.upsert(check);
+        });
+        wg.done();
     });
-    init.done();
-});
+};
 
-init.add(1);
-Vue.http.get('/api/notifiers').then(function(response) {
-    response.body.forEach(function(check) {
-        notifiers.upsert(check);
-    });
-    init.done();
-});
-
-init.add(1);
-Vue.http.get('/api/checks').then(function(response) {
-    response.body.forEach(function(check) {
-        checks.upsert(check);
-    });
-    init.done();
-});
-
-init.add(1);
-Vue.http.get('/api/evaluations').then(function(response) {
-    response.body.forEach(function(evaluation) {
-        evaluations.upsert(evaluation);
-    });
-    init.done();
-});
-
-init.add(1);
-Vue.http.get('/api/contacts').then(function(response) {
-    response.body.forEach(function(contact) {
-        contacts.upsert(contact);
-    });
-    init.done();
-});
-
-init.add(1);
-Vue.http.get('/api/contactgroups').then(function(response) {
-    response.body.forEach(function(group) {
-        contactgroups.upsert(group);
-    });
-    init.done();
-});
+restFetch(init, '/api/agents', agents);
+restFetch(init, '/api/notifiers', notifiers);
+restFetch(init, '/api/checks/', checks);
+restFetch(init, '/api/evaluations/', evaluations);
+restFetch(init, '/api/contacts/', contacts);
+restFetch(init, '/api/contactgroups/', contactgroups);
 
 const router = new VueRouter({
     routes: [
