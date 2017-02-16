@@ -23,8 +23,8 @@ type (
 	}
 
 	data struct {
-		ID string `storm:"id"`
-		A  string
+		database.Object `storm:"inline"`
+		A               string
 	}
 )
 
@@ -80,9 +80,9 @@ func TestBoltStoreSave(t *testing.T) {
 	defer db.clean()
 
 	d := data{
-		ID: "bah",
-		A:  "hello",
+		A: "hello",
 	}
+	d.ID = "bah"
 
 	err := db.Save(&d)
 	if err != nil {
@@ -95,9 +95,9 @@ func TestBoltStoreOne(t *testing.T) {
 	defer db.clean()
 
 	d := data{
-		ID: "bah",
-		A:  "hello",
+		A: "hello",
 	}
+	d.ID = "bah"
 
 	err := db.Save(&d)
 	if err != nil {
@@ -120,9 +120,9 @@ func TestBoltStoreAll(t *testing.T) {
 	defer db.clean()
 
 	d := data{
-		ID: "bah",
-		A:  "hello",
+		A: "hello",
 	}
+	d.ID = "bah"
 
 	var all []data
 	err := db.All(&all, -1, 0, false)
@@ -167,9 +167,9 @@ func TestProcessLogEntry(t *testing.T) {
 	defer db.clean()
 
 	d := data{
-		ID: "bah",
-		A:  "hello",
+		A: "hello",
 	}
+	d.ID = "bah"
 
 	save := database.NewLogEntry(database.CommandSave, d)
 	err := db.ProcessLogEntry(save)
@@ -208,9 +208,9 @@ func TestBoltStoreApply(t *testing.T) {
 	defer db.clean()
 
 	d := data{
-		ID: "bah",
-		A:  "hello",
+		A: "hello",
 	}
+	d.ID = "bah"
 
 	entry := database.NewLogEntry(database.CommandSave, &d)
 	l := &raft.Log{}
@@ -236,9 +236,9 @@ func TestDatabaseWriteTo(t *testing.T) {
 	db := newTestDb()
 
 	d := data{
-		ID: "bah",
-		A:  "hello",
+		A: "hello",
 	}
+	d.ID = "bah"
 
 	err := db.Save(&d)
 	if err != nil {
