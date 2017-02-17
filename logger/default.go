@@ -6,9 +6,17 @@ import (
 )
 
 var (
-	debugLogger = New(os.Stdout, Green, os.Getenv("DEBUG"))
+	debug = os.Getenv("DEBUG")
+
+	debugLogger = New(os.Stdout, Green, debug)
 	infoLogger  = New(os.Stderr, Yellow, "*")
 )
+
+func init() {
+	if debug != "" {
+		Debug("logger", "Debug log enabled for '%s'", debug)
+	}
+}
 
 // Info will log something for the end user to stderr.
 func Info(pkg string, format string, args ...interface{}) {
