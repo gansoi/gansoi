@@ -13,7 +13,7 @@ docker-push: docker-image
 	docker push abrander/gansoi
 
 docker-run:
-	docker run --rm -p 443:443 -e DEBUG=* abrander/gansoi
+	docker run --rm -p 80:80 -p 443:443 -e DEBUG=* abrander/gansoi
 
 clean:
 	rm -f gansoi dockerroot/etc/ssl/certs/ca-certificates.crt

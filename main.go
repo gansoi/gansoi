@@ -439,6 +439,11 @@ func runCore(_ *cobra.Command, _ []string) {
 
 	logger.Info("main", "Binding public interface to %s", conf.HTTP.Bind)
 
+	if conf.HTTPRedirect.Bind != "" && conf.HTTPRedirect.Target != "" {
+		handler := http.RedirectHandler(conf.HTTPRedirect.Target, 307)
+		go http.ListenAndServe(conf.HTTPRedirect.Bind, handler)
+	}
+
 	if conf.HTTP.TLS {
 		var tlsConfig tls.Config
 

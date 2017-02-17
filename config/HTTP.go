@@ -12,3 +12,10 @@ type (
 		Password  string   `toml:"password"`
 	}
 )
+
+var (
+	scheme = map[bool]string{
+		false: "http",
+		true:  "https",
+	}
+)

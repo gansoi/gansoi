@@ -5,9 +5,10 @@ import "github.com/BurntSushi/toml"
 type (
 	// Configuration keeps configuration for a core node.
 	Configuration struct {
-		Bind    string `toml:"bind"`
-		DataDir string `toml:"datadir"`
-		HTTP    HTTP   `toml:"http"`
+		Bind         string       `toml:"bind"`
+		DataDir      string       `toml:"datadir"`
+		HTTP         HTTP         `toml:"http"`
+		HTTPRedirect HTTPRedirect `toml:"redirect"`
 	}
 )
 
@@ -27,6 +28,10 @@ tls = true
 hostnames = [ "gansoi.example.com" ]
 cert = "/etc/gansoi/me-cert.pem"
 key = "/etc/gansoi/me-key.pem"
+
+[redirect]
+bind = ":80"
+target = "https://gansoi.example.com/"
 `
 )
 
@@ -37,6 +42,8 @@ func (c *Configuration) SetDefaults() {
 	c.HTTP.Bind = ":443"
 	c.HTTP.TLS = true
 
+	c.HTTPRedirect.Bind = ":80"
+
 	c.Bind = ":4934"
 
 	// This makes sense on a unix system.
@@ -46,6 +53,17 @@ func (c *Configuration) SetDefaults() {
 // LoadFromFile loads a configuration from path.
 func (c *Configuration) LoadFromFile(path string) error {
 	_, err := toml.DecodeFile(path, c)
+	if err != nil {
+		return err
+	}
 
-	return err
+	// If the redirect target is empty, we default to the first hostname.
+	if c.HTTPRedirect.Target == "" && len(c.HTTP.Hostnames) > 0 {
+		c.HTTPRedirect.Target = scheme[c.HTTP.TLS] +
+			"://" +
+			c.HTTP.Hostnames[0] +
+			"/"
+	}
+
+	return nil
 }
