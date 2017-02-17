@@ -29,7 +29,7 @@ func TestSetDefaults(t *testing.T) {
 		t.Fatalf("Wrong default")
 	}
 
-	if !conf.HTTP.TLS() {
+	if !conf.HTTP.TLS {
 		t.Fatalf("Configuration should use TLS as default.")
 	}
 

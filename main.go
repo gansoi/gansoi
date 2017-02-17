@@ -430,16 +430,16 @@ func runCore(_ *cobra.Command, _ []string) {
 	engine.Use(static.Serve("/", static.LocalFile(webroot, true)))
 
 	s := &http.Server{
-		Addr:           conf.HTTP.Bind(),
+		Addr:           conf.HTTP.Bind,
 		Handler:        engine,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	logger.Info("main", "Binding public interface to %s", conf.HTTP.Bind())
+	logger.Info("main", "Binding public interface to %s", conf.HTTP.Bind)
 
-	if conf.HTTP.TLS() {
+	if conf.HTTP.TLS {
 		var tlsConfig tls.Config
 
 		if conf.HTTP.CertPath == "" || conf.HTTP.KeyPath == "" {
@@ -453,7 +453,7 @@ func runCore(_ *cobra.Command, _ []string) {
 			}
 
 			// ensure we dont ask for random certificates
-			lManager.SetHosts(conf.HTTP.Hostnames())
+			lManager.SetHosts(conf.HTTP.Hostnames)
 
 			tlsConfig.GetCertificate = lManager.GetCertificate
 		}
@@ -467,7 +467,7 @@ func runCore(_ *cobra.Command, _ []string) {
 	}
 
 	if err != nil {
-		logger.Info("main", "Bind to %s failed: %s", conf.HTTP.Bind(), err.Error())
+		logger.Info("main", "Bind to %s failed: %s", conf.HTTP.Bind, err.Error())
 		os.Exit(1)
 	}
 }

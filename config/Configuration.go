@@ -22,10 +22,11 @@ bind = ":4934"
 datadir = "/var/lib/gansoi"
 
 [http]
-url = "https://0.0.0.0/:443"
+bind = ":443"
+tls = true
+hostnames = [ "gansoi.example.com" ]
 cert = "/etc/gansoi/me-cert.pem"
 key = "/etc/gansoi/me-key.pem"
-cluster-url = "gansoi.example.com"
 `
 )
 
@@ -33,7 +34,8 @@ cluster-url = "gansoi.example.com"
 func (c *Configuration) SetDefaults() {
 	// By default we bind to port 443 (HTTPS) on all interfaces on both IPv4
 	// and IPv6.
-	c.HTTP.LocalURL = "https://0.0.0.0/"
+	c.HTTP.Bind = ":443"
+	c.HTTP.TLS = true
 
 	c.Bind = ":4934"
 
