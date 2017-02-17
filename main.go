@@ -316,8 +316,8 @@ func runCore(_ *cobra.Command, _ []string) {
 	stream, _ := node.NewHTTPStream(conf.Bind, pair, core.CA())
 	n, err := node.NewNode(stream, conf.DataDir, db, db, info, pair, core.CA())
 	if err != nil {
-		// FIXME: Fail in a more helpful manner than panic().
-		panic(err.Error())
+		logger.Info("main", "%s", err.Error())
+		os.Exit(1)
 	}
 
 	e := eval.NewEvaluator(n, info)
