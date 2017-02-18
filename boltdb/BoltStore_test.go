@@ -153,6 +153,27 @@ func TestBoltStoreAll(t *testing.T) {
 	}
 }
 
+func TestBoltStoreDelete(t *testing.T) {
+	db := newTestDb()
+	defer db.clean()
+
+	d := data{
+		A: "hello",
+	}
+	d.ID = "bah"
+
+	err := db.Delete(&d)
+	if err == nil {
+		t.Fatalf("Deleting non-existing record did not fail")
+	}
+
+	db.Save(&d)
+	err = db.Delete(&d)
+	if err != nil {
+		t.Fatalf("Delete() failed: %s", err.Error())
+	}
+}
+
 func TestBoltStoreStorm(t *testing.T) {
 	db := newTestDb()
 	defer db.clean()

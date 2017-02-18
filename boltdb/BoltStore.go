@@ -93,7 +93,7 @@ func (d *BoltStore) ProcessLogEntry(entry *database.LogEntry) error {
 	case database.CommandDelete:
 		stats.CounterInc("database_deletes", 1)
 		v, _ = entry.Payload()
-		err = d.db.DeleteStruct(v)
+		err = d.Delete(v)
 	default:
 		err = fmt.Errorf("not implemented")
 	}
@@ -217,6 +217,11 @@ func (d *BoltStore) All(to interface{}, limit int, skip int, reverse bool) error
 	}
 
 	return err
+}
+
+// Delete deletes a record from the store.
+func (d *BoltStore) Delete(data interface{}) error {
+	return d.db.DeleteStruct(data)
 }
 
 // RegisterListener implements database.Database.

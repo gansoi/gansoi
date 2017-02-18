@@ -16,6 +16,9 @@ type (
 		// All lists all kinds of a type.
 		All(to interface{}, limit int, skip int, reverse bool) error
 
+		// Delete an object from the database.
+		Delete(data interface{}) error
+
 		// RegisterListener adds a new listener for changes.
 		RegisterListener(listener Listener)
 	}
