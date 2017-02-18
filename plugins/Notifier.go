@@ -31,7 +31,12 @@ func RegisterNotifier(name string, notifier interface{}) {
 
 // GetNotifier will return a notifier registred with the name.
 func GetNotifier(name string) Notifier {
-	return reflect.New(notifiers[name]).Interface().(Notifier)
+	notifier, found := notifiers[name]
+	if !found {
+		return nil
+	}
+
+	return reflect.New(notifier).Interface().(Notifier)
 }
 
 // ListNotifiers will return a list of all agents.

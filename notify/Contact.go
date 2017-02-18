@@ -2,6 +2,7 @@ package notify
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/plugins"
@@ -32,6 +33,10 @@ func LoadContact(db database.Database, ID string) (*Contact, error) {
 // Notify contacts a Contact about a service change.
 func (c *Contact) Notify(text string) error {
 	notifier := plugins.GetNotifier(c.Notifier)
+	if notifier == nil {
+		return fmt.Errorf("Unknown notifier: %s", c.Notifier)
+	}
+
 	err := json.Unmarshal(c.Arguments, &notifier)
 	if err != nil {
 		return err
