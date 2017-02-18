@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"reflect"
 
+	"github.com/gansoi/gansoi/database"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,16 +12,16 @@ type (
 	// RestAPI is a generic way to build a REST-based API for the cluster
 	// database.
 	RestAPI struct {
-		node *Node
-		typ  reflect.Type
+		db  database.Database
+		typ reflect.Type
 	}
 )
 
 // NewRestAPI will instantiate a new RestAPI.
-func NewRestAPI(typ interface{}, node *Node) *RestAPI {
+func NewRestAPI(typ interface{}, db database.Database) *RestAPI {
 	return &RestAPI{
-		node: node,
-		typ:  reflect.TypeOf(typ),
+		db:  db,
+		typ: reflect.TypeOf(typ),
 	}
 }
 
@@ -33,7 +34,7 @@ func (r *RestAPI) list(c *gin.Context) {
 	// Please see: http://stackoverflow.com/a/25386460/1156537
 	list := reflect.New(reflect.MakeSlice(reflect.SliceOf(r.typ), 0, 0).Type()).Interface()
 
-	err := r.node.All(list, -1, 0, false)
+	err := r.db.All(list, -1, 0, false)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -50,7 +51,7 @@ func (r *RestAPI) create(c *gin.Context) {
 		return
 	}
 
-	err = r.node.Save(record)
+	err = r.db.Save(record)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -66,13 +67,13 @@ func (r *RestAPI) replace(c *gin.Context) {
 
 func (r *RestAPI) delete(c *gin.Context) {
 	record := r.new()
-	err := r.node.One("ID", c.Param("id"), record)
+	err := r.db.One("ID", c.Param("id"), record)
 	if err != nil {
 		c.AbortWithError(http.StatusNotFound, err)
 		return
 	}
 
-	err = r.node.Delete(record)
+	err = r.db.Delete(record)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
