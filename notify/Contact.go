@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"gopkg.in/go-playground/validator.v9"
+
 	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/plugins"
 )
@@ -12,8 +14,8 @@ type (
 	// Contact is a person or service capable of receiving notifications.
 	Contact struct {
 		database.Object `storm:"inline"`
-		Name            string          `json:"name"`
-		Notifier        string          `json:"notifier"`
+		Name            string          `json:"name" validate:"required"`
+		Notifier        string          `json:"notifier" validate:"required"`
 		Arguments       json.RawMessage `json:"arguments"`
 	}
 )
@@ -43,4 +45,10 @@ func (c *Contact) Notify(text string) error {
 	}
 
 	return notifier.Notify(text)
+}
+
+// Validate implements database.Validator.
+func (c *Contact) Validate(db database.Database) error {
+	v := validator.New()
+	return v.Struct(c)
 }

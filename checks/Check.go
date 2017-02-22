@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Knetic/govaluate"
+	"gopkg.in/go-playground/validator.v9"
 
 	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/plugins"
@@ -16,8 +17,8 @@ type (
 	// Check defines a check to be conducted by Gansoi.
 	Check struct {
 		database.Object `storm:"inline"`
-		Name            string          `json:"name"`
-		AgentID         string          `json:"agent"`
+		Name            string          `json:"name" validate:"required"`
+		AgentID         string          `json:"agent" validate:"required"`
 		Interval        time.Duration   `json:"interval"`
 		Arguments       json.RawMessage `json:"arguments"`
 		Agent           plugins.Agent   `json:"-"`
@@ -115,4 +116,10 @@ func (c *Check) Evaluate(result plugins.AgentResult) error {
 	}
 
 	return nil
+}
+
+// Validate implements database.Validator.
+func (c *Check) Validate(db database.Database) error {
+	v := validator.New()
+	return v.Struct(c)
 }

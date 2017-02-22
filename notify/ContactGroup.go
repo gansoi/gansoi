@@ -1,6 +1,10 @@
 package notify
 
 import (
+	"fmt"
+
+	"gopkg.in/go-playground/validator.v9"
+
 	"github.com/gansoi/gansoi/database"
 )
 
@@ -8,7 +12,7 @@ type (
 	// ContactGroup is a group of contacts.
 	ContactGroup struct {
 		database.Object `storm:"inline"`
-		Name            string   `json:"name"`
+		Name            string   `json:"name" validate:"required"`
 		Members         []string `json:"members"`
 	}
 )
@@ -38,4 +42,22 @@ func (g *ContactGroup) GetContacts(db database.Database) ([]*Contact, error) {
 	}
 
 	return contacts, nil
+}
+
+// Validate implements database.Validator.
+func (g *ContactGroup) Validate(db database.Database) error {
+	v := validator.New()
+	err := v.Struct(g)
+	if err != nil {
+		return err
+	}
+
+	for _, m := range g.Members {
+		_, err = LoadContact(db, m)
+		if err != nil {
+			return fmt.Errorf("Member %s not found", m)
+		}
+	}
+
+	return nil
 }

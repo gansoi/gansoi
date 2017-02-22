@@ -3,8 +3,10 @@ package checks
 import (
 	"encoding/json"
 	"errors"
+	"os"
 	"testing"
 
+	"github.com/gansoi/gansoi/boltdb"
 	"github.com/gansoi/gansoi/plugins"
 )
 
@@ -12,7 +14,34 @@ type (
 	mockAgent struct {
 		ReturnError bool `json:"return_error"`
 	}
+
+	TestDb struct {
+		*boltdb.BoltStore
+	}
 )
+
+func newTestDb() *TestDb {
+	var err error
+	db, err := boltdb.NewBoltStore("/dev/shm/gansoi-test.db")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return &TestDb{
+		BoltStore: db,
+	}
+}
+
+func (d *TestDb) clean() {
+	err := d.Close()
+	if err != nil {
+		panic(err.Error())
+	}
+	err = os.Remove("/dev/shm/gansoi-test.db")
+	if err != nil {
+		panic(err.Error())
+	}
+}
 
 func (m *mockAgent) Check(result plugins.AgentResult) error {
 	if m.ReturnError {
@@ -102,6 +131,34 @@ func TestRunCheckError(t *testing.T) {
 		result := RunCheck(&check)
 		if result.Error == "" {
 			t.Fatalf("Failed to return error for '%s'", input)
+		}
+	}
+}
+
+func TestCheckValidate(t *testing.T) {
+	db := newTestDb()
+	defer db.clean()
+	cases := []struct {
+		in  *Check
+		err bool
+	}{
+		{&Check{}, true},
+		{&Check{Name: "name"}, true},
+		{&Check{AgentID: "agent"}, true},
+		{&Check{Name: "name", AgentID: "agent"}, false},
+	}
+
+	for i, c := range cases {
+		err := c.in.Validate(db)
+
+		// Got no error, expected error
+		if err == nil && c.err {
+			t.Fatalf("%d: Failed to catch validation error in %+v", i, c.in)
+		}
+
+		// Got error, expected none
+		if err != nil && !c.err {
+			t.Fatalf("%d: Wrongly catched validation error in %+v", i, c.in)
 		}
 	}
 }

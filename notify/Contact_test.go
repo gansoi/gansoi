@@ -73,3 +73,32 @@ func TestLoadContact(t *testing.T) {
 		t.Fatalf("Did not load the same Contact as saevd, got %v, expected %v", c2, c1)
 	}
 }
+
+func TestContactValidate(t *testing.T) {
+	db := newDB(t)
+	defer db.Close()
+
+	cases := []struct {
+		in  *Contact
+		err bool
+	}{
+		{&Contact{}, true},
+		{&Contact{Name: "name"}, true},
+		{&Contact{Notifier: "notifier"}, true},
+		{&Contact{Name: "name", Notifier: "notifier"}, false},
+	}
+
+	for i, c := range cases {
+		err := c.in.Validate(db)
+
+		// Got no error, expected error
+		if err == nil && c.err {
+			t.Fatalf("%d: Failed to catch validation error in %+v", i, c.in)
+		}
+
+		// Got error, expected none
+		if err != nil && !c.err {
+			t.Fatalf("%d: Wrongly catched validation error in %+v", i, c.in)
+		}
+	}
+}

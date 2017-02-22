@@ -95,3 +95,36 @@ func TestGetContacts(t *testing.T) {
 		t.Fatalf("len != 2")
 	}
 }
+
+func TestContactGroupValidate(t *testing.T) {
+	db := newDB(t)
+	defer db.Close()
+
+	contact := &Contact{Name: "Name", Arguments: json.RawMessage("{}")}
+	db.Save(contact)
+
+	cases := []struct {
+		in  *ContactGroup
+		err bool
+	}{
+		{&ContactGroup{}, true},
+		{&ContactGroup{Name: "name"}, false},
+		{&ContactGroup{Name: "name", Members: []string{"hopsa"}}, true},
+		{&ContactGroup{Name: "name", Members: []string{contact.ID}}, false},
+		{&ContactGroup{Name: "name", Members: []string{contact.ID, "hopsa"}}, true},
+	}
+
+	for i, c := range cases {
+		err := c.in.Validate(db)
+
+		// Got no error, expected error
+		if err == nil && c.err {
+			t.Fatalf("%d: Failed to catch validation error in %+v", i, c.in)
+		}
+
+		// Got error, expected none
+		if err != nil && !c.err {
+			t.Fatalf("%d: Wrongly catched validation error in %+v (%s)", i, c.in, err.Error())
+		}
+	}
+}
