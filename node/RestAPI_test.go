@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -188,7 +189,9 @@ func TestRestApiCreateFailedValidation(t *testing.T) {
 		t.Fatalf("POST / returned unexpected status code: %d", resp.Code)
 	}
 
-	if resp.Body.String() != `{"error":"A cannot be empty"}` {
+	b := strings.TrimSpace(resp.Body.String())
+
+	if b != `{"error":"A cannot be empty"}` {
 		t.Fatalf("create returned unexpected body. Got '%s'", resp.Body.String())
 	}
 }
