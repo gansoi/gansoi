@@ -51,6 +51,15 @@ func (r *RestAPI) create(c *gin.Context) {
 		return
 	}
 
+	validator, ok := record.(database.Validator)
+	if ok {
+		err = validator.Validate(r.db)
+		if err != nil {
+			c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+	}
+
 	err = r.db.Save(record)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
