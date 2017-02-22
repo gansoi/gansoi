@@ -3,7 +3,6 @@ package eval
 import (
 	"encoding/json"
 	"errors"
-	"os"
 	"testing"
 	"time"
 
@@ -58,19 +57,10 @@ func (p *peerStore) Peers() ([]string, error) {
 }
 
 func newE(t *testing.T, nodes []string) (*boltdb.BoltStore, *Evaluator) {
-	path := "/dev/shm/mockdb"
 	peers := &peerStore{}
 	peers.SetPeers(nodes)
 
-	db, err := boltdb.NewBoltStore(path)
-	if err != nil {
-		t.Fatalf("Failed to create mock database: %s", err.Error())
-	}
-
-	err = os.Remove(path)
-	if err != nil {
-		t.Fatalf("os.remove() failed: %s", err.Error())
-	}
+	db := boltdb.NewTestStore()
 
 	e := NewEvaluator(db, peers)
 	if e == nil {
