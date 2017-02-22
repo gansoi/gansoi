@@ -327,6 +327,7 @@ func runCore(_ *cobra.Command, _ []string) {
 
 	engine := gin.New()
 	engine.Use(gin.Logger())
+	engine.Use(gin.ErrorLogger())
 
 	n.Router(internal.Group("/node"))
 	core.Router(internal.Group(cluster.CorePrefix), stream, n)
