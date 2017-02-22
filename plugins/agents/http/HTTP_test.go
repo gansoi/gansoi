@@ -58,6 +58,7 @@ func TestCheckFail(t *testing.T) {
 		"http://127.0.0.1:0/",
 		"http/////",
 		"http://go-test-nonexisting/",
+		"%",
 	}
 
 	for _, u := range cases {
