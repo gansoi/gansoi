@@ -5,12 +5,12 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/gansoi/gansoi/boltdb"
 	"github.com/gansoi/gansoi/database"
 )
 
 func TestLoadContactGroupFail(t *testing.T) {
-	db := newDB(t)
-	defer db.Close()
+	db := boltdb.NewTestStore()
 
 	g, err := LoadContactGroup(db, "nonexisting")
 	if err == nil {
@@ -23,8 +23,7 @@ func TestLoadContactGroupFail(t *testing.T) {
 }
 
 func TestLoadContactGroup(t *testing.T) {
-	db := newDB(t)
-	defer db.Close()
+	db := boltdb.NewTestStore()
 
 	g1 := &ContactGroup{
 		Members: nil,
@@ -51,8 +50,7 @@ func TestLoadContactGroup(t *testing.T) {
 }
 
 func TestGetContacts(t *testing.T) {
-	db := newDB(t)
-	defer db.Close()
+	db := boltdb.NewTestStore()
 
 	g := &ContactGroup{}
 	g.ID = "buh"
@@ -97,8 +95,7 @@ func TestGetContacts(t *testing.T) {
 }
 
 func TestContactGroupValidate(t *testing.T) {
-	db := newDB(t)
-	defer db.Close()
+	db := boltdb.NewTestStore()
 
 	contact := &Contact{Name: "Name", Arguments: json.RawMessage("{}")}
 	db.Save(contact)

@@ -3,7 +3,6 @@ package checks
 import (
 	"encoding/json"
 	"errors"
-	"os"
 	"testing"
 
 	"github.com/gansoi/gansoi/boltdb"
@@ -14,34 +13,7 @@ type (
 	mockAgent struct {
 		ReturnError bool `json:"return_error"`
 	}
-
-	TestDb struct {
-		*boltdb.BoltStore
-	}
 )
-
-func newTestDb() *TestDb {
-	var err error
-	db, err := boltdb.NewBoltStore("/dev/shm/gansoi-test.db")
-	if err != nil {
-		panic(err.Error())
-	}
-
-	return &TestDb{
-		BoltStore: db,
-	}
-}
-
-func (d *TestDb) clean() {
-	err := d.Close()
-	if err != nil {
-		panic(err.Error())
-	}
-	err = os.Remove("/dev/shm/gansoi-test.db")
-	if err != nil {
-		panic(err.Error())
-	}
-}
 
 func (m *mockAgent) Check(result plugins.AgentResult) error {
 	if m.ReturnError {
@@ -136,8 +108,8 @@ func TestRunCheckError(t *testing.T) {
 }
 
 func TestCheckValidate(t *testing.T) {
-	db := newTestDb()
-	defer db.clean()
+	db := boltdb.NewTestStore()
+
 	cases := []struct {
 		in  *Check
 		err bool

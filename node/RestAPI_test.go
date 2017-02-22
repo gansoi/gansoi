@@ -6,7 +6,6 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 
@@ -16,19 +15,7 @@ import (
 	"github.com/gansoi/gansoi/database"
 )
 
-var (
-	db *boltdb.BoltStore
-)
-
-const (
-	testDBPath = "/dev/shm/gansoi-test.db"
-)
-
 type (
-	TestDb struct {
-		*boltdb.BoltStore
-	}
-
 	data struct {
 		database.Object `storm:"inline"`
 		A               string
@@ -94,32 +81,8 @@ func init() {
 	gin.SetMode(gin.ReleaseMode)
 }
 
-func newTestDb() *TestDb {
-	var err error
-	db, err = boltdb.NewBoltStore(testDBPath)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	return &TestDb{
-		BoltStore: db,
-	}
-}
-
-func (d *TestDb) clean() {
-	err := d.Close()
-	if err != nil {
-		panic(err.Error())
-	}
-	err = os.Remove("/dev/shm/gansoi-test.db")
-	if err != nil {
-		panic(err.Error())
-	}
-}
-
 func TestNewRestAPI(t *testing.T) {
-	db := newTestDb()
-	defer db.clean()
+	db := boltdb.NewTestStore()
 
 	r := NewRestAPI(data{}, db)
 
@@ -177,8 +140,7 @@ func TestRestApiDBFail(t *testing.T) {
 }
 
 func TestRestApiCreateFailedValidation(t *testing.T) {
-	db := newTestDb()
-	defer db.clean()
+	db := boltdb.NewTestStore()
 
 	d := &data{}
 
@@ -197,8 +159,7 @@ func TestRestApiCreateFailedValidation(t *testing.T) {
 }
 
 func TestRestApiCreateFailedJSON(t *testing.T) {
-	db := newTestDb()
-	defer db.clean()
+	db := boltdb.NewTestStore()
 
 	body := []byte("this is not JSON")
 	resp := request(db, "POST", "/", body)
@@ -213,8 +174,7 @@ func TestRestApiCreateFailedJSON(t *testing.T) {
 }
 
 func TestRestApiCreate(t *testing.T) {
-	db := newTestDb()
-	defer db.clean()
+	db := boltdb.NewTestStore()
 
 	d := &data{A: "hejsa"}
 
@@ -231,8 +191,7 @@ func TestRestApiCreate(t *testing.T) {
 }
 
 func TestRestAPIList0(t *testing.T) {
-	db := newTestDb()
-	defer db.clean()
+	db := boltdb.NewTestStore()
 
 	resp := request(db, "GET", "/", nil)
 
@@ -253,8 +212,7 @@ func TestRestAPIList0(t *testing.T) {
 }
 
 func TestRestAPIDeleteFail(t *testing.T) {
-	db := newTestDb()
-	defer db.clean()
+	db := boltdb.NewTestStore()
 
 	resp := request(db, "DELETE", "/id-that-doesnt-exist", nil)
 
@@ -264,8 +222,7 @@ func TestRestAPIDeleteFail(t *testing.T) {
 }
 
 func TestRestAPIDelete(t *testing.T) {
-	db := newTestDb()
-	defer db.clean()
+	db := boltdb.NewTestStore()
 
 	d := &data{A: "hejsa"}
 	db.Save(d)

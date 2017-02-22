@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math/rand"
 	"os"
 	"sync"
 	"time"
@@ -46,6 +47,17 @@ func NewBoltStore(path string) (*BoltStore, error) {
 	}
 
 	return d, nil
+}
+
+// NewTestStore returns a store suited for testing.
+func NewTestStore() *BoltStore {
+	path := fmt.Sprintf("/dev/shm/.gansoi-test-%d.db", rand.Int63())
+	d := &BoltStore{}
+
+	d.open(path)
+	os.Remove(path)
+
+	return d
 }
 
 // Close will close the database. Accessing the database after this will
