@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"reflect"
 	"testing"
+
+	"github.com/gansoi/gansoi/boltdb"
 )
 
 func TestContactNotify(t *testing.T) {
@@ -36,8 +38,7 @@ func TestContactNotify(t *testing.T) {
 }
 
 func TestLoadContactFail(t *testing.T) {
-	db := newDB(t)
-	defer db.Close()
+	db := boltdb.NewTestStore()
 
 	c, err := LoadContact(db, "nonexisting")
 	if err == nil {
@@ -50,8 +51,7 @@ func TestLoadContactFail(t *testing.T) {
 }
 
 func TestLoadContact(t *testing.T) {
-	db := newDB(t)
-	defer db.Close()
+	db := boltdb.NewTestStore()
 
 	c1 := &Contact{
 		Notifier:  "none",
@@ -75,8 +75,7 @@ func TestLoadContact(t *testing.T) {
 }
 
 func TestContactValidate(t *testing.T) {
-	db := newDB(t)
-	defer db.Close()
+	db := boltdb.NewTestStore()
 
 	cases := []struct {
 		in  *Contact

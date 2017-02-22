@@ -56,12 +56,10 @@ func (d *TestDb) clean() {
 }
 
 func TestDatabaseOpen(t *testing.T) {
-	db := newTestDb()
+	db := NewTestStore()
 	if db == nil {
 		t.Fatalf("NewDatabase() failed to open database")
 	}
-
-	db.clean()
 }
 
 func TestDatabaseOpenFail(t *testing.T) {
@@ -76,8 +74,7 @@ func TestDatabaseOpenFail(t *testing.T) {
 }
 
 func TestBoltStoreSave(t *testing.T) {
-	db := newTestDb()
-	defer db.clean()
+	db := NewTestStore()
 
 	d := data{
 		A: "hello",
@@ -91,8 +88,7 @@ func TestBoltStoreSave(t *testing.T) {
 }
 
 func TestBoltStoreOne(t *testing.T) {
-	db := newTestDb()
-	defer db.clean()
+	db := NewTestStore()
 
 	d := data{
 		A: "hello",
@@ -116,8 +112,7 @@ func TestBoltStoreOne(t *testing.T) {
 }
 
 func TestBoltStoreAll(t *testing.T) {
-	db := newTestDb()
-	defer db.clean()
+	db := NewTestStore()
 
 	d := data{
 		A: "hello",
@@ -154,8 +149,7 @@ func TestBoltStoreAll(t *testing.T) {
 }
 
 func TestBoltStoreDelete(t *testing.T) {
-	db := newTestDb()
-	defer db.clean()
+	db := NewTestStore()
 
 	d := data{
 		A: "hello",
@@ -175,17 +169,15 @@ func TestBoltStoreDelete(t *testing.T) {
 }
 
 func TestBoltStoreStorm(t *testing.T) {
-	db := newTestDb()
-	defer db.clean()
+	db := NewTestStore()
 
-	if db.Storm().Bolt.Path() != path {
+	if db.Storm().Bolt.Path() == "" {
 		t.Fatalf("Something is wrong with the underlying Storm/Bolt storage")
 	}
 }
 
 func TestProcessLogEntry(t *testing.T) {
-	db := newTestDb()
-	defer db.clean()
+	db := NewTestStore()
 
 	d := data{
 		A: "hello",
@@ -225,8 +217,7 @@ func TestProcessLogEntry(t *testing.T) {
 }
 
 func TestBoltStoreApply(t *testing.T) {
-	db := newTestDb()
-	defer db.clean()
+	db := NewTestStore()
 
 	d := data{
 		A: "hello",
