@@ -137,10 +137,10 @@ func (s *Scheduler) loop() {
 					checkResult.Node = s.nodeName
 
 					if checkResult.Error != "" {
-						logger.Info("scheduler", "%s failed in %s: %s", check.ID, time.Now().Sub(start), checkResult.Error)
+						logger.Info("scheduler", "%s failed in %s: %s", check.ID, time.Since(start), checkResult.Error)
 					} else {
 						stats.CounterInc("scheduler_failed", 1)
-						logger.Debug("scheduler", "%s ran in %s: %+v", check.ID, time.Now().Sub(start), checkResult.Results)
+						logger.Debug("scheduler", "%s ran in %s: %+v", check.ID, time.Since(start), checkResult.Results)
 					}
 
 					s.node.Save(checkResult)

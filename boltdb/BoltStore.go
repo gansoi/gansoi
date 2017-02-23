@@ -179,12 +179,7 @@ func (d *BoltStore) Restore(source io.ReadCloser) error {
 		return err
 	}
 
-	err = d.open(path)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return d.open(path)
 }
 
 // Save will save an object to the database.

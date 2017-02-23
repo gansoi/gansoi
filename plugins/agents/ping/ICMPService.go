@@ -166,7 +166,7 @@ func (i *ICMPService) gotReply(id uint16, payload []byte) {
 			return
 		}
 
-		ch <- &icmpReply{RTT: time.Now().Sub(p.Timestamp)}
+		ch <- &icmpReply{RTT: time.Since(p.Timestamp)}
 		return
 	}
 }

@@ -113,7 +113,7 @@ func (c *Info) SetSelf(self string) error {
 // DefaultPort will return the hostname with the default internal Gansoi port.
 // If hostport already contains a port, DefaultPort will simply return that.
 func DefaultPort(hostport string) string {
-	if strings.IndexRune(hostport, ':') < 0 {
+	if !strings.ContainsRune(hostport, ':') {
 		return hostport + ":" + "4934"
 	}
 

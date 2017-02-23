@@ -33,7 +33,7 @@ type HTTP struct {
 }
 
 func getHostPort(URL *url.URL) (string, string) {
-	if strings.IndexRune(URL.Host, ':') < 0 {
+	if !strings.ContainsRune(URL.Host, ':') {
 		switch URL.Scheme {
 		case httpScheme:
 			return URL.Host, "80"

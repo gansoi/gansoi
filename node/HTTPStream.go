@@ -64,7 +64,7 @@ func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, erro
 	dial := h.dial
 	dial.Timeout = timeout
 
-	if strings.IndexRune(address, ':') < 0 {
+	if !strings.ContainsRune(address, ':') {
 		address += ":4934"
 	}
 

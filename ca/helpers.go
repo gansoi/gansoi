@@ -128,10 +128,7 @@ func GenerateCSR(key *ecdsa.PrivateKey, commonName string, ips []net.IP) (*x509.
 		},
 		SignatureAlgorithm: x509.ECDSAWithSHA256,
 		DNSNames:           []string{commonName},
-	}
-
-	for _, ip := range ips {
-		template.IPAddresses = append(template.IPAddresses, ip)
+		IPAddresses:        ips,
 	}
 
 	derBytes, err := x509.CreateCertificateRequest(rand.Reader, &template, key)

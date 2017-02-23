@@ -25,7 +25,7 @@ func (t *TCPPort) Check(result plugins.AgentResult) error {
 	}
 
 	// Measure the duration. This is the only check we for for now.
-	result.AddValue("ConnectDuration", ms(time.Now().Sub(start)))
+	result.AddValue("ConnectDuration", ms(time.Since(start)))
 
 	// No need to check for errors here, it is not an error if the remote end
 	// already closed the connection.

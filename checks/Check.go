@@ -60,12 +60,7 @@ func (c *Check) UnmarshalJSON(data []byte) error {
 		return errors.New("Agent not found")
 	}
 
-	err = json.Unmarshal(c.Arguments, &c.Agent)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return json.Unmarshal(c.Arguments, &c.Agent)
 }
 
 // RunCheck will run a check and return a CheckResult.

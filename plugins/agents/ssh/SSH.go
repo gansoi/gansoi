@@ -21,7 +21,7 @@ type SSH struct {
 
 // defaultPort will append the default ssh port to a hostname if needed.
 func defaultPort(address string) string {
-	if strings.IndexRune(address, ':') < 0 {
+	if !strings.ContainsRune(address, ':') {
 		return address + ":22"
 	}
 
@@ -48,7 +48,7 @@ func (s *SSH) Check(result plugins.AgentResult) error {
 		return err
 	}
 
-	result.AddValue("HandshakeTime", ms(time.Now().Sub(start)))
+	result.AddValue("HandshakeTime", ms(time.Since(start)))
 
 	if conn != nil {
 		result.AddValue("Version", string(conn.ServerVersion()))

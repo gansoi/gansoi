@@ -68,7 +68,7 @@ func (p *ICMPPayload) Read(payload []byte) error {
 	h.Write(payload[16:])
 	digest := h.Sum(nil)[:]
 
-	if bytes.Compare(digest, payload[:16]) != 0 {
+	if !bytes.Equal(digest, payload[:16]) {
 		return errors.New("Checksum error")
 	}
 

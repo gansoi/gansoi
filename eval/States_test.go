@@ -137,7 +137,7 @@ func TestStatesJSON(t *testing.T) {
 			t.Fatalf("json.Marshall() failed: %s", err.Error())
 		}
 
-		if bytes.Compare(result, dat.expected) != 0 {
+		if !bytes.Equal(result, dat.expected) {
 			t.Fatalf("Failed to JSON encode [%s] correct. Got [%s], expected [%s]", dat.input.ColorString(), result, dat.expected)
 		}
 	}

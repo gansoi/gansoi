@@ -209,7 +209,7 @@ func TestCertificatePEM(t *testing.T) {
 		t.Fatalf("CertificatePEM() failed: %s", err.Error())
 	}
 
-	if bytes.Compare(certPem, testCa) != 0 {
+	if !bytes.Equal(certPem, testCa) {
 		t.Fatalf("CertificatePEM() returned wrong output, got '%s', expected '%s'", certPem, testCa)
 	}
 }
@@ -235,7 +235,7 @@ func TestKeyPEM(t *testing.T) {
 		t.Fatalf("KeyPEM() failed: %s", err.Error())
 	}
 
-	if bytes.Compare(keyPem, testKey) != 0 {
+	if !bytes.Equal(keyPem, testKey) {
 		t.Fatalf("KeyPEM() returned wrong output, got '%s', expected '%s'", keyPem, testKey)
 	}
 }
