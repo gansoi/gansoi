@@ -11,7 +11,6 @@ import (
 	"os"
 
 	"github.com/gansoi/gansoi/ca"
-	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/logger"
 	"github.com/gin-gonic/gin"
 )
@@ -20,7 +19,6 @@ type (
 	// Core describes a Gansoi core node.
 	Core struct {
 		info        *Info
-		db          database.Database
 		ca          *ca.CA
 		pair        []tls.Certificate
 		raftHandler http.Handler

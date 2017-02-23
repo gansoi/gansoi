@@ -68,7 +68,7 @@ func (h *HTTP) Check(result plugins.AgentResult) error {
 		return err
 	}
 
-	for try := 0; try < 10; try++ {
+	for try := 0; try < redirectsToFollow; try++ {
 		if !(URL.Scheme == "http" || URL.Scheme == "https") {
 			return http.ErrNotSupported
 		}

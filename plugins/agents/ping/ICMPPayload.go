@@ -6,12 +6,9 @@ package ping
 import (
 	"bytes"
 	"crypto/md5"
-	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"time"
-
-	"github.com/gansoi/gansoi/logger"
 )
 
 type (
@@ -29,13 +26,6 @@ var (
 const (
 	helo = "Gansoi ping agent"
 )
-
-func _init() {
-	_, err := rand.Reader.Read(secret)
-	if err != nil {
-		logger.Info("ping", "Something is wrong with our random source: %s", err.Error())
-	}
-}
 
 // NewICMPPayload returns a new ICMPPayload set to current time.
 func NewICMPPayload() *ICMPPayload {

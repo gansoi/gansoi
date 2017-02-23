@@ -52,7 +52,7 @@ func TestPayloadReadFail(t *testing.T) {
 	}
 }
 
-func _TestPayloadBrokenJSON(t *testing.T) {
+func TestPayloadBrokenJSON(t *testing.T) {
 	msg := []byte("broken json")
 	h := md5.New()
 	h.Write(secret)

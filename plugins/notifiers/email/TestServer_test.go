@@ -19,7 +19,6 @@ type (
 		DataResponse  string
 		listener      net.Listener
 		authenticated bool
-		clientError   error
 	}
 )
 
@@ -167,7 +166,7 @@ func (t *TestServer) Close() {
 	t.listener.Close()
 }
 
-func _TestTestServer(t *testing.T) {
+func TestTestServer(t *testing.T) {
 	s := NewTestServer()
 
 	err := smtp.SendMail(s.Address, nil, "test@example.com", []string{"test@example.com"}, []byte("Hello there"))

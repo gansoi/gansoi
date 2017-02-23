@@ -15,12 +15,6 @@ func newInfo() *Info {
 	return NewInfo(testPath)
 }
 
-func readInfo() []byte {
-	b, _ := ioutil.ReadFile(testPath)
-
-	return b
-}
-
 func rmInfo() {
 	os.Remove(testPath)
 }

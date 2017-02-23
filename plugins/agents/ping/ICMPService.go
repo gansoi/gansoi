@@ -23,7 +23,6 @@ type (
 	ICMPService struct {
 		conn4      readwritecloser
 		conn6      readwritecloser
-		nextID     int
 		activeLock sync.RWMutex
 		active     map[uint16]chan *icmpReply
 	}
@@ -52,11 +51,6 @@ type (
 
 	closer interface {
 		Close() error
-	}
-
-	readwriter interface {
-		reader
-		writer
 	}
 
 	readwritecloser interface {
