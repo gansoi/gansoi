@@ -12,12 +12,17 @@ import (
 type (
 	mockAgent struct {
 		ReturnError bool `json:"return_error"`
+		Panic       bool `json:"panic"`
 	}
 )
 
 func (m *mockAgent) Check(result plugins.AgentResult) error {
 	if m.ReturnError {
 		return errors.New("error")
+	}
+
+	if m.Panic {
+		panic("panic")
 	}
 
 	result.AddValue("ran", true)
@@ -91,6 +96,7 @@ func TestRunCheckError(t *testing.T) {
 		`{"agent": "mock", "arguments": {}, "expressions": ["<<"]}`,
 		`{"agent": "mock", "arguments": {}, "expressions": ["nonexisting < 10"]}`,
 		`{"agent": "mock", "arguments": {}, "expressions": ["ran == false"]}`,
+		`{"agent": "mock", "arguments": {"panic": true}, "expressions": []}`,
 	}
 
 	var check Check

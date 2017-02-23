@@ -64,15 +64,24 @@ func (c *Check) UnmarshalJSON(data []byte) error {
 }
 
 // RunCheck will run a check and return a CheckResult.
-func RunCheck(check *Check) *CheckResult {
+func RunCheck(check *Check) (checkResult *CheckResult) {
 	agentResult := plugins.NewAgentResult()
-	e := check.Agent.Check(agentResult)
-
-	checkResult := &CheckResult{
+	checkResult = &CheckResult{
 		CheckID:   check.ID,
 		TimeStamp: time.Now(),
 		Results:   agentResult,
 	}
+
+	defer func() {
+		err := recover()
+
+		if err != nil {
+			// We don't know the type of 'err', so we let fmt deal with it :)
+			checkResult.Error = fmt.Sprintf("%s", err)
+		}
+	}()
+
+	e := check.Agent.Check(agentResult)
 
 	// If any expressions is defined, we try to evaluate them until one fails.
 	if len(check.Expressions) > 0 && e == nil {
