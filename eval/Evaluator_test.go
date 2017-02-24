@@ -62,7 +62,7 @@ func newE(t *testing.T, nodes []string) (*boltdb.BoltStore, *Evaluator) {
 
 	db := boltdb.NewTestStore()
 
-	e := NewEvaluator(db, peers)
+	e := NewEvaluator(db)
 	if e == nil {
 		t.Fatalf("NewEvaluator() returned nil")
 	}
@@ -76,16 +76,16 @@ func TestEvaluatorEvaluate1Basics(t *testing.T) {
 
 	result := &checks.CheckResult{
 		TimeStamp: time.Now(),
-		CheckID:   "test",
+		CheckID:   "da",
 		Node:      "justone",
 	}
 
-	_, err := e.evaluate1(result)
+	_, err := e.evaluate(result)
 	if err != nil {
-		t.Fatalf("evaluate1() failed: %s", err.Error())
+		t.Fatalf("evaluate() failed: %s", err.Error())
 	}
 
-	pe := []PartialEvaluation{}
+	pe := []Evaluation{}
 	err = db.All(&pe, -1, 0, false)
 	if err != nil {
 		t.Fatalf("db.All() failed: %s", err.Error())
@@ -98,9 +98,9 @@ func TestEvaluatorEvaluate1Basics(t *testing.T) {
 	// Move one minute into the future.
 	result.TimeStamp = result.TimeStamp.Add(time.Minute)
 
-	_, err = e.evaluate1(result)
+	_, err = e.evaluate(result)
 	if err != nil {
-		t.Fatalf("evaluate1() failed: %s", err.Error())
+		t.Fatalf("evaluate() failed: %s", err.Error())
 	}
 
 	err = db.All(&pe, -1, 0, false)
@@ -109,7 +109,7 @@ func TestEvaluatorEvaluate1Basics(t *testing.T) {
 	}
 
 	if len(pe) != 1 {
-		t.Fatalf("Got wrong number of evaluations.")
+		t.Fatalf("Got wrong number of evaluations, got %d", len(pe))
 	}
 }
 
@@ -121,115 +121,36 @@ func TestEvaluatorEvaluate1(t *testing.T) {
 		in    checks.CheckResult
 		state State
 	}{
+		{checks.CheckResult{}, StateUnknown},
+		{checks.CheckResult{}, StateUnknown},
+		{checks.CheckResult{}, StateUnknown},
+		{checks.CheckResult{}, StateUnknown},
 		{checks.CheckResult{}, StateUp},
 		{checks.CheckResult{}, StateUp},
-		{checks.CheckResult{Error: "error"}, StateDown},
-		{checks.CheckResult{Error: "error"}, StateDown},
-		{checks.CheckResult{Error: "error"}, StateDown},
 		{checks.CheckResult{}, StateUp},
-		{checks.CheckResult{Error: "error"}, StateDown},
+		{checks.CheckResult{Error: "error"}, StateDegraded},
+		{checks.CheckResult{Error: "error"}, StateDegraded},
+		{checks.CheckResult{Error: "error"}, StateDegraded},
+		{checks.CheckResult{}, StateDegraded},
+		{checks.CheckResult{Error: "error"}, StateDegraded},
+		{checks.CheckResult{}, StateDegraded},
+		{checks.CheckResult{}, StateDegraded},
+		{checks.CheckResult{}, StateDegraded},
+		{checks.CheckResult{}, StateDegraded},
+		{checks.CheckResult{}, StateUp},
+		{checks.CheckResult{}, StateUp},
 		{checks.CheckResult{}, StateUp},
 	}
 
-	for _, c := range cases {
-		e, _ := e.evaluate1(&c.in)
+	for i, c := range cases {
+		err := db.Save(&c.in)
+		if err != nil {
+			t.Fatalf("Save() failed: %s", err.Error())
+		}
+
+		e, _ := e.evaluate(&c.in)
 		if e.State != c.state {
-			t.Fatalf("evaluate1() concluded wrong state. Got %s, expected %s", e.State.ColorString(), c.state.ColorString())
-		}
-	}
-}
-
-func TestEvaluatorEvaluate2(t *testing.T) {
-	db, e := newE(t, []string{"justone"})
-	defer db.Close()
-
-	err := db.Save(&check)
-	if err != nil {
-		t.Fatalf("db.Save() failed: %s", err.Error())
-	}
-
-	cases := []struct {
-		in    checks.CheckResult
-		state State
-	}{
-		{checks.CheckResult{CheckID: "test", Node: "justone", TimeStamp: time.Now()}, StateUp},
-		{checks.CheckResult{CheckID: "test", Node: "justone", TimeStamp: time.Now()}, StateUp},
-		{checks.CheckResult{CheckID: "test", Node: "justone", TimeStamp: time.Now(), Error: "error"}, StateDown},
-		{checks.CheckResult{CheckID: "test", Node: "justone", TimeStamp: time.Now(), Error: "error"}, StateDown},
-		{checks.CheckResult{CheckID: "test", Node: "justone", TimeStamp: time.Now(), Error: "error"}, StateDown},
-		{checks.CheckResult{CheckID: "test", Node: "justone", TimeStamp: time.Now(), Error: "error"}, StateDown},
-		{checks.CheckResult{CheckID: "test", Node: "justone", TimeStamp: time.Now()}, StateUp},
-		{checks.CheckResult{CheckID: "test", Node: "justone", TimeStamp: time.Now()}, StateUp},
-		{checks.CheckResult{CheckID: "test", Node: "justone", TimeStamp: time.Now()}, StateUp},
-		{checks.CheckResult{CheckID: "test", Node: "justone", TimeStamp: time.Now()}, StateUp},
-		{checks.CheckResult{CheckID: "test", Node: "justone", TimeStamp: time.Now()}, StateUp},
-		{checks.CheckResult{CheckID: "test", Node: "justone", TimeStamp: time.Now()}, StateUp},
-		{checks.CheckResult{CheckID: "test", Node: "justone", TimeStamp: time.Now()}, StateUp},
-		{checks.CheckResult{CheckID: "test", Node: "justone", TimeStamp: time.Now()}, StateUp},
-		{checks.CheckResult{CheckID: "test", Node: "justone", TimeStamp: time.Now()}, StateUp},
-	}
-
-	for i, c := range cases {
-		pe, _ := e.evaluate1(&c.in)
-		eval, err := e.evaluate2(pe)
-		if err != nil {
-			t.Fatalf("evaluate2() returned error: %s", err.Error())
-		}
-
-		evalState := eval.History[0]
-		if evalState != c.state {
-			t.Fatalf("evaluate2(%d) concluded wrong state. Got %s, expected %s", i, evalState.ColorString(), c.state.ColorString())
-		}
-	}
-}
-
-func TestEvaluatorEvaluate2Cluster(t *testing.T) {
-	db, e := newE(t, []string{"one", "two"})
-	defer db.Close()
-
-	err := db.Save(&check)
-	if err != nil {
-		t.Fatalf("db.Save() failed: %s", err.Error())
-	}
-
-	cases := []struct {
-		in    checks.CheckResult
-		state State
-	}{
-		{checks.CheckResult{CheckID: "test", Node: "one", TimeStamp: time.Now()}, StateUnknown},
-		{checks.CheckResult{CheckID: "test", Node: "one", TimeStamp: time.Now()}, StateUnknown},
-		{checks.CheckResult{CheckID: "test", Node: "two", TimeStamp: time.Now()}, StateUp},
-		{checks.CheckResult{CheckID: "test", Node: "two", TimeStamp: time.Now()}, StateUp},
-		{checks.CheckResult{CheckID: "test", Node: "one", TimeStamp: time.Now(), Error: "error"}, StateDegraded},
-		{checks.CheckResult{CheckID: "test", Node: "two", TimeStamp: time.Now(), Error: "error"}, StateDown},
-		{checks.CheckResult{CheckID: "test", Node: "one", TimeStamp: time.Now(), Error: "error"}, StateDown},
-		{checks.CheckResult{CheckID: "test", Node: "one", TimeStamp: time.Now(), Error: "error"}, StateDown},
-		{checks.CheckResult{CheckID: "test", Node: "one", TimeStamp: time.Now()}, StateDegraded},
-		{checks.CheckResult{CheckID: "test", Node: "two", TimeStamp: time.Now()}, StateUp},
-		{checks.CheckResult{CheckID: "test", Node: "one", TimeStamp: time.Now()}, StateUp},
-		{checks.CheckResult{CheckID: "test", Node: "one", TimeStamp: time.Now()}, StateUp},
-		{checks.CheckResult{CheckID: "test", Node: "one", TimeStamp: time.Now(), Error: "error"}, StateDegraded},
-		{checks.CheckResult{CheckID: "test", Node: "one", TimeStamp: time.Now()}, StateUp},
-		{checks.CheckResult{CheckID: "test", Node: "one", TimeStamp: time.Now()}, StateUp},
-
-		// Old results should result in unknown. Something is wrong.
-		{checks.CheckResult{CheckID: "test", Node: "one", TimeStamp: time.Now().Add(-time.Hour)}, StateUnknown},
-		{checks.CheckResult{CheckID: "test", Node: "two", TimeStamp: time.Now().Add(-time.Hour)}, StateUnknown},
-		{checks.CheckResult{CheckID: "test", Node: "one", TimeStamp: time.Now()}, StateUnknown},
-		{checks.CheckResult{CheckID: "test", Node: "one", TimeStamp: time.Now()}, StateUnknown},
-		{checks.CheckResult{CheckID: "test", Node: "two", TimeStamp: time.Now()}, StateUp},
-	}
-
-	for i, c := range cases {
-		pe, _ := e.evaluate1(&c.in)
-		eval, err := e.evaluate2(pe)
-		if err != nil {
-			t.Fatalf("evaluate2() returned error: %s", err.Error())
-		}
-
-		evalState := eval.History[0]
-		if evalState != c.state {
-			t.Fatalf("evaluate2(%d) concluded wrong state. Got %s, expected %s", i, evalState.ColorString(), c.state.ColorString())
+			t.Fatalf("evaluate() [%d] concluded wrong state. Got %s, expected %s", i, e.State.ColorString(), c.state.ColorString())
 		}
 	}
 }

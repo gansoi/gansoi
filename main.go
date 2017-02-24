@@ -328,7 +328,7 @@ func runCore(_ *cobra.Command, _ []string) {
 		os.Exit(1)
 	}
 
-	e := eval.NewEvaluator(n, info)
+	e := eval.NewEvaluator(n)
 	n.RegisterListener(e)
 
 	scheduler := checks.NewScheduler(n, info.Self())

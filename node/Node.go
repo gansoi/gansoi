@@ -50,6 +50,7 @@ func init() {
 	stats.CounterInit("node_save")
 	stats.CounterInit("node_one")
 	stats.CounterInit("node_all")
+	stats.CounterInit("node_find")
 	stats.CounterInit("node_delete")
 }
 
@@ -242,6 +243,13 @@ func (n *Node) All(to interface{}, limit int, skip int, reverse bool) error {
 	stats.CounterInc("node_all", 1)
 
 	return n.db.All(to, limit, skip, reverse)
+}
+
+// Find find objects of type.
+func (n *Node) Find(field string, value interface{}, to interface{}, limit int, skip int, reverse bool) error {
+	stats.CounterInc("node_find", 1)
+
+	return n.db.Find(field, value, to, limit, skip, reverse)
 }
 
 // Delete deletes one record.

@@ -226,6 +226,24 @@ func (d *BoltStore) All(to interface{}, limit int, skip int, reverse bool) error
 	return err
 }
 
+// Find Find returns one or more records by the specified index.
+func (d *BoltStore) Find(field string, value interface{}, to interface{}, limit int, skip int, reverse bool) error {
+	d.dbMutex.RLock()
+	defer d.dbMutex.RUnlock()
+
+	err := d.db.Find(field, value, to, func(opts *index.Options) {
+		opts.Limit = limit
+		opts.Skip = skip
+		opts.Reverse = reverse
+	})
+
+	if err == storm.ErrNotFound {
+		return database.ErrNotFound
+	}
+
+	return err
+}
+
 // Delete deletes a record from the store.
 func (d *BoltStore) Delete(data interface{}) error {
 	return d.db.DeleteStruct(data)

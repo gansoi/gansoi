@@ -26,6 +26,7 @@ type (
 		SaveError   error
 		OneError    error
 		AllError    error
+		FindError   error
 		DeleteError error
 	}
 )
@@ -57,6 +58,14 @@ func (f *failDB) One(fieldName string, value interface{}, to interface{}) error 
 func (f *failDB) All(to interface{}, limit int, skip int, reverse bool) error {
 	if f.AllError != nil {
 		return f.AllError
+	}
+
+	return f.err
+}
+
+func (f *failDB) Find(field string, value interface{}, to interface{}, limit int, skip int, reverse bool) error {
+	if f.FindError != nil {
+		return f.FindError
 	}
 
 	return f.err

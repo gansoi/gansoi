@@ -29,6 +29,10 @@ func (f *failDB) All(_ interface{}, _ int, _ int, _ bool) error {
 	return f.err
 }
 
+func (f *failDB) Find(field string, value interface{}, to interface{}, limit int, skip int, reverse bool) error {
+	return f.err
+}
+
 func (f *failDB) Delete(data interface{}) error {
 	return f.err
 }
