@@ -324,7 +324,7 @@ func runCore(_ *cobra.Command, _ []string) {
 	e := eval.NewEvaluator(n, info)
 	n.RegisterListener(e)
 
-	checks.NewScheduler(n, info.Self(), true)
+	checks.NewScheduler(n, info.Self()).Run()
 
 	engine := gin.New()
 	engine.Use(gin.Logger())

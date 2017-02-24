@@ -1,8 +1,6 @@
 package checks
 
 import (
-	"math/rand"
-	"sync"
 	"time"
 
 	"github.com/gansoi/gansoi/database"
@@ -12,20 +10,11 @@ import (
 
 type (
 	// Scheduler takes care of scheduling checks on the local node. For now
-	// it will tick two times each second.
+	// it will spin four times each second.
 	Scheduler struct {
-		run       bool
-		node      database.Database
-		nodeName  string
-		ticker    *time.Ticker
-		metaStore map[string]*checkMeta
-	}
-
-	// checkMeta is used internally in the scheduler to keep track of check
-	// metadata.
-	checkMeta struct {
-		LastCheck time.Time
-		NextCheck time.Time
+		nodeName string
+		stop     chan struct{}
+		db       database.Database
 	}
 )
 
@@ -36,129 +25,95 @@ func init() {
 	stats.CounterInit("scheduler_failed")
 }
 
-// NewScheduler starts a new scheduler.
-func NewScheduler(n database.Database, nodeName string, run bool) *Scheduler {
+// NewScheduler instantiates a new scheduler.
+func NewScheduler(db database.Database, nodeName string) *Scheduler {
 	s := &Scheduler{
-		node:      n,
-		nodeName:  nodeName,
-		ticker:    time.NewTicker(time.Millisecond * 500),
-		run:       run,
-		metaStore: make(map[string]*checkMeta),
+		nodeName: nodeName,
+		stop:     make(chan struct{}),
+		db:       db,
 	}
-
-	go s.loop()
 
 	return s
 }
 
 // Run will start the event loop.
 func (s *Scheduler) Run() {
-	s.run = true
+	go s.loop()
 }
 
-// Stop will stp the event loop.
+// Stop will stop the event loop.
 func (s *Scheduler) Stop() {
-	s.run = false
-}
-
-func (s *Scheduler) meta(check *Check) *checkMeta {
-	meta, found := s.metaStore[check.ID]
-	if !found {
-		meta = &checkMeta{}
-		s.metaStore[check.ID] = meta
-	}
-
-	return meta
+	s.stop <- struct{}{}
 }
 
 func (s *Scheduler) loop() {
-	// inFlight is a list of check id's currently running
-	inFlight := make(map[string]bool)
-	inFlightLock := sync.RWMutex{}
+	ticker := time.NewTicker(time.Millisecond * 250)
 
-	for t := range s.ticker.C {
-		if !s.run {
-			continue
-		}
-
-		// We start by extracting a list of all checks. If this gets too
-		// expensive at some point, we can do it less frequent or more
-		// efficient.
-		var allChecks []Check
-		err := s.node.All(&allChecks, -1, 0, false)
-		if err != nil {
-			logger.Info("scheduler", "%s", err.Error())
-			continue
-		}
-
-		// We iterate the list of checks, to see if anything needs to be done.
-		for _, check := range allChecks {
-			meta := s.meta(&check)
-
-			// Calculate the age of the last check, if the age is positive, it's
-			// in the past.
-			age := t.Sub(meta.LastCheck)
-
-			// Calculate how much we should wait before executing the check. If
-			// the value is positive, it's in the future.
-			wait := meta.NextCheck.Sub(t)
-
-			// Check if the check is already executing.
-			inFlightLock.RLock()
-			_, found := inFlight[check.ID]
-			inFlightLock.RUnlock()
-
-			if found {
-				stats.CounterInc("scheduler_inflight_overrun", 1)
-				continue
-			}
-
-			// If the check is older than two intervals, we treat it as new.
-			if age > check.Interval*2 && wait < -check.Interval {
-				checkIn := time.Duration(rand.Int63n(int64(check.Interval)))
-				meta.NextCheck = t.Add(checkIn)
-
-				logger.Debug("scheduler", "%s start delayed for %s", check.ID, checkIn.String())
-			} else if wait < 0 {
-				// If we arrive here, wait is sub-zero, which means that we
-				// should execute now.
-				inFlightLock.Lock()
-				inFlight[check.ID] = true
-				inFlightLock.Unlock()
-				stats.CounterInc("scheduler_inflight", 1)
-
-				// Execute the check in its own go routine.
-				go func(check Check) {
-					// Run the job.
-					start := time.Now()
-
-					stats.CounterInc("scheduler_started", 1)
-					checkResult := RunCheck(&check)
-					checkResult.Node = s.nodeName
-
-					if checkResult.Error != "" {
-						logger.Info("scheduler", "%s failed in %s: %s", check.ID, time.Since(start), checkResult.Error)
-					} else {
-						stats.CounterInc("scheduler_failed", 1)
-						logger.Debug("scheduler", "%s ran in %s: %+v", check.ID, time.Since(start), checkResult.Results)
-					}
-
-					s.node.Save(checkResult)
-
-					// Save the check time and schedule next check. It should be
-					// safe to update meta from a go routine. We shouldn't
-					// execute the same check more than once at a time.
-					meta.LastCheck = t
-					meta.NextCheck = t.Add(check.Interval)
-
-					// Remove the check from the inFlight map.
-					inFlightLock.Lock()
-					delete(inFlight, check.ID)
-					inFlightLock.Unlock()
-
-					stats.CounterDec("scheduler_inflight", 1)
-				}(check)
-			}
+	for {
+		select {
+		case t := <-ticker.C:
+			s.spin(t)
+		case <-s.stop:
+			ticker.Stop()
+			return
 		}
 	}
+}
+
+func (s *Scheduler) spin(clock time.Time) {
+	// Get a list of all checks.
+	all, err := All(s.db)
+	if err != nil {
+		logger.Info("scheduler", "All() failed: %s", err.Error())
+		return
+	}
+
+	for _, c := range all {
+		meta := meta(clock, &c)
+
+		// Calculate how much we should wait before executing the check. If
+		// the value is positive, it's in the future.
+		wait := meta.NextCheck.Sub(clock)
+
+		// If there's still time to wait - wait.
+		if wait > 0 {
+			continue
+		}
+
+		// If the last check is still running, abort.
+		if meta.running {
+			stats.CounterInc("scheduler_inflight_overrun", 1)
+			continue
+		}
+
+		meta.runs++
+		meta.running = true
+
+		stats.CounterInc("scheduler_inflight", 1)
+		go s.runCheck(clock, &c, meta)
+	}
+}
+
+func (s *Scheduler) runCheck(clock time.Time, check *Check, meta *checkMeta) *CheckResult {
+	start := time.Now()
+
+	stats.CounterInc("scheduler_started", 1)
+
+	checkResult := RunCheck(check)
+	checkResult.Node = s.nodeName
+
+	if checkResult.Error != "" {
+		logger.Info("scheduler", "%s failed in %s: %s", check.ID, time.Since(start), checkResult.Error)
+	} else {
+		stats.CounterInc("scheduler_failed", 1)
+		logger.Debug("scheduler", "%s ran in %s: %+v", check.ID, time.Since(start), checkResult.Results)
+	}
+
+	meta.NextCheck = clock.Add(check.Interval)
+
+	s.db.Save(checkResult)
+
+	meta.running = false
+
+	return checkResult
 }
