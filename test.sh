@@ -150,14 +150,14 @@ TOKEN=$(./gansoi core --config /tmp/gansoi-dev/node1.conf print-token 2>/dev/nul
 export DEBUG=*
 
 # Start first server
-tmux new-session -d './gansoi core --config /tmp/gansoi-dev/node1.conf; sleep 10'
+tmux new-session -d './gansoi core --config /tmp/gansoi-dev/node1.conf run; sleep 10'
 
 sleep 3
 ./gansoi core --config /tmp/gansoi-dev/node2.conf join 127.0.0.1 $TOKEN
-tmux split-window -v './gansoi core --config /tmp/gansoi-dev/node2.conf; sleep 10'
+tmux split-window -v './gansoi core --config /tmp/gansoi-dev/node2.conf run; sleep 10'
 
 sleep 3
 ./gansoi core --config /tmp/gansoi-dev/node3.conf join 127.0.0.1 $TOKEN
-tmux split-window -v './gansoi core --config /tmp/gansoi-dev/node3.conf; sleep 10'
+tmux split-window -v './gansoi core --config /tmp/gansoi-dev/node3.conf run; sleep 10'
 
 tmux -2 attach-session -d
