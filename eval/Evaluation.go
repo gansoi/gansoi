@@ -29,11 +29,7 @@ func LatestEvaluation(db database.Database, checkID string) (*Evaluation, error)
 	}
 
 	var results []Evaluation
-	err := db.Find("CheckID", checkID, &results, 1, 0, true)
-	if err != nil {
-		return nil, err
-	}
-
+	db.Find("CheckID", checkID, &results, 1, 0, true)
 	if len(results) != 1 {
 		return nil, database.ErrNotFound
 	}
