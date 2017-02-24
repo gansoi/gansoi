@@ -26,6 +26,7 @@ type (
 		db            database.Database
 		raft          *raft.Raft
 		leader        bool
+		leadersChans  []chan bool
 		basePath      string
 		listenersLock sync.RWMutex
 		listeners     []database.Listener
@@ -122,7 +123,7 @@ func NewNode(stream *HTTPStream, datadir string, db database.Database, fsm raft.
 		for {
 			select {
 			case leader := <-lch:
-				n.leader = leader
+				n.leaderChange(leader)
 			case <-tickChannel:
 				var ni nodeInfo
 				ni.Started = started
@@ -136,6 +137,14 @@ func NewNode(stream *HTTPStream, datadir string, db database.Database, fsm raft.
 	}()
 
 	return n, nil
+}
+
+func (n *Node) leaderChange(leader bool) {
+	n.leader = leader
+
+	for _, ch := range n.leadersChans {
+		ch <- leader
+	}
 }
 
 // statsHandler will reply with a few raft statistics.
@@ -276,4 +285,15 @@ func (n *Node) Router(router *gin.RouterGroup) {
 // AddPeer adds a new cluster/raft peer.
 func (n *Node) AddPeer(name string) error {
 	return n.raft.AddPeer(name).Error()
+}
+
+// LeaderCh is used to get a channel which delivers signals on acquiring or
+// losing leadership. It sends true if we become the leader, and false if we
+// lose it.
+func (n *Node) LeaderCh() <-chan bool {
+	ch := make(chan bool)
+
+	n.leadersChans = append(n.leadersChans, ch)
+
+	return ch
 }

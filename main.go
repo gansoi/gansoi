@@ -331,7 +331,17 @@ func runCore(_ *cobra.Command, _ []string) {
 	e := eval.NewEvaluator(n, info)
 	n.RegisterListener(e)
 
-	checks.NewScheduler(n, info.Self()).Run()
+	scheduler := checks.NewScheduler(n, info.Self())
+
+	go func() {
+		for leader := range n.LeaderCh() {
+			if leader {
+				scheduler.Run()
+			} else {
+				scheduler.Stop()
+			}
+		}
+	}()
 
 	engine := gin.New()
 	engine.Use(gin.Logger())
