@@ -66,12 +66,19 @@ func main() {
 		Use:   "core",
 		Short: "Run a core node",
 		Long:  `Run a core node in a Gansoi cluster`,
-		Run:   runCore,
 	}
 	cmdCore.PersistentFlags().StringVar(&configFile,
 		"config",
 		config.DefaultPath,
 		"The configuration file to use.")
+
+	coreRun := &cobra.Command{
+		Use:   "run",
+		Short: "Start a core node",
+		Long:  "Start a core Gansoi node",
+		Run:   runCore,
+	}
+	cmdCore.AddCommand(coreRun)
 
 	coreInit := &cobra.Command{
 		Use:   "init",
