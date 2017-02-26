@@ -87,6 +87,7 @@ func (h *HTTP) Check(result plugins.AgentResult) error {
 		if err != nil {
 			return err
 		}
+		defer conn.Close()
 
 		t2 := time.Now()
 		if URL.Scheme == httpsScheme {
