@@ -6,6 +6,7 @@ import (
 	"io"
 	"math/rand"
 	"os"
+	"path"
 	"sync"
 	"time"
 
@@ -51,11 +52,11 @@ func NewBoltStore(path string) (*BoltStore, error) {
 
 // NewTestStore returns a store suited for testing.
 func NewTestStore() *BoltStore {
-	path := fmt.Sprintf("/dev/shm/.gansoi-test-%d.db", rand.Int63())
+	p := path.Join(os.TempDir(), fmt.Sprintf(".gansoi-test-%d.db", rand.Int63()))
 	d := &BoltStore{}
 
-	d.open(path)
-	os.Remove(path)
+	d.open(p)
+	os.Remove(p)
 
 	return d
 }
