@@ -38,6 +38,14 @@ type (
 	}
 )
 
+// All returns a slice of all checks in db
+func All(db database.Database) ([]Check, error) {
+	var allChecks []Check
+	err := db.All(&allChecks, -1, 0, false)
+
+	return allChecks, err
+}
+
 // UnmarshalJSON implements json.Unmarshaler.
 func (c *Check) UnmarshalJSON(data []byte) error {
 	proxy := checkProxy{}

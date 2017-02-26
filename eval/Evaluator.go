@@ -1,10 +1,7 @@
 package eval
 
 import (
-	"fmt"
 	"time"
-
-	"github.com/hashicorp/raft"
 
 	"github.com/gansoi/gansoi/checks"
 	"github.com/gansoi/gansoi/database"
@@ -15,131 +12,65 @@ type (
 	// Evaluator will evaluate check results from all nodes on the leader node.
 	Evaluator struct {
 		db            database.Database
-		peers         raft.PeerStore
 		historyLength int
 	}
 )
 
 // NewEvaluator will instantiate a new Evaluator listening to cluster changes,
 // and evaluating results as they arrive.
-func NewEvaluator(db database.Database, peers raft.PeerStore) *Evaluator {
+func NewEvaluator(db database.Database) *Evaluator {
 	e := &Evaluator{
-		db:    db,
-		peers: peers,
+		db:            db,
+		historyLength: 5,
 	}
-
-	// Preserve state history for double the cluster size. This ensures that
-	// we have at least to results from at least two runs from each node.
-	p, _ := peers.Peers()
-	e.historyLength = len(p) * 2
 
 	return e
 }
 
-// evaluate1 will evalute a check result from a single node.
-func (e *Evaluator) evaluate1(checkResult *checks.CheckResult) (*PartialEvaluation, error) {
-	pe := PartialEvaluation{}
-	pe.ID = checkResult.CheckID + ":::" + checkResult.Node
+func statesFromHistory(history []checks.CheckResult) States {
+	var states States
+	for _, result := range history {
+		state := StateDown
 
-	state := StateDown
-
-	// Evaluate if the check went well for a single node. For now we simply
-	// checks for empty error string and assume everything is good if its
-	// empty :)
-	if checkResult.Error == "" {
-		state = StateUp
-	}
-
-	err := e.db.One("ID", pe.ID, &pe)
-	if err != nil {
-		// None was found. Fill out new.
-		pe.CheckID = checkResult.CheckID
-		pe.NodeID = checkResult.Node
-		pe.Start = checkResult.TimeStamp
-		pe.End = checkResult.TimeStamp
-		pe.State = state
-	} else {
-		// Check if the state changed.
-		if pe.State == state {
-			// If the state is the same, just update end time.
-			pe.End = checkResult.TimeStamp
-		} else {
-			// If the state changed, reset both start and end time.
-			pe.Start = checkResult.TimeStamp
-			pe.End = checkResult.TimeStamp
+		if result.Error == "" {
+			state = StateUp
 		}
 
-		pe.State = state
+		states = append(states, state)
 	}
 
-	return &pe, e.db.Save(&pe)
+	return states
 }
 
-// evaluate2 will evalute if a given check should be considered up or down when
-// evaluating the result from all nodes.
-// This should only be done on the leader.
-func (e *Evaluator) evaluate2(n *PartialEvaluation) (*Evaluation, error) {
-	var eval Evaluation
+// evaluate will FIXME
+func (e *Evaluator) evaluate(checkResult *checks.CheckResult) (*Evaluation, error) {
+	clock := time.Now()
 
-	// FIXME: Locking.
-
-	err := e.db.One("CheckID", n.CheckID, &eval)
-	if err != nil {
-		// Evaluation is unknown. Start new.
-		eval.CheckID = n.CheckID
-		eval.Start = n.Start
-		eval.End = n.End
-	}
-
-	check := checks.Check{}
-	err = e.db.One("ID", n.CheckID, &check)
-	if err != nil {
-		return nil, fmt.Errorf("Got result from unknown check [%s]", n.CheckID)
-	}
-
-	state := StateUnknown
-
-	nodes, _ := e.peers.Peers()
-	nodeStates := States{}
-
-	for _, nodeID := range nodes {
-		ID := n.CheckID + ":::" + nodeID
-
-		var pe PartialEvaluation
-		err = e.db.One("ID", ID, &pe)
-		if err != nil {
-			// Not all nodes have reported yet, abort.
-			break
+	// Get latest evaluation.
+	eval, _ := LatestEvaluation(e.db, checkResult.CheckID)
+	if eval == nil {
+		eval = &Evaluation{
+			CheckID: checkResult.CheckID,
+			Start:   clock,
+			End:     clock,
 		}
-
-		// If any result is older than two cycles, we discard it.
-		if time.Since(pe.End) > check.Interval*2 {
-			logger.Debug("eval", "Result from %s is too old (T:%s) (D:%s) (I:%s)", nodeID, pe.End, time.Since(pe.End), check.Interval)
-			break
-		}
-
-		nodeStates.Add(pe.State, -1)
 	}
 
-	// Only assume anything other than StateUnknown if all nodes have reported.
-	if len(nodeStates) == len(nodes) {
-		state = nodeStates.Reduce()
+	// Get historyLength checkResults.
+	var history []checks.CheckResult
+	e.db.Find("CheckID", checkResult.CheckID, &history, e.historyLength, 0, true)
+
+	if len(history) < e.historyLength {
+		logger.Debug("evaluator", "Not enough history for %s yet", checkResult.CheckID)
 	}
 
-	lastReduce := eval.History.Reduce()
-	eval.History.Add(state, e.historyLength)
+	eval.History = statesFromHistory(history)
 
-	if eval.History.Reduce() == lastReduce {
-		// There is no change in state. Keep current start time, and update end
-		// time.
-		eval.End = time.Now()
-	} else {
-		// We have a new state. Update both start and end time.
-		eval.Start = time.Now()
-		eval.End = eval.Start
+	if len(history) == e.historyLength {
+		eval.State = eval.History.Reduce()
 	}
 
-	return &eval, e.db.Save(&eval)
+	return eval, e.db.Save(eval)
 }
 
 // PostApply implements databse.Listener.
@@ -157,9 +88,7 @@ func (e *Evaluator) PostApply(leader bool, command database.Command, data interf
 
 	switch data.(type) {
 	case *checks.CheckResult:
-		e.evaluate1(data.(*checks.CheckResult))
-	case *PartialEvaluation:
-		e.evaluate2(data.(*PartialEvaluation))
+		e.evaluate(data.(*checks.CheckResult))
 	case *Evaluation:
 		eval := data.(*Evaluation)
 		logger.Debug("eval", "%s: %s (%s) %v", eval.CheckID, eval.History.Reduce().ColorString(), eval.End.Sub(eval.Start).String(), eval.History)

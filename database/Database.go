@@ -16,6 +16,9 @@ type (
 		// All lists all kinds of a type.
 		All(to interface{}, limit int, skip int, reverse bool) error
 
+		// Find Find returns one or more records by the specified index.
+		Find(field string, value interface{}, to interface{}, limit int, skip int, reverse bool) error
+
 		// Delete an object from the database.
 		Delete(data interface{}) error
 

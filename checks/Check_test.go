@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/gansoi/gansoi/boltdb"
 	"github.com/gansoi/gansoi/plugins"
@@ -11,12 +12,15 @@ import (
 
 type (
 	mockAgent struct {
-		ReturnError bool `json:"return_error"`
-		Panic       bool `json:"panic"`
+		ReturnError bool          `json:"return_error"`
+		Panic       bool          `json:"panic"`
+		Delay       time.Duration `json:"delay"`
 	}
 )
 
 func (m *mockAgent) Check(result plugins.AgentResult) error {
+	time.Sleep(m.Delay)
+
 	if m.ReturnError {
 		return errors.New("error")
 	}
@@ -138,5 +142,33 @@ func TestCheckValidate(t *testing.T) {
 		if err != nil && !c.err {
 			t.Fatalf("%d: Wrongly catched validation error in %+v", i, c.in)
 		}
+	}
+}
+
+func TestAll(t *testing.T) {
+	db := boltdb.NewTestStore()
+	c := &Check{
+		AgentID:   "mock",
+		Arguments: json.RawMessage("{}"),
+	}
+
+	err := db.Save(c)
+	if err != nil {
+		t.Fatalf("Save() failed: %s", err.Error())
+	}
+
+	c.ID = ""
+	err = db.Save(c)
+	if err != nil {
+		t.Fatalf("Save() failed: %s", err.Error())
+	}
+
+	list, err := All(db)
+	if err != nil {
+		t.Fatalf("All() failed: %s", err.Error())
+	}
+
+	if len(list) != 2 {
+		t.Fatalf("Wrong lenght of list, got %d", len(list))
 	}
 }
