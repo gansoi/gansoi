@@ -1,7 +1,10 @@
 package boltdb
 
 import (
+	"fmt"
+	"math/rand"
 	"os"
+	"path"
 	"testing"
 	"time"
 
@@ -9,19 +12,7 @@ import (
 	"github.com/hashicorp/raft"
 )
 
-var (
-	db *BoltStore
-)
-
-const (
-	path = "/dev/shm/gansoi-test.db"
-)
-
 type (
-	TestDb struct {
-		*BoltStore
-	}
-
 	data struct {
 		database.Object `storm:"inline"`
 		A               string
@@ -30,29 +21,6 @@ type (
 
 func init() {
 	database.RegisterType(data{})
-}
-
-func newTestDb() *TestDb {
-	var err error
-	db, err = NewBoltStore(path)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	return &TestDb{
-		BoltStore: db,
-	}
-}
-
-func (d *TestDb) clean() {
-	err := d.Close()
-	if err != nil {
-		panic(err.Error())
-	}
-	err = os.Remove("/dev/shm/gansoi-test.db")
-	if err != nil {
-		panic(err.Error())
-	}
 }
 
 func TestDatabaseOpen(t *testing.T) {
@@ -243,9 +211,10 @@ func TestBoltStoreApply(t *testing.T) {
 }
 
 func TestDatabaseWriteTo(t *testing.T) {
-	backupPath := path + ".backup"
+	originalPath := path.Join(os.TempDir(), fmt.Sprintf(".gansoi-test-%d.db", rand.Int63()))
+	backupPath := path.Join(os.TempDir(), fmt.Sprintf(".gansoi-test-%d.db_backup", rand.Int63()))
 
-	db := newTestDb()
+	db, _ := NewBoltStore(originalPath)
 
 	d := data{
 		A: "hello",
@@ -271,12 +240,9 @@ func TestDatabaseWriteTo(t *testing.T) {
 		t.Fatal("WriteTo() saved too few bytes")
 	}
 
-	db.clean()
+	db.Close()
 
-	os.Rename(backupPath, path)
-
-	db = newTestDb()
-	defer db.clean()
+	db, _ = NewBoltStore(backupPath)
 
 	var dd data
 
@@ -288,6 +254,9 @@ func TestDatabaseWriteTo(t *testing.T) {
 	if d.ID != dd.ID || d.A != dd.A {
 		t.Fatalf("Backup returned wrong data: %v Should be: %v", dd, d)
 	}
+
+	db.Close()
+	os.Remove(backupPath)
 }
 
 // Make sure we implement the needed interface.

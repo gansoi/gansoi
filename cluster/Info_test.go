@@ -1,14 +1,17 @@
 package cluster
 
 import (
+	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
+	"path"
 	"reflect"
 	"testing"
 )
 
-const (
-	testPath = "/dev/shm/info.json"
+var (
+	testPath = path.Join(os.TempDir(), fmt.Sprintf(".info-%d.json", rand.Int63()))
 )
 
 func newInfo() *Info {
