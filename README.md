@@ -75,7 +75,7 @@ Go 1.6 or newer is required for building Gansoi.
 
 You can run a small local Gansoi cluster for testing and development:
 
-    $ ./test.sh
+    $ ./test3.sh
 
 A three-node local cluster will be started shortly. You can visit the web
 interface at https://gansoi-dev.com:9002/.
