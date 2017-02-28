@@ -149,7 +149,7 @@ func TestSchedulerRunCheck(t *testing.T) {
 		Panic: false,
 	}
 
-	c := &Check{
+	c := Check{
 		Interval: time.Millisecond * 100,
 		Agent:    mock,
 		AgentID:  "mock",
@@ -160,7 +160,7 @@ func TestSchedulerRunCheck(t *testing.T) {
 
 	clock := time.Now()
 
-	result := s.runCheck(clock, c, meta(clock, c))
+	result := s.runCheck(clock, c, meta(clock, &c))
 	ran, _ := result.Results["ran"].(bool)
 
 	if !ran {
@@ -169,7 +169,7 @@ func TestSchedulerRunCheck(t *testing.T) {
 
 	// Now try to panic.
 	c.Agent.(*mockAgent).Panic = true
-	s.runCheck(clock, c, meta(clock, c))
+	s.runCheck(clock, c, meta(clock, &c))
 }
 
 func TestSpinFail(t *testing.T) {

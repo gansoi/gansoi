@@ -90,16 +90,16 @@ func (s *Scheduler) spin(clock time.Time) {
 		meta.running = true
 
 		stats.CounterInc("scheduler_inflight", 1)
-		go s.runCheck(clock, &c, meta)
+		go s.runCheck(clock, c, meta)
 	}
 }
 
-func (s *Scheduler) runCheck(clock time.Time, check *Check, meta *checkMeta) *CheckResult {
+func (s *Scheduler) runCheck(clock time.Time, check Check, meta *checkMeta) *CheckResult {
 	start := time.Now()
 
 	stats.CounterInc("scheduler_started", 1)
 
-	checkResult := RunCheck(check)
+	checkResult := RunCheck(&check)
 	checkResult.Node = s.nodeName
 
 	if checkResult.Error != "" {
