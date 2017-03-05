@@ -18,27 +18,18 @@ type (
 		Channel  string `json:"channel"`
 	}
 
-	field struct {
-		Title string `json:"title,omitempty"`
-		Value string `json:"value,omitempty"`
-		Short bool   `json:"short,omitempty"`
-	}
-
 	attachment struct {
-		Fallback  string  `json:"fallback,omitempty"`
-		Color     string  `json:"color,omitempty"`
-		Title     string  `json:"title,omitempty"`
-		Text      string  `json:"text,omitempty"`
-		Footer    string  `json:"footer,omitempty"`
-		Fields    []field `json:"fields,omitempty"`
-		Timestamp int64   `json:"ts,omitempty"`
+		Fallback  string `json:"fallback,omitempty"`
+		Title     string `json:"title,omitempty"`
+		Text      string `json:"text,omitempty"`
+		Footer    string `json:"footer,omitempty"`
+		Timestamp int64  `json:"ts,omitempty"`
 	}
 
 	message struct {
 		Username    string       `json:"username,omitempty"`
 		Channel     string       `json:"channel,omitempty"`
 		IconEmoji   string       `json:"icon_emoji,omitempty"`
-		Text        string       `json:"text,omitempty"`
 		Attachments []attachment `json:"attachments,omitempty"`
 	}
 )
@@ -63,10 +54,8 @@ func (s *Slack) Notify(text string) error {
 		},
 	}
 
-	b, err := json.Marshal(msg)
-	if err != nil {
-		return err
-	}
+	// This should never fail.
+	b, _ := json.Marshal(msg)
 
 	resp, err := http.Post(s.URL, "application/json", bytes.NewReader(b))
 	if err != nil {
