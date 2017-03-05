@@ -74,7 +74,8 @@
  <td>{{ check.name }}</td>
  <td>{{ check.agent }}</td>
  <td>{{ check.interval / 1000000000 }}</td>
- <td><g-time-since :time="evaluation.End"></g-time-since></td>
+ <td v-if="evaluation"><g-time-since :time="evaluation.End"></g-time-since></td>
+ <td v-if="!evaluation">-</td>
 </tr>
 </template>
 
