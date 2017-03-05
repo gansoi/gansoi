@@ -49,12 +49,9 @@ func (e *Evaluator) evaluate(checkResult *checks.CheckResult) (*Evaluation, erro
 	// Get latest evaluation.
 	eval, _ := LatestEvaluation(e.db, checkResult.CheckID)
 	if eval == nil {
-		eval = &Evaluation{
-			CheckID: checkResult.CheckID,
-			Start:   clock,
-			End:     clock,
-		}
+		eval = NewEvaluation(clock, checkResult.CheckID)
 	}
+	eval.End = clock
 
 	// Get historyLength checkResults.
 	var history []checks.CheckResult
@@ -66,8 +63,20 @@ func (e *Evaluator) evaluate(checkResult *checks.CheckResult) (*Evaluation, erro
 
 	eval.History = statesFromHistory(history)
 
+	state := StateUnknown
 	if len(history) == e.historyLength {
-		eval.State = eval.History.Reduce()
+		state = eval.History.Reduce()
+	}
+
+	// If the state has changed, we allocate a new evaluation and end the old.
+	if eval.State != state {
+		e.db.Save(eval)
+
+		nextEval := NewEvaluation(clock, checkResult.CheckID)
+		nextEval.State = state
+		nextEval.History = eval.History
+
+		eval = nextEval
 	}
 
 	return eval, e.db.Save(eval)

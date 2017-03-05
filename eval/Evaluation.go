@@ -22,6 +22,15 @@ func init() {
 	database.RegisterType(Evaluation{})
 }
 
+// NewEvaluation returns a new evaluation.
+func NewEvaluation(clock time.Time, checkID string) *Evaluation {
+	return &Evaluation{
+		CheckID: checkID,
+		Start:   clock,
+		End:     clock,
+	}
+}
+
 // LatestEvaluation retrieves the latest evaluation if any.
 func LatestEvaluation(db database.Database, checkID string) (*Evaluation, error) {
 	if checkID == "" {
