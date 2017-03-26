@@ -6,11 +6,6 @@ import (
 )
 
 type (
-	// Plugin must be implemented by all gansoi plugins. For now it's an empty
-	// interface. That should be easy :-)
-	Plugin interface {
-	}
-
 	// ArgumentDescription contains everything needed for creating a GUI for
 	// configuring a plugin.
 	ArgumentDescription struct {
@@ -18,12 +13,6 @@ type (
 		Type        string   `json:"type"`
 		Description string   `json:"description"`
 		EnumValues  []string `json:"enum"`
-	}
-
-	// PluginDescription describes a plugin.
-	PluginDescription struct {
-		Name      string                `json:"name"`
-		Arguments []ArgumentDescription `json:"arguments"`
 	}
 )
 

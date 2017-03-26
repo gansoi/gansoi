@@ -8,9 +8,13 @@ type (
 	// Notifier must be implemented by plugins capable of delivering
 	// notifications.
 	Notifier interface {
-		Plugin
-
 		Notify(text string) error
+	}
+
+	// NotifierDescription describes a notifier.
+	NotifierDescription struct {
+		Name      string                `json:"name"`
+		Arguments []ArgumentDescription `json:"arguments"`
 	}
 )
 
@@ -40,11 +44,11 @@ func GetNotifier(name string) Notifier {
 }
 
 // ListNotifiers will return a list of all agents.
-func ListNotifiers() []PluginDescription {
-	list := make([]PluginDescription, 0, len(agents))
+func ListNotifiers() []NotifierDescription {
+	list := make([]NotifierDescription, 0, len(agents))
 
 	for name, typ := range notifiers {
-		list = append(list, PluginDescription{
+		list = append(list, NotifierDescription{
 			Name:      name,
 			Arguments: getArguments(typ),
 		})

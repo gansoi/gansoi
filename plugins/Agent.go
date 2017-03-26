@@ -8,10 +8,14 @@ type (
 	// Agent should be implemented by all agents. An agent is the entity
 	// responsible for carrying out all checks.
 	Agent interface {
-		Plugin
-
 		// Check should run the agents check.
 		Check(result AgentResult) error
+	}
+
+	// AgentDescription describes an agent.
+	AgentDescription struct {
+		Name      string                `json:"name"`
+		Arguments []ArgumentDescription `json:"arguments"`
 	}
 )
 
@@ -41,11 +45,11 @@ func GetAgent(name string) Agent {
 }
 
 // ListAgents will return a list of all agents.
-func ListAgents() []PluginDescription {
-	list := make([]PluginDescription, 0, len(agents))
+func ListAgents() []AgentDescription {
+	list := make([]AgentDescription, 0, len(agents))
 
 	for name, typ := range agents {
-		list = append(list, PluginDescription{
+		list = append(list, AgentDescription{
 			Name:      name,
 			Arguments: getArguments(typ),
 		})
