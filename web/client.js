@@ -142,6 +142,11 @@ var editCheck = Vue.component('edit-check', {
             var agentId = this.check.agent;
             var agent = agents.get(agentId);
 
+            // If the agent is unknown, return an empty array.
+            if (!agent) {
+                return [];
+            }
+
             return agent.arguments;
         }
     },
@@ -289,6 +294,11 @@ var editContact = Vue.component('edit-contact', {
         arguments: function() {
             var notifierId = this.contact.notifier;
             var notifier = notifiers.get(notifierId);
+
+            // If the notifier is unknown, simply return an empty array.
+            if (!notifier) {
+                return [];
+            }
 
             return notifier.arguments;
         }
