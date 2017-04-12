@@ -115,7 +115,7 @@ func request(db database.Database, method string, URI string, body []byte) *http
 }
 
 func TestRestApiDBFail(t *testing.T) {
-	db := &failDB{err: errors.New("Fail!")}
+	db := &failDB{err: errors.New("fail")}
 	d := &data{A: "hejsa"}
 
 	body, _ := json.Marshal(d)
@@ -141,7 +141,7 @@ func TestRestApiDBFail(t *testing.T) {
 	}
 
 	db.err = nil
-	db.DeleteError = errors.New("Fail!")
+	db.DeleteError = errors.New("fail")
 	resp = request(db, "DELETE", "/id1", nil)
 	if resp.Code != 500 {
 		t.Fatalf("DELETE /id1 returned unexpected status code: %d", resp.Code)
