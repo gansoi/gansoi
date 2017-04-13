@@ -67,6 +67,7 @@ Vue.component('check-line', {
 var editCheck = Vue.component('edit-check', {
     data: function() {
         return {
+            showDeleteConfirm: false,
             title: 'Add check',
             agents: agents.data,
             contactgroups: contactgroups,
@@ -242,6 +243,7 @@ var testContact = function(button) {
 var editContact = Vue.component('edit-contact', {
     data: function() {
         return {
+            showDeleteConfirm: false,
             title: 'Add Contact',
             notifiers: notifiers.data,
             contact: {
@@ -363,6 +365,7 @@ Vue.component('contactgroup-line', {
 var editContactgroup = Vue.component('edit-contactgroup', {
     data: function() {
         return {
+            showDeleteConfirm: false,
             title: 'Add Contact Group',
             contactgroup: {
                 id: '',

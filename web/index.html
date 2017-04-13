@@ -136,7 +136,7 @@
 <template id="template-edit-check">
 <div>
  <h2>
-  {{ title }} <button class="right button red" v-on:click="deleteCheck(this)">Delete</button>
+  {{ title }} <button class="right button red" @click="showDeleteConfirm = true">Delete</button>
  </h2>
  <form>
   <fieldset>
@@ -202,6 +202,14 @@
    <input class="button green right" name="add" type="button" value="Add check" v-on:click="addCheck()" />
   </fieldset>
  </form>
+ <g-modal v-if="showDeleteConfirm" @close="showDeleteConfirm = false">
+  <h3 slot="header">Delete check {{ check.name }}?</h3>
+  <p slot="body">Do you really want to delete this check? There's no undo.</p>
+  <div slot="footer">
+   <button class="right button red" v-on:click="deleteCheck(this)">Really delete check</button>
+   <button class="button" v-on:click="showDeleteConfirm = false">Don't delete</button>
+  </div>
+ </g-modal>
 </div>
 </template>
 
@@ -264,7 +272,7 @@
 <template id="template-edit-contact">
 <div>
  <h2>
-  {{ title }} <button class="right button red" v-on:click="deleteContact(this)">Delete</button>
+  {{ title }} <button class="right button red" @click="showDeleteConfirm = true">Delete</button>
  </h2>
  <form>
   <fieldset>
@@ -298,6 +306,14 @@
    <input class="button green right" name="add" type="button" value="Save Contact" v-on:click="saveContact()" />
   </fieldset>
  </form>
+ <g-modal v-if="showDeleteConfirm" @close="showDeleteConfirm = false">
+  <h3 slot="header">Delete check {{ contact.name }}?</h3>
+  <p slot="body">Do you really want to delete this check? There's no undo.</p>
+  <div slot="footer">
+   <button class="right button red" v-on:click="deleteContact(this)">Really delete contact</button>
+   <button class="button" v-on:click="showDeleteConfirm = false">Don't delete</button>
+  </div>
+ </g-modal>
 </div>
 </template>
 
@@ -325,7 +341,7 @@
 <template id="template-edit-contactgroup">
 <div>
  <h2>
-  {{ title }} <button class="right button red" v-on:click="deleteContactgroup(this)">Delete</button>
+  {{ title }} <button class="right button red" @click="showDeleteConfirm = true">Delete</button>
  </h2>
  <form>
   <fieldset>
@@ -351,6 +367,14 @@
    <input class="button green right" name="add" type="button" value="Save Contact Group" v-on:click="saveContactgroup()" />
   </fieldset>
  </form>
+ <g-modal v-if="showDeleteConfirm" @close="showDeleteConfirm = false">
+  <h3 slot="header">Delete contact group {{ contactgroup.name }}?</h3>
+  <p slot="body">There is no undo for this. Whatever you choose, you have to live with the consequences for the rest of your life.</p>
+  <div slot="footer">
+   <button class="right button red" v-on:click="deleteContactgroup(this)">Really delete group</button>
+   <button class="button" v-on:click="showDeleteConfirm = false">Don't delete</button>
+  </div>
+ </g-modal>
 </div>
 </template>
 
