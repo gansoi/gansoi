@@ -380,6 +380,24 @@
  </span>
 </template>
 
+<template id="template-g-modal">
+ <transition name="modal">
+  <div class="modal-mask">
+   <div class="modal-container">
+    <div class="modal-header">
+     <slot name="header"></slot>
+    </div>
+    <div class="modal-body">
+     <slot name="body"></slot>
+    </div>
+    <div class="modal-footer">
+     <slot name="footer"><button class="button" @click="$emit('close')">Got it</button></slot>
+    </div>
+   </div>
+  </div>
+ </transition>
+</template>
+
 <script src="https://unpkg.com/vue@2.1.8/dist/vue.js"></script>
 <script src="https://unpkg.com/vue-resource@1.0.3/dist/vue-resource.min.js"></script>
 <script src="https://unpkg.com/vue-router@2.0.1"></script>

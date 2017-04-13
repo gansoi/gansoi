@@ -510,6 +510,27 @@ Vue.component('g-time-since', {
     template: '<span>{{ elapsed }}</span>'
 });
 
+Vue.component('g-modal', {
+    methods: {
+        keyDown: function(e) {
+            // Capture escape.
+            if (e.keyCode == 27) {
+                this.$emit('close');
+            }
+        }
+    },
+
+    created: function () {
+        document.addEventListener("keydown", this.keyDown);
+    },
+
+    destroyed: function() {
+        document.removeEventListener('keydown', this.keyDown);
+    },
+
+    template: '#template-g-modal',
+});
+
 var init = g.waitGroup(function() {
     var live = g.live();
 
