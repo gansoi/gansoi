@@ -14,7 +14,14 @@ var listChecks = Vue.component('list-checks', {
         };
     },
 
-    methods: {
+    computed: {
+        sorted: function() {
+            return checks.data.slice().sort(function(a, b) {
+                a = a.name;
+                b = b.name;
+                return (a === b ? 0 : a > b ? 1 : -1);
+            });
+        }
     },
 
     template: '#template-checks'

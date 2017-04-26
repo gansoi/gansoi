@@ -62,7 +62,7 @@
    <th>Interval</th>
    <th>Age</th>
   </tr>
-  <tr is="check-line" v-for="check in checks.data" :check="check"></tr>
+  <tr is="check-line" v-for="check in sorted" :check="check"></tr>
  </table>
  <router-link class="button" id="dddd" to="/check/edit/new">Add Check</router-link>
 </div>
