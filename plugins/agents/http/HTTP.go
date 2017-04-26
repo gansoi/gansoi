@@ -30,6 +30,7 @@ type HTTP struct {
 	FollowRedirect bool   `json:"followRedirect" description:"Follow 30x redirects"`
 	Insecure       bool   `json:"insecure" description:"Ignore SSL errors"`
 	IncludeBody    bool   `json:"includeBody" description:"Include body in results"`
+	Host           string `json:"host" description:"Host to contact (leave empty to use host derived from URL)"`
 }
 
 func getHostPort(URL *url.URL) (string, string) {
@@ -74,6 +75,10 @@ func (h *HTTP) Check(result plugins.AgentResult) error {
 		}
 
 		host, port := getHostPort(URL)
+
+		if h.Host != "" {
+			host = h.Host
+		}
 
 		t0 := time.Now()
 		raddr, err := net.ResolveTCPAddr("tcp", net.JoinHostPort(host, port))
