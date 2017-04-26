@@ -18,3 +18,8 @@ func (o *Object) SetID() {
 		o.ID = ca.RandomString(24)
 	}
 }
+
+// GetID will return the ID of o or an empty string if none is set.
+func (o *Object) GetID() string {
+	return o.ID
+}

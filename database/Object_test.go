@@ -26,3 +26,20 @@ func TestSetID(t *testing.T) {
 		t.Fatalf("SetID failed to set ID")
 	}
 }
+
+func TestGetID(t *testing.T) {
+	var buh typed
+
+	if buh.GetID() != "" {
+		t.Errorf("GetID() returned non-empty ID")
+	}
+
+	buh.Object.ID = "hellohello"
+
+	if buh.GetID() != "hellohello" {
+		t.Errorf("GetID() returned wrong ID")
+	}
+}
+
+// Make sure we implement the needed interface.
+var _ IDSetter = (*Object)(nil)

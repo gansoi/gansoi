@@ -66,6 +66,12 @@ func (r *RestAPI) create(c *gin.Context) {
 		return
 	}
 
+	obj, valid := record.(database.IDSetter)
+	if valid {
+		c.Data(http.StatusAccepted, "text/plain", []byte(obj.GetID()))
+		return
+	}
+
 	c.Data(http.StatusAccepted, "text/plain", []byte("got it, thanks\n"))
 }
 

@@ -202,6 +202,33 @@ var viewCheck = Vue.component('view-check', {
     methods: {
         editCheck: function(button) {
             router.push('/check/edit/' + this.$route.params.id);
+        },
+
+        cloneCheck: function(button) {
+            button.disabled = true;
+
+            // Javascript is beautiful! :-)
+            var clone = Object.assign({}, this.check);
+
+            // We set the ID to an empty string and let the server assign one.
+            clone.id = '';
+
+            this.$http.post('/api/checks', clone).then(function(response) {
+                clone.id = response.body;
+
+                // Try to find the object in the local storage, maybe the
+                // websocket transport was faster than HTTP.
+                var found = checks.get(clone.id);
+
+                if (!found) {
+                    // If we didn't find a local copy, insert it.
+                    // The "real" check will arrive later from the websocket
+                    // connection and overwrite this.
+                    checks.insert(clone);
+                }
+
+                router.push('/check/edit/' + clone.id);
+            });
         }
     },
 
