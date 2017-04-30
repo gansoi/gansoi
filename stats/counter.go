@@ -46,11 +46,6 @@ func CounterInc(key string, val int64) {
 	atomic.AddInt64(counter(key), val)
 }
 
-// CounterDec decrements a counter by val.
-func CounterDec(key string, val int64) {
-	atomic.AddInt64(counter(key), -val)
-}
-
 // CounterSet will set a counter to val.
 func CounterSet(key string, val int64) {
 	atomic.StoreInt64(counter(key), val)

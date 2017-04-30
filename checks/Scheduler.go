@@ -101,7 +101,7 @@ func (s *Scheduler) runCheck(clock time.Time, check Check, meta *checkMeta) *Che
 
 	checkResult := RunCheck(&check)
 
-	stats.CounterDec("scheduler_inflight", 1)
+	stats.CounterInc("scheduler_inflight", -1)
 
 	checkResult.Node = s.nodeName
 

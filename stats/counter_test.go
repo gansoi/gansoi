@@ -40,22 +40,6 @@ func TestCounterIncPanic(t *testing.T) {
 	CounterInc("not initialized", 1)
 }
 
-func TestCounterDec(t *testing.T) {
-	CounterInit("TestCounterDec")
-	CounterDec("TestCounterDec", 1)
-	CounterDec("TestCounterDec", 0)
-	CounterDec("TestCounterDec", 1)
-	if CounterGet("TestCounterDec") != -2 {
-		t.Fatalf("CounterDec failed")
-	}
-}
-
-func TestCounterDecPanic(t *testing.T) {
-	defer mustPanic(t)
-
-	CounterDec("not initialized", 1)
-}
-
 func TestCounterSetGet(t *testing.T) {
 	CounterInit("TestCounterGet")
 	CounterSet("TestCounterGet", 123)
