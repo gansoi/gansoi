@@ -100,12 +100,15 @@ func (s *Scheduler) runCheck(clock time.Time, check Check, meta *checkMeta) *Che
 	stats.CounterInc("scheduler_started", 1)
 
 	checkResult := RunCheck(&check)
+
+	stats.CounterDec("scheduler_inflight", 1)
+
 	checkResult.Node = s.nodeName
 
 	if checkResult.Error != "" {
+		stats.CounterInc("scheduler_failed", 1)
 		logger.Info("scheduler", "%s failed in %s: %s", check.ID, time.Since(start), checkResult.Error)
 	} else {
-		stats.CounterInc("scheduler_failed", 1)
 		logger.Debug("scheduler", "%s ran in %s: %+v", check.ID, time.Since(start), checkResult.Results)
 	}
 
