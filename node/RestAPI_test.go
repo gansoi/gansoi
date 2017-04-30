@@ -162,7 +162,7 @@ func TestRestApiCreateFailedValidation(t *testing.T) {
 
 	b := strings.TrimSpace(resp.Body.String())
 
-	if b != `{"error":"A cannot be empty"}` {
+	if b != "A cannot be empty" {
 		t.Fatalf("create returned unexpected body. Got '%s'", resp.Body.String())
 	}
 }

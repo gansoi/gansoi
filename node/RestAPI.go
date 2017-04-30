@@ -29,14 +29,19 @@ func (r *RestAPI) new() interface{} {
 	return reflect.New(r.typ).Interface()
 }
 
+func reply(c *gin.Context, code int, data string) {
+	c.Data(code, "text/plain", []byte(data))
+}
+
 func (r *RestAPI) list(c *gin.Context) {
+
 	// Reflect is so beautiful. This will create a pointer to a slice of typ's.
 	// Please see: http://stackoverflow.com/a/25386460/1156537
 	list := reflect.New(reflect.MakeSlice(reflect.SliceOf(r.typ), 0, 0).Type()).Interface()
 
 	err := r.db.All(list, -1, 0, false)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		reply(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -47,7 +52,7 @@ func (r *RestAPI) create(c *gin.Context) {
 	record := r.new()
 	err := c.BindJSON(record)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		reply(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -55,24 +60,26 @@ func (r *RestAPI) create(c *gin.Context) {
 	if ok {
 		err = validator.Validate(r.db)
 		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+			reply(c, http.StatusBadRequest, err.Error())
 			return
 		}
 	}
 
 	err = r.db.Save(record)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		reply(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
+	data := "got it, thanks"
+
+	// If the type is an IDSetter, we should return the new ID.
 	obj, valid := record.(database.IDSetter)
 	if valid {
-		c.Data(http.StatusAccepted, "text/plain", []byte(obj.GetID()))
-		return
+		data = obj.GetID()
 	}
 
-	c.Data(http.StatusAccepted, "text/plain", []byte("got it, thanks\n"))
+	reply(c, http.StatusAccepted, data)
 }
 
 func (r *RestAPI) replace(c *gin.Context) {
@@ -84,17 +91,17 @@ func (r *RestAPI) delete(c *gin.Context) {
 	record := r.new()
 	err := r.db.One("ID", c.Param("id"), record)
 	if err != nil {
-		c.AbortWithError(http.StatusNotFound, err)
+		reply(c, http.StatusNotFound, err.Error())
 		return
 	}
 
 	err = r.db.Delete(record)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		reply(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.Data(http.StatusAccepted, "text/plain", []byte("deleted"))
+	reply(c, http.StatusAccepted, "deleted")
 }
 
 // Router can be used to assign a Gin routergroup.
