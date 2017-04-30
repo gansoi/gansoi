@@ -5,7 +5,6 @@ import (
 	"net"
 	"testing"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/server"
 

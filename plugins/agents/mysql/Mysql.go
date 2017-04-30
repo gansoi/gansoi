@@ -5,6 +5,9 @@ import (
 	"strconv"
 
 	"github.com/gansoi/gansoi/plugins"
+
+	// We need the MySQL driver for this.
+	_ "github.com/go-sql-driver/mysql"
 )
 
 // MySQL retrieves metrics from a MySQL server.
