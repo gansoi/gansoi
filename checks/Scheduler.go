@@ -88,6 +88,7 @@ func (s *Scheduler) spin(clock time.Time) {
 
 		meta.runs++
 		meta.running = true
+		meta.NextCheck = clock.Add(c.Interval)
 
 		stats.CounterInc("scheduler_inflight", 1)
 		go s.runCheck(clock, c, meta)
@@ -111,8 +112,6 @@ func (s *Scheduler) runCheck(clock time.Time, check Check, meta *checkMeta) *Che
 	} else {
 		logger.Debug("scheduler", "%s ran in %s: %+v", check.ID, time.Since(start), checkResult.Results)
 	}
-
-	meta.NextCheck = clock.Add(check.Interval)
 
 	s.db.Save(checkResult)
 
