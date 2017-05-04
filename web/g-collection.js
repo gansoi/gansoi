@@ -48,6 +48,18 @@ g.Collection = function(identifier) {
         return ret;
     };
 
+    self.query = function(key, value) {
+        var ret = [];
+
+        self.data.find(function(element) {
+            if (element[key] === value) {
+                ret.push(element);
+            }
+        });
+
+        return ret;
+    };
+
     self.log = function(log) {
         switch (log.command) {
             case 'delete':
