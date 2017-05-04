@@ -27,7 +27,10 @@ g.live = function() {
         var data = JSON.parse(event.data);
 
         if (subscriptions.hasOwnProperty(data.type)) {
-            subscriptions[data.type].log(data);
+            subscriptions[data.type].forEach(function(collection) {
+                console.log(data, "to", collection);
+                collection.log(data);
+            });
         }
     };
 
@@ -56,7 +59,11 @@ g.live = function() {
      * @param {!g.Collection} collection The collection to update.
      */
     this.subscribe = function(id, collection) {
-        subscriptions[id] = collection;
+        if (subscriptions.hasOwnProperty(id)) {
+            subscriptions[id].push(collection);
+        } else {
+            subscriptions[id] = [collection];
+        }
     };
 
     return this;
