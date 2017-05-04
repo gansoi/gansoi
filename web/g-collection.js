@@ -7,57 +7,33 @@
 g.Collection = function(identifier) {
     var self = this;
 
-    self.data = new Array();
+    self.dataset = new vis.DataSet([], {
+        fieldId: identifier
+    });
+
+    // This is for easy Vue.js iteration.
+    self.data = self.dataset._data;
 
     self.insert = function(obj) {
-        self.data.push(obj);
+        Vue.set(self.data, obj[identifier], obj);
+
+        self.dataset.add(obj);
     };
 
     self.deleteId = function(id) {
-        self.data = self.data.filter(function(obj) {
-            return obj[identifier] !== id;
-        });
+        Vue.delete(self.data, id);
+
+        self.dataset.remove(id);
     };
 
     self.upsert = function(obj) {
-        var index = self.data.findIndex(function(element) {
-            if (element[identifier] === obj[identifier]) {
-                return true;
-            }
+        Vue.set(self.data, obj[identifier], obj);
 
-            return false;
-        });
-
-        if (index >= 0) {
-            // We must use splice, if we simply replace the element Vue will
-            // never notice.
-            // https://vuejs.org/v2/guide/list.html#Caveats
-            self.data.splice(index, 1, obj);
-        } else {
-            self.insert(obj);
-        }
+        self.dataset.update(obj);
     };
 
     self.get = function(id) {
-        var ret = self.data.find(function(element) {
-            if (element[identifier] === id) {
-                return true;
-            }
-        });
-
-        return ret;
-    };
-
-    self.query = function(key, value) {
-        var ret = [];
-
-        self.data.find(function(element) {
-            if (element[key] === value) {
-                ret.push(element);
-            }
-        });
-
-        return ret;
+        return self.dataset.get(id);
     };
 
     self.log = function(log) {

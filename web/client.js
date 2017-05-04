@@ -17,7 +17,7 @@ var listChecks = Vue.component('list-checks', {
 
     computed: {
         sorted: function() {
-            return checks.data.slice().sort(function(a, b) {
+            return checks.dataset.get().sort(function(a, b) {
                 a = a.name;
                 b = b.name;
                 return (a === b ? 0 : a > b ? 1 : -1);
@@ -173,7 +173,7 @@ var viewCheck = Vue.component('view-check', {
     },
 
     mounted: function() {
-        evals = evaluations.query('check_id', this.id);
+        var check_id = this.id;
 
         var now = new Date().getTime();
 
@@ -183,21 +183,28 @@ var viewCheck = Vue.component('view-check', {
         // start in the past.
         var first = now;
 
-        var dataset = [];
-        evals.forEach(function(item) {
-            var data = {
-                id: item.id,
-                content: item.state,
-                start: item.start,
-                end: item.end,
-                type: 'background',
-                className: item.state
+        var filter = function(item) {
+            if (item.check_id === check_id) {
+                // We piggyback on the filter function to determine the start
+                // time of all evaluations. It doesn't matter if this gets run
+                // again, we already set up the timeline.
+                var itemStart = new Date(item.start).getTime();
+                first = Math.min(itemStart, first);
+
+                return true;
             }
 
-            dataset.push(data);
+            return false;
+        };
 
-            var itemStart = new Date(item.start).getTime();
-            first = Math.min(itemStart, first);
+        var dataview = new vis.DataView(evaluations.dataset, {
+            filter: filter,
+            fields: {
+                id: 'id',
+                start: 'start',
+                end: 'end',
+                state: 'className'
+            }
         });
 
         // One week ago default.
@@ -210,12 +217,13 @@ var viewCheck = Vue.component('view-check', {
         var options = {
             start: new Date(start),
             end: new Date(now + (60*60*1000)), // one hour
-            editable: false
+            editable: false,
+            type: 'background'
         };
 
         var timeline = new vis.Timeline(
             this.$refs.timeline,
-            new vis.DataSet(dataset),
+            dataview,
             options);
     },
 
