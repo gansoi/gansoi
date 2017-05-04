@@ -28,7 +28,6 @@ g.live = function() {
 
         if (subscriptions.hasOwnProperty(data.type)) {
             subscriptions[data.type].forEach(function(collection) {
-                console.log(data, "to", collection);
                 collection.log(data);
             });
         }
