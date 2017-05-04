@@ -360,3 +360,19 @@ select:hover, .button:hover, .clickable:hover {
     -webkit-transform: scale(1.1);
     transform: scale(1.1);
 }
+
+.vis-time-axis .vis-text {
+    color: #f0f1f1;
+}
+
+.vis-item.vis-background.down {
+    background-color: rgba(255, 0, 0, 0.4);
+}
+
+.vis-item.vis-background.up {
+    background-color: rgba(0, 255, 0, 0.4);
+}
+
+.vis-timeline {
+    border: 0px;
+}

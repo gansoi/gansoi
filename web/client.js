@@ -172,6 +172,53 @@ var viewCheck = Vue.component('view-check', {
         };
     },
 
+    mounted: function() {
+        evals = evaluations.query('check_id', this.id);
+
+        var now = new Date().getTime();
+
+        // We seed "first" by the time as of now. If we see an item that is
+        // older, we update first. This is to determine when the first
+        // evaluation period started. This should be safe as all evaluations
+        // start in the past.
+        var first = now;
+
+        var dataset = [];
+        evals.forEach(function(item) {
+            var data = {
+                id: item.id,
+                content: item.state,
+                start: item.start,
+                end: item.end,
+                type: 'background',
+                className: item.state
+            }
+
+            dataset.push(data);
+
+            var itemStart = new Date(item.start).getTime();
+            first = Math.min(itemStart, first);
+        });
+
+        // One week ago default.
+        var start = now - (7*24*60*60*1000);
+
+        // If the first evaluation if newer than a week, we use that as a
+        // starting point instead.
+        start = Math.max(first, start);
+
+        var options = {
+            start: new Date(start),
+            end: new Date(now + (60*60*1000)), // one hour
+            editable: false
+        };
+
+        var timeline = new vis.Timeline(
+            this.$refs.timeline,
+            new vis.DataSet(dataset),
+            options);
+    },
+
     computed: {
         id: function() {
             return this.$route.params.id;
