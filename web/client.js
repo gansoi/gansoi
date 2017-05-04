@@ -2,7 +2,8 @@ var checks = new g.Collection('id');
 var nodes = new g.Collection('name');
 var agents = new g.Collection('name');
 var notifiers = new g.Collection('name');
-var evaluations = new g.Collection('CheckID');
+var evaluations = new g.Collection('id');
+var lastEvaluations = new g.Collection('check_id');
 var checkresults = new g.Collection('check_id');
 var contacts = new g.Collection('id');
 var contactgroups = new g.Collection('id');
@@ -50,7 +51,7 @@ Vue.component('check-line', {
 
     computed: {
         evaluation: function() {
-            return evaluations.get(this.check.id);
+            return lastEvaluations.get(this.check.id);
         },
 
         klass: function() {
@@ -60,8 +61,8 @@ Vue.component('check-line', {
                 return 'state unknown';
             }
 
-            if (e.History && e.History.length > 0) {
-                return 'state ' + e.History[0];
+            if (e.history && e.history.length > 0) {
+                return 'state ' + e.history[0];
             }
 
             return 'state unknown';
@@ -88,7 +89,7 @@ var editCheck = Vue.component('edit-check', {
                 expressions: []
             },
             results: {results: {}},
-            evaluations: evaluations
+            lastEvaluations: lastEvaluations
         };
     },
 
@@ -166,7 +167,7 @@ var viewCheck = Vue.component('view-check', {
     data: function() {
         return {
             checks: checks,
-            evaluations: evaluations,
+            lastEvaluations: lastEvaluations,
             checkresults: checkresults,
         };
     },
@@ -181,7 +182,7 @@ var viewCheck = Vue.component('view-check', {
         },
 
         evaluation: function() {
-            return evaluations.get(this.$route.params.id);
+            return lastEvaluations.get(this.$route.params.id);
         },
 
         result: function() {
@@ -575,6 +576,7 @@ var init = g.waitGroup(function() {
     live.subscribe('checkresult', checkresults);
     live.subscribe('check', checks);
     live.subscribe('evaluation', evaluations);
+    live.subscribe('evaluation', lastEvaluations);
     live.subscribe('contact', contacts);
     live.subscribe('contactgroup', contactgroups);
 
@@ -623,6 +625,7 @@ restFetch(init, '/api/agents', agents);
 restFetch(init, '/api/notifiers', notifiers);
 restFetch(init, '/api/checks/', checks);
 restFetch(init, '/api/evaluations/', evaluations);
+restFetch(init, '/api/evaluations/', lastEvaluations); // FIXME: Don't request this twice!
 restFetch(init, '/api/contacts/', contacts);
 restFetch(init, '/api/contactgroups/', contactgroups);
 

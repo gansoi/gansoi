@@ -9,12 +9,12 @@ import (
 type (
 	// Evaluation describes the current state of a check.
 	Evaluation struct {
-		ID      uint64 `json:"id" storm:"id"`
-		CheckID string `storm:"index"`
-		History States
-		State   State
-		Start   time.Time
-		End     time.Time
+		ID      uint64    `json:"id" storm:"id"`
+		CheckID string    `json:"check_id" storm:"index"`
+		History States    `json:"history"`
+		State   State     `json:"state"`
+		Start   time.Time `json:"start"`
+		End     time.Time `json:"end"`
 	}
 )
 

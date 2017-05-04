@@ -74,7 +74,7 @@
  <td>{{ check.name }}</td>
  <td>{{ check.agent }}</td>
  <td>{{ check.interval / 1000000000 }}</td>
- <td v-if="evaluation"><g-time-since :time="evaluation.End"></g-time-since></td>
+ <td v-if="evaluation"><g-time-since :time="evaluation.end"></g-time-since></td>
  <td v-if="!evaluation">-</td>
 </tr>
 </template>
@@ -116,9 +116,9 @@
 
    <tr><th colspan="2">Evaluation</th></tr>
    <tr><td colspan="2"><hr></td></tr>
-   <tr v-if="evaluation"><td colspan="2" class="state" :class="evaluation.History[0]">{{ evaluation.History[0] }}</td></tr>
-   <tr v-if="evaluation"><td>Since</td><td><g-time :time="evaluation.Start"></g-time> (<g-time-since :time="evaluation.Start"></g-time-since> ago)</td></tr>
-   <tr v-if="evaluation"><td>Last Evaluation</td><td><g-time :time="evaluation.End"></g-time> (<g-time-since :time="evaluation.End"></g-time-since> ago)</td></tr>
+   <tr v-if="evaluation"><td colspan="2" class="state" :class="evaluation.history[0]">{{ evaluation.history[0] }}</td></tr>
+   <tr v-if="evaluation"><td>Since</td><td><g-time :time="evaluation.start"></g-time> (<g-time-since :time="evaluation.start"></g-time-since> ago)</td></tr>
+   <tr v-if="evaluation"><td>Last Evaluation</td><td><g-time :time="evaluation.end"></g-time> (<g-time-since :time="evaluation.end"></g-time-since> ago)</td></tr>
 
    <tr><th colspan="2">Latest Results</th></tr>
    <tr><td colspan="2"><hr></td></tr>
