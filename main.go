@@ -39,6 +39,7 @@ import (
 	_ "github.com/gansoi/gansoi/plugins/notifiers/console"
 	_ "github.com/gansoi/gansoi/plugins/notifiers/email"
 	_ "github.com/gansoi/gansoi/plugins/notifiers/slack"
+	"github.com/gansoi/gansoi/transports/ssh"
 )
 
 var (
@@ -337,6 +338,12 @@ func runCore(_ *cobra.Command, _ []string) {
 	go func() {
 		for leader := range n.LeaderCh() {
 			if leader {
+				sshErr := ssh.Init(n)
+				if sshErr != nil {
+					logger.Info("main", "ssh.Init() error: %s", sshErr.Error())
+					os.Exit(1)
+				}
+
 				scheduler.Run()
 			} else {
 				scheduler.Stop()
