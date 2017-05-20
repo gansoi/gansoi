@@ -123,6 +123,24 @@ var viewHost = Vue.component('view-host', {
     template: '#template-view-host'
 });
 
+Vue.component('g-host', {
+    props: ['id'],
+
+    computed: {
+        host: function() {
+            return hosts.get(this.id);
+        },
+    },
+
+    methods: {
+        view: function() {
+            router.push('/host/view/' + this.id);
+        },
+    },
+
+    template: '#template-g-host'
+});
+
 var listChecks = Vue.component('list-checks', {
     data: function() {
         return {
@@ -193,9 +211,11 @@ var editCheck = Vue.component('edit-check', {
             showDeleteConfirm: false,
             title: 'Add check',
             agents: agents.data,
+            hosts: hosts,
             contactgroups: contactgroups,
             check: {
                 interval: 30,
+                hosts: [],
                 contactgroups: [],
                 arguments: {},
                 agent: 'http',
@@ -272,6 +292,17 @@ var editCheck = Vue.component('edit-check', {
             }
 
             return agent.arguments;
+        },
+        remote: function() {
+            var agentId = this.check.agent;
+            var agent = agents.get(agentId);
+
+            // If the agent is unknown, return an empty array.
+            if (!agent) {
+                return false;
+            }
+
+            return agent.remote;
         }
     },
 

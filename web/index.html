@@ -198,6 +198,11 @@
     <td>{{ value }}</td>
    </tr>
 
+   <tr><th colspan="2">Hosts</th></tr>
+   <tr v-for="hostid in check.hosts">
+    <td colspan="2"><g-host :id="hostid" /></td>
+   </tr>
+
    <tr><th colspan="2">Contact Groups</th></tr>
    <tr><td colspan="2"><hr></td></tr>
    <tr v-for="groupid in check.contactgroups">
@@ -256,6 +261,15 @@
       <td v-else-if="argument.type == 'bool'"><input type="checkbox" v-model="check.arguments[argument.name]" /><label>{{ argument.description }}</label></td>
       <td v-else-if="argument.type == 'int'"><input type="number" v-model="check.arguments[argument.name]" /><label> {{ argument.description }}</label></td>
       <td v-else>{{ argument.type }} not supported in client</td>
+     </tr>
+
+     <tr v-if="remote == true">
+      <td><label>Hosts</label></td>
+      <td>
+       <select v-model="check.hosts" multiple>
+        <option v-for="host in hosts.data" :value="host.id">{{ host.host }}</option>
+       </select>
+      </td>
      </tr>
 
      <tr>
@@ -486,6 +500,12 @@
 <template id="template-g-contact">
  <span v-on:click="view()" class="clickable">
   {{ contact.name }}
+ </span>
+</template>
+
+<template id="template-g-host">
+ <span v-on:click="view()" class="clickable">
+  {{ host.host }}
  </span>
 </template>
 

@@ -18,6 +18,7 @@ type (
 		database.Object `storm:"inline"`
 		Name            string          `json:"name" validate:"required"`
 		AgentID         string          `json:"agent" validate:"required"`
+		Hosts           []string        `json:"hosts"`
 		Interval        time.Duration   `json:"interval"`
 		Arguments       json.RawMessage `json:"arguments"`
 		Expressions     []string        `json:"expressions"`
