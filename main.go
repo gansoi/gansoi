@@ -378,6 +378,9 @@ func runCore(_ *cobra.Command, _ []string) {
 	restContactGroups := node.NewRestAPI(notify.ContactGroup{}, n)
 	restContactGroups.Router(api.Group("/contactgroups"))
 
+	restHosts := node.NewRestAPI(ssh.SSH{}, n)
+	restHosts.Router(api.Group("/hosts"))
+
 	// Endpoint for running a check on the cluster node.
 	api.POST("/test", func(c *gin.Context) {
 		var check checks.Check

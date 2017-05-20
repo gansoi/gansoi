@@ -11,6 +11,7 @@
         <div class="buttonbar">
          <router-link class="button" id="overview" to="/overview">Overview</router-link>
          <router-link class="button" id="gansoi" to="/gansoi">Gansoi</router-link>
+         <router-link class="button" id="hosts" to="/hosts">Hosts</router-link>
          <router-link class="button" id="checks" to="/checks">Checks</router-link>
          <router-link class="button" id="contacts" to="/contacts">Contacts</router-link>
          <router-link class="button" id="contactgroups" to="/contactgroups">Contact Groups</router-link>
@@ -49,6 +50,93 @@
  <td>{{ node.raft.last_log_index }}</td>
  </tr>
 </table>
+</div>
+</template>
+
+<template id="template-hosts">
+<div>
+ <h2>Hosts</h2>
+ <table class="table">
+  <tr>
+   <th>ID</th>
+   <th>Hostname</th>
+   <th>Port</th>
+   <th>Username</th>
+  </tr>
+  <tr is="host-line" v-for="host in sorted" :host="host"></tr>
+ </table>
+ <router-link class="button" to="/host/edit/new">Add Host</router-link>
+</div>
+</template>
+
+<template id="template-host-line">
+<tr class="clickable" v-on:click="viewHost()">
+ <td>{{ host.id }}</td>
+ <td>{{ host.host }}</td>
+ <td>{{ host.port }}</td>
+ <td>{{ host.username }}</td>
+</tr>
+</template>
+
+<template id="template-edit-host">
+<div>
+ <h2>
+  {{ title }} <button class="right button red" @click="showDeleteConfirm = true">Delete</button>
+ </h2>
+ <form>
+  <fieldset>
+   <table>
+    <tbody>
+     <tr>
+      <td><label>Hostname</label></td>
+      <td><input type="text" v-model="host.host" ref="autofocus"/></td>
+     </tr>
+     <tr>
+      <td><label>Port</label></td>
+      <td><input type="number" min="1" max="65535" v-model="host.port"></td>
+     </tr>
+     <tr>
+      <td><label>Username</label></td>
+      <td><input type="text" v-model="host.username"/></td>
+     </tr>
+    </tbody>
+   </table>
+   <input class="button green right" name="add" type="button" value="Save" v-on:click="save()" />
+  </fieldset>
+ </form>
+ <g-modal v-if="showDeleteConfirm" @close="showDeleteConfirm = false">
+  <h3 slot="header">Delete host {{ host.host }}?</h3>
+  <p slot="body">Do you really want to delete this host? Think about it, it cannot be undone.</p>
+  <div slot="footer">
+   <button class="right button red" v-on:click="deleteHost(this)">Really delete host</button>
+   <button class="button" v-on:click="showDeleteConfirm = false">Don't delete</button>
+  </div>
+ </g-modal>
+</div>
+</template>
+
+<template id="template-view-host">
+<div>
+ <h2>
+  {{ id }} Details
+  <button class="right button" v-on:click="edit(this)">Edit</button>
+ </h2>
+ <table>
+  <tbody v-if="host">
+   <tr>
+    <td><label>Name</label></td>
+    <td>{{ host.host }}</td>
+   </tr>
+   <tr>
+    <td><label>Port</label></td>
+    <td>{{ host.port }}</td>
+   </tr>
+   <tr>
+    <td><label>Username</label></td>
+    <td>{{ host.username }} </td>
+   </tr>
+  </tbody>
+ </table>
 </div>
 </template>
 

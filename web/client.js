@@ -7,6 +7,121 @@ var lastEvaluations = new g.Collection('check_id');
 var checkresults = new g.Collection('check_id');
 var contacts = new g.Collection('id');
 var contactgroups = new g.Collection('id');
+var hosts = new g.Collection('id');
+
+var listHosts = Vue.component('list-hosts', {
+    data: function() {
+        return {
+            hosts: hosts
+        };
+    },
+
+    computed: {
+        sorted: function() {
+            return this.hosts.dataset.get().sort(function(a, b) {
+                a = a.host;
+                b = b.host;
+                return (a === b ? 0 : a > b ? 1 : -1);
+            });
+        }
+    },
+
+    template: '#template-hosts'
+});
+
+Vue.component('host-line', {
+    props: {
+        host: {default: {id: 'unkn', host: ''}}
+    },
+
+    methods: {
+        viewHost: function() {
+            router.push('/host/view/' + this.host.id);
+        },
+    },
+
+    template: '#template-host-line'
+});
+
+var editHost = Vue.component('edit-host', {
+    data: function() {
+        return {
+            showDeleteConfirm: false,
+            title: 'Add host',
+            host: {
+                host: "",
+                port: 22,
+                username: "root"
+            }
+        };
+    },
+
+    created: function() {
+        // fetch the data when the view is created and the data is
+        // already being observed
+        this.fetchData();
+    },
+
+    watch: {
+        '$route': 'fetchData'
+    },
+
+    mounted: function() {
+        this.$refs.autofocus.focus();
+    },
+
+    methods: {
+        deleteHost: function(button) {
+            button.disabled = true;
+
+            Vue.http.delete('/api/hosts/' + this.$route.params.id);
+            router.push('/hosts/');
+        },
+
+        fetchData: function() {
+            var host = hosts.get(this.$route.params.id);
+
+            if (host != undefined) {
+                this.title = "Edit " + this.$route.params.id;
+                this.host = host;
+            }
+        },
+
+        save: function() {
+            this.$http.post('/api/hosts/', this.host).then(function(response) {
+                router.push('/hosts');
+            });
+        }
+    },
+
+    template: '#template-edit-host'
+});
+
+var viewHost = Vue.component('view-host', {
+    data: function() {
+        return {
+            hosts: hosts
+        };
+    },
+
+    computed: {
+        id: function() {
+            return this.$route.params.id;
+        },
+
+        host: function() {
+            return hosts.get(this.$route.params.id);
+        },
+    },
+
+    methods: {
+        edit: function(button) {
+            router.push('/host/edit/' + this.$route.params.id);
+        }
+    },
+
+    template: '#template-view-host'
+});
 
 var listChecks = Vue.component('list-checks', {
     data: function() {
@@ -634,6 +749,7 @@ var init = g.waitGroup(function() {
     live.subscribe('evaluation', lastEvaluations);
     live.subscribe('contact', contacts);
     live.subscribe('contactgroup', contactgroups);
+    live.subscribe('host', hosts);
 
     const app = new Vue({
         data: {
@@ -683,12 +799,17 @@ restFetch(init, '/api/evaluations/', evaluations);
 restFetch(init, '/api/evaluations/', lastEvaluations); // FIXME: Don't request this twice!
 restFetch(init, '/api/contacts/', contacts);
 restFetch(init, '/api/contactgroups/', contactgroups);
+restFetch(init, '/api/hosts/', hosts);
 
 const router = new VueRouter({
     routes: [
         { path: '/', component: { template: '<h1>Hello, world.</h1>' } },
         { path: '/overview', component: { template: '#template-overview' } },
         { path: '/gansoi', component: listNodes },
+
+        { path: '/hosts', component: listHosts },
+        { path: '/host/view/:id', component: viewHost },
+        { path: '/host/edit/:id', component: editHost },
 
         { path: '/checks', component: listChecks },
         { path: '/check/view/:id', component: viewCheck },
