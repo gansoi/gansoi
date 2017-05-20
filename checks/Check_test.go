@@ -47,9 +47,10 @@ func TestCheckJsonInvalid(t *testing.T) {
 
 	var check Check
 	for _, input := range cases {
-		err := json.Unmarshal([]byte(input), &check)
+		json.Unmarshal([]byte(input), &check)
+		result := RunCheck(&check)
 
-		if err == nil {
+		if result.Error == "" {
 			t.Fatalf("Unmarshal did not catch broken json '%s'", input)
 		}
 	}

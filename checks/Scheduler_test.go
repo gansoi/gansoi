@@ -67,15 +67,10 @@ func TestSchedulerLoop(t *testing.T) {
 }
 
 func TestSchedulerLoopCheck(t *testing.T) {
-	mock := &mockAgent{
-		Panic: false,
-	}
-
 	c := &Check{
 		Interval:  time.Millisecond * 1,
-		Agent:     mock,
 		AgentID:   "mock",
-		Arguments: json.RawMessage("{}"),
+		Arguments: json.RawMessage(`{"panic": false}`),
 	}
 	c.ID = "hello"
 
@@ -104,14 +99,8 @@ func TestSchedulerLoopCheck(t *testing.T) {
 func TestSchedulerLoopCheckOverrun(t *testing.T) {
 	stats.CounterSet("scheduler_inflight_overrun", 0)
 
-	mock := &mockAgent{
-		Panic: false,
-		Delay: time.Second,
-	}
-
 	c := &Check{
 		Interval:  time.Millisecond * 1,
-		Agent:     mock,
 		AgentID:   "mock",
 		Arguments: json.RawMessage(`{"delay":510000000}`),
 	}
@@ -145,14 +134,10 @@ func TestSchedulerLoopCheckOverrun(t *testing.T) {
 }
 
 func TestSchedulerRunCheck(t *testing.T) {
-	mock := &mockAgent{
-		Panic: false,
-	}
-
 	c := Check{
-		Interval: time.Millisecond * 100,
-		Agent:    mock,
-		AgentID:  "mock",
+		Interval:  time.Millisecond * 100,
+		AgentID:   "mock",
+		Arguments: []byte("{}"),
 	}
 
 	db := boltdb.NewTestStore()
@@ -163,12 +148,16 @@ func TestSchedulerRunCheck(t *testing.T) {
 	result := s.runCheck(clock, c, meta(clock, &c))
 	ran, _ := result.Results["ran"].(bool)
 
+	if result.Error != "" {
+		t.Fatalf("runCheck() returned an error: %s", result.Error)
+	}
+
 	if !ran {
 		t.Fatalf("runCheck() did not execute the check")
 	}
 
 	// Now try to panic.
-	c.Agent.(*mockAgent).Panic = true
+	c.Arguments = []byte(`{"panic": true}`)
 	s.runCheck(clock, c, meta(clock, &c))
 }
 

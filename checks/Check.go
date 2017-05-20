@@ -2,7 +2,6 @@ package checks
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 
@@ -21,20 +20,8 @@ type (
 		AgentID         string          `json:"agent" validate:"required"`
 		Interval        time.Duration   `json:"interval"`
 		Arguments       json.RawMessage `json:"arguments"`
-		Agent           plugins.Agent   `json:"-"`
 		Expressions     []string        `json:"expressions"`
 		ContactGroups   []string        `json:"contactgroups"`
-	}
-
-	checkProxy struct {
-		database.Object
-		Name          string          `json:"name"`
-		AgentID       string          `json:"agent"`
-		Interval      time.Duration   `json:"interval"`
-		Node          string          `json:"node"`
-		Arguments     json.RawMessage `json:"arguments"`
-		Expressions   []string        `json:"expressions"`
-		ContactGroups []string        `json:"contactgroups"`
 	}
 )
 
@@ -44,31 +31,6 @@ func All(db database.Database) ([]Check, error) {
 	err := db.All(&allChecks, -1, 0, false)
 
 	return allChecks, err
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (c *Check) UnmarshalJSON(data []byte) error {
-	proxy := checkProxy{}
-
-	err := json.Unmarshal(data, &proxy)
-	if err != nil {
-		return err
-	}
-
-	c.ID = proxy.ID
-	c.Name = proxy.Name
-	c.AgentID = proxy.AgentID
-	c.Interval = proxy.Interval
-	c.Arguments = proxy.Arguments
-	c.Expressions = proxy.Expressions
-	c.ContactGroups = proxy.ContactGroups
-
-	c.Agent = plugins.GetAgent(c.AgentID)
-	if c.Agent == nil {
-		return errors.New("Agent not found")
-	}
-
-	return json.Unmarshal(c.Arguments, &c.Agent)
 }
 
 // RunCheck will run a check and return a CheckResult.
@@ -89,7 +51,14 @@ func RunCheck(check *Check) (checkResult *CheckResult) {
 		}
 	}()
 
-	e := check.Agent.Check(agentResult)
+	agent := plugins.GetAgent(check.AgentID)
+	err := json.Unmarshal(check.Arguments, &agent)
+	if err != nil {
+		checkResult.Error = err.Error()
+		return checkResult
+	}
+
+	e := agent.Check(agentResult)
 
 	// If any expressions is defined, we try to evaluate them until one fails.
 	if len(check.Expressions) > 0 && e == nil {
