@@ -1,8 +1,6 @@
 package plugins
 
-import (
-	"reflect"
-)
+import "reflect"
 
 type (
 	// Agent should be implemented by all agents. An agent is the entity
@@ -15,6 +13,7 @@ type (
 	// AgentDescription describes an agent.
 	AgentDescription struct {
 		Name      string                `json:"name"`
+		Remote    bool                  `json:"remote"`
 		Arguments []ArgumentDescription `json:"arguments"`
 	}
 )
@@ -49,8 +48,11 @@ func ListAgents() []AgentDescription {
 	list := make([]AgentDescription, 0, len(agents))
 
 	for name, typ := range agents {
+		_, remote := reflect.New(typ).Interface().(RemoteAgent)
+
 		list = append(list, AgentDescription{
 			Name:      name,
+			Remote:    remote,
 			Arguments: getArguments(typ),
 		})
 	}
