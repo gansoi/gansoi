@@ -121,8 +121,9 @@ func (s *SSH) connect() (*ssh.Client, error) {
 	}
 
 	config := &ssh.ClientConfig{
-		User: s.Username,
-		Auth: []ssh.AuthMethod{ssh.PublicKeys(signer)},
+		User:            s.Username,
+		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // FIXME
 	}
 
 	client, err := ssh.Dial("tcp", dialString, config)
