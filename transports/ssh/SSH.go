@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"sync"
 
 	"github.com/gansoi/gansoi/database"
@@ -130,6 +131,11 @@ func (s *SSH) connect() (*ssh.Client, error) {
 	}
 
 	return client, nil
+}
+
+// Dial implements transports.Transport.
+func (s *SSH) Dial(network string, address string) (net.Conn, error) {
+	return nil, errors.New("Dial() not implemented")
 }
 
 // Exec executes a binary on the remote host.
