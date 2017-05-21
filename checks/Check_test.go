@@ -145,31 +145,3 @@ func TestCheckValidate(t *testing.T) {
 		}
 	}
 }
-
-func TestAll(t *testing.T) {
-	db := boltdb.NewTestStore()
-	c := &Check{
-		AgentID:   "mock",
-		Arguments: json.RawMessage("{}"),
-	}
-
-	err := db.Save(c)
-	if err != nil {
-		t.Fatalf("Save() failed: %s", err.Error())
-	}
-
-	c.ID = ""
-	err = db.Save(c)
-	if err != nil {
-		t.Fatalf("Save() failed: %s", err.Error())
-	}
-
-	list, err := All(db)
-	if err != nil {
-		t.Fatalf("All() failed: %s", err.Error())
-	}
-
-	if len(list) != 2 {
-		t.Fatalf("Wrong lenght of list, got %d", len(list))
-	}
-}

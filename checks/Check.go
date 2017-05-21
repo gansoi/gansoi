@@ -10,6 +10,7 @@ import (
 
 	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/plugins"
+	"github.com/gansoi/gansoi/transports"
 )
 
 type (
@@ -25,14 +26,6 @@ type (
 		ContactGroups   []string        `json:"contactgroups"`
 	}
 )
-
-// All returns a slice of all checks in db
-func All(db database.Database) ([]Check, error) {
-	var allChecks []Check
-	err := db.All(&allChecks, -1, 0, false)
-
-	return allChecks, err
-}
 
 // RunCheck will run a check and return a CheckResult.
 func RunCheck(check *Check) (checkResult *CheckResult) {
@@ -60,6 +53,45 @@ func RunCheck(check *Check) (checkResult *CheckResult) {
 	}
 
 	e := agent.Check(agentResult)
+
+	// If any expressions is defined, we try to evaluate them until one fails.
+	if len(check.Expressions) > 0 && e == nil {
+		e = check.Evaluate(agentResult)
+	}
+
+	if e != nil {
+		checkResult.Error = e.Error()
+	}
+
+	return checkResult
+}
+
+// RunRemoteCheck will run a check and return a CheckResult.
+func RunRemoteCheck(transport transports.Transport, check *Check) (checkResult *CheckResult) {
+	agentResult := plugins.NewAgentResult()
+	checkResult = &CheckResult{
+		CheckID:   check.ID,
+		TimeStamp: time.Now(),
+		Results:   agentResult,
+	}
+
+	defer func() {
+		err := recover()
+
+		if err != nil {
+			// We don't know the type of 'err', so we let fmt deal with it :)
+			checkResult.Error = fmt.Sprintf("%s", err)
+		}
+	}()
+
+	agent := plugins.GetRemoteAgent(check.AgentID)
+	err := json.Unmarshal(check.Arguments, &agent)
+	if err != nil {
+		checkResult.Error = err.Error()
+		return checkResult
+	}
+
+	e := agent.RemoteCheck(transport, agentResult)
 
 	// If any expressions is defined, we try to evaluate them until one fails.
 	if len(check.Expressions) > 0 && e == nil {

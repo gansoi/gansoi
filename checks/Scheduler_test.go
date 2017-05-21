@@ -145,7 +145,11 @@ func TestSchedulerRunCheck(t *testing.T) {
 
 	clock := time.Now()
 
-	result := s.runCheck(clock, c, meta(clock, &c))
+	meta := &checkMeta{
+		check: &c,
+		key:   &metaKey{},
+	}
+	result := s.runCheck(clock, meta)
 	ran, _ := result.Results["ran"].(bool)
 
 	if result.Error != "" {
@@ -158,7 +162,7 @@ func TestSchedulerRunCheck(t *testing.T) {
 
 	// Now try to panic.
 	c.Arguments = []byte(`{"panic": true}`)
-	s.runCheck(clock, c, meta(clock, &c))
+	s.runCheck(clock, meta)
 }
 
 func TestSpinFail(t *testing.T) {
