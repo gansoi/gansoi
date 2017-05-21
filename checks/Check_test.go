@@ -48,7 +48,7 @@ func TestCheckJsonInvalid(t *testing.T) {
 	var check Check
 	for _, input := range cases {
 		json.Unmarshal([]byte(input), &check)
-		result := RunCheck(&check)
+		result := RunCheck(nil, &check)
 
 		if result.Error == "" {
 			t.Fatalf("Unmarshal did not catch broken json '%s'", input)
@@ -89,7 +89,7 @@ func TestRunCheck(t *testing.T) {
 		t.Fatalf("Unmarshal failed: %s", err.Error())
 	}
 
-	result := RunCheck(&check)
+	result := RunCheck(nil, &check)
 	if result.Results["ran"] != true {
 		t.Fatalf("Check failed to run")
 	}
@@ -111,7 +111,7 @@ func TestRunCheckError(t *testing.T) {
 			t.Fatalf("Unmarshal failed: %s", err.Error())
 		}
 
-		result := RunCheck(&check)
+		result := RunCheck(nil, &check)
 		if result.Error == "" {
 			t.Fatalf("Failed to return error for '%s'", input)
 		}

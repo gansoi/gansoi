@@ -6,6 +6,7 @@ import (
 	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/logger"
 	"github.com/gansoi/gansoi/stats"
+	"github.com/gansoi/gansoi/transports"
 	"github.com/gansoi/gansoi/transports/ssh"
 )
 
@@ -81,14 +82,17 @@ func (s *Scheduler) runCheck(clock time.Time, meta *checkMeta) *CheckResult {
 	stats.CounterInc("scheduler_started", 1)
 
 	var checkResult *CheckResult
-	transport := ssh.SSH{}
+	var transport transports.Transport
 
 	if meta.key.hostID != "" {
-		s.db.One("ID", meta.key.hostID, &transport)
-		checkResult = RunRemoteCheck(&transport, meta.check)
-	} else {
-		checkResult = RunCheck(meta.check)
+		remote := ssh.SSH{}
+		err := s.db.One("ID", meta.key.hostID, &remote)
+		if err == nil {
+			transport = &remote
+		}
 	}
+
+	checkResult = RunCheck(transport, meta.check)
 
 	stats.CounterInc("scheduler_inflight", -1)
 

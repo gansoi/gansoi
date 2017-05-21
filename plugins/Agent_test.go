@@ -28,7 +28,7 @@ func TestAgentGet(t *testing.T) {
 
 	RegisterAgent(id, mockAgent{})
 
-	agent := GetAgent(id)
+	agent := GetAgent(id).(Agent)
 	if agent == nil {
 		t.Fatalf("GetAgent() returned nil")
 	}

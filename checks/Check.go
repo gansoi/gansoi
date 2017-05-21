@@ -28,7 +28,7 @@ type (
 )
 
 // RunCheck will run a check and return a CheckResult.
-func RunCheck(check *Check) (checkResult *CheckResult) {
+func RunCheck(transport transports.Transport, check *Check) (checkResult *CheckResult) {
 	agentResult := plugins.NewAgentResult()
 	checkResult = &CheckResult{
 		CheckID:   check.ID,
@@ -52,54 +52,30 @@ func RunCheck(check *Check) (checkResult *CheckResult) {
 		return checkResult
 	}
 
-	e := agent.Check(agentResult)
-
-	// If any expressions is defined, we try to evaluate them until one fails.
-	if len(check.Expressions) > 0 && e == nil {
-		e = check.Evaluate(agentResult)
-	}
-
-	if e != nil {
-		checkResult.Error = e.Error()
-	}
-
-	return checkResult
-}
-
-// RunRemoteCheck will run a check and return a CheckResult.
-func RunRemoteCheck(transport transports.Transport, check *Check) (checkResult *CheckResult) {
-	agentResult := plugins.NewAgentResult()
-	checkResult = &CheckResult{
-		CheckID:   check.ID,
-		TimeStamp: time.Now(),
-		Results:   agentResult,
-	}
-
-	defer func() {
-		err := recover()
-
-		if err != nil {
-			// We don't know the type of 'err', so we let fmt deal with it :)
-			checkResult.Error = fmt.Sprintf("%s", err)
+	switch agent.(type) {
+	case plugins.RemoteAgent:
+		if transport == nil {
+			checkResult.Error = "no host"
+			return checkResult
 		}
-	}()
 
-	agent := plugins.GetRemoteAgent(check.AgentID)
-	err := json.Unmarshal(check.Arguments, &agent)
+		err = agent.(plugins.RemoteAgent).RemoteCheck(transport, agentResult)
+	case plugins.Agent:
+		err = agent.(plugins.Agent).Check(agentResult)
+	}
+
 	if err != nil {
 		checkResult.Error = err.Error()
 		return checkResult
 	}
 
-	e := agent.RemoteCheck(transport, agentResult)
-
 	// If any expressions is defined, we try to evaluate them until one fails.
-	if len(check.Expressions) > 0 && e == nil {
-		e = check.Evaluate(agentResult)
+	if len(check.Expressions) > 0 && err == nil {
+		err = check.Evaluate(agentResult)
 	}
 
-	if e != nil {
-		checkResult.Error = e.Error()
+	if err != nil {
+		checkResult.Error = err.Error()
 	}
 
 	return checkResult

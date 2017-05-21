@@ -187,7 +187,8 @@ func runCheck(printSummary bool, arguments []string) {
 		os.Exit(3)
 	}
 
-	result := checks.RunCheck(&check)
+	// FIXME: Support remote hosts here!
+	result := checks.RunCheck(nil, &check)
 
 	if printSummary {
 		if result.Error != "" {
@@ -390,7 +391,8 @@ func runCore(_ *cobra.Command, _ []string) {
 			c.AbortWithError(http.StatusBadRequest, e)
 		}
 
-		checkResult := checks.RunCheck(&check)
+		// FIXME: Support remote checks somehow.
+		checkResult := checks.RunCheck(nil, &check)
 		checkResult.Node = info.Self()
 
 		c.JSON(http.StatusOK, checkResult)

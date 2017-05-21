@@ -87,7 +87,7 @@ func TestAgent(t *testing.T) {
 func TestCheck(t *testing.T) {
 	path := mockServer()
 
-	a := plugins.GetAgent("mysql")
+	a := plugins.GetAgent("mysql").(plugins.Agent)
 	a.(*MySQL).DSN = fmt.Sprintf("mock:mock@tcp(%s)/", path)
 
 	result := plugins.NewAgentResult()
@@ -98,7 +98,7 @@ func TestCheck(t *testing.T) {
 }
 
 func TestCheckFailConnect(t *testing.T) {
-	a := plugins.GetAgent("mysql")
+	a := plugins.GetAgent("mysql").(plugins.Agent)
 	a.(*MySQL).DSN = "mock:mock@tcp(127.0.0.1:0)/"
 
 	result := plugins.NewAgentResult()
@@ -109,7 +109,7 @@ func TestCheckFailConnect(t *testing.T) {
 }
 
 func TestCheckFailDSN(t *testing.T) {
-	a := plugins.GetAgent("mysql")
+	a := plugins.GetAgent("mysql").(plugins.Agent)
 	a.(*MySQL).DSN = "(/"
 
 	result := plugins.NewAgentResult()
