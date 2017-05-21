@@ -3,6 +3,8 @@ package ssh
 import (
 	"testing"
 
+	"github.com/gansoi/gansoi/transports"
+
 	"golang.org/x/crypto/ssh"
 )
 
@@ -17,3 +19,5 @@ func TestGenerateKey(t *testing.T) {
 		t.Fatalf("Key type is wrong, format is '%s'", pub.Type())
 	}
 }
+
+var _ transports.Transport = (*SSH)(nil)
