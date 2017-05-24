@@ -50,6 +50,7 @@ func connect(s SSH) (*ssh.Client, error) {
 
 	conn, found := pool[s]
 	if found && conn.client != nil {
+		conn.lastUse = time.Now()
 		conn.refCount++
 
 		return conn.client, nil
