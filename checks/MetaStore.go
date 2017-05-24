@@ -89,11 +89,11 @@ func (s *MetaStore) removeCheck(check *Check) {
 }
 
 func (s *MetaStore) addCheck(clock time.Time, check *Check) {
-	key := metaKey{
-		checkID: check.ID,
-	}
-
 	if len(check.Hosts) == 0 {
+		key := metaKey{
+			checkID: check.ID,
+		}
+
 		meta := &checkMeta{
 			NextCheck: randomStartTime(clock, check.Interval),
 			interval:  check.Interval,
@@ -107,14 +107,17 @@ func (s *MetaStore) addCheck(clock time.Time, check *Check) {
 	}
 
 	for _, hostID := range check.Hosts {
+		key := metaKey{
+			checkID: check.ID,
+			hostID:  hostID,
+		}
+
 		meta := &checkMeta{
 			NextCheck: randomStartTime(clock, check.Interval),
 			interval:  check.Interval,
 			check:     check,
 			key:       &key,
 		}
-
-		key.hostID = hostID
 
 		s.Lock()
 		s.store[key] = meta
