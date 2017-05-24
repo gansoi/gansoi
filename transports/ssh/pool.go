@@ -22,6 +22,10 @@ var (
 	pool     = make(map[SSH]*connection)
 )
 
+const (
+	closeAfter time.Duration = time.Second * 30
+)
+
 func init() {
 	go loop()
 }
@@ -33,7 +37,7 @@ func loop() {
 		poolLock.Lock()
 
 		for s, conn := range pool {
-			if t.Sub(conn.lastUse) > time.Second*10 && conn.refCount == 0 && conn.client != nil {
+			if t.Sub(conn.lastUse) > closeAfter && conn.refCount == 0 && conn.client != nil {
 				conn.client.Close()
 				conn.client = nil
 				logger.Debug("ssh", "Closing unused connection %s:%d", s.Host, s.Port)
