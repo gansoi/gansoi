@@ -47,9 +47,9 @@ func (e *Evaluator) evaluate(checkResult *checks.CheckResult) (*Evaluation, erro
 	clock := time.Now()
 
 	// Get latest evaluation.
-	eval, _ := LatestEvaluation(e.db, checkResult.CheckID)
+	eval, _ := LatestEvaluation(e.db, checkResult)
 	if eval == nil {
-		eval = NewEvaluation(clock, checkResult.CheckID)
+		eval = NewEvaluation(clock, checkResult)
 	}
 	eval.End = clock
 
@@ -72,7 +72,7 @@ func (e *Evaluator) evaluate(checkResult *checks.CheckResult) (*Evaluation, erro
 	if eval.State != state {
 		e.db.Save(eval)
 
-		nextEval := NewEvaluation(clock, checkResult.CheckID)
+		nextEval := NewEvaluation(clock, checkResult)
 		nextEval.State = state
 		nextEval.History = eval.History
 

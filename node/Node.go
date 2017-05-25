@@ -81,6 +81,8 @@ func NewNode(stream *HTTPStream, datadir string, db database.Database, fsm raft.
 	conf.LeaderLeaseTimeout = 500 * time.Millisecond
 	conf.CommitTimeout = 200 * time.Millisecond
 	conf.Logger = logger.InfoLogger("raft")
+	conf.SnapshotInterval = time.Second * 60
+	conf.SnapshotThreshold = 100
 
 	// If we have exactly one peer - and its ourself, we are bootstrapping.
 	p, _ := peers.Peers()

@@ -36,6 +36,14 @@ g.Collection = function(identifier) {
         return self.dataset.get(id);
     };
 
+    self.query = function(field, value) {
+        return self.dataset.get({
+            filter: function (item) {
+                return (item[field] == value);
+            }
+        });
+    };
+
     self.log = function(log) {
         switch (log.command) {
             case 'delete':

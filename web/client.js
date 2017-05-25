@@ -4,7 +4,7 @@ var agents = new g.Collection('name');
 var notifiers = new g.Collection('name');
 var evaluations = new g.Collection('id');
 var lastEvaluations = new g.Collection('check_id');
-var checkresults = new g.Collection('check_id');
+var checkresults = new g.Collection('id');
 var contacts = new g.Collection('id');
 var contactgroups = new g.Collection('id');
 var hosts = new g.Collection('id');
@@ -329,6 +329,7 @@ var viewCheck = Vue.component('view-check', {
         // start in the past.
         var first = now;
 
+        var groups = new vis.DataSet();
         var filter = function(item) {
             if (item.check_id === check_id) {
                 // We piggyback on the filter function to determine the start
@@ -336,6 +337,16 @@ var viewCheck = Vue.component('view-check', {
                 // again, we already set up the timeline.
                 var itemStart = new Date(item.start).getTime();
                 first = Math.min(itemStart, first);
+
+                if (!groups.get(item.host_id)) {
+                    var host = hosts.get(item.host_id);
+                    var content;
+                    if (host) {
+                        content = host.host;
+                    }
+                    content += '&nbsp;';
+                    groups.add({id: item.host_id, content: content});
+                }
 
                 return true;
             }
@@ -349,6 +360,7 @@ var viewCheck = Vue.component('view-check', {
                 id: 'id',
                 start: 'start',
                 end: 'end',
+                host_id: 'group',
                 state: 'className'
             }
         });
@@ -370,6 +382,7 @@ var viewCheck = Vue.component('view-check', {
         var timeline = new vis.Timeline(
             this.$refs.timeline,
             dataview,
+            groups.get(),
             options);
     },
 
@@ -387,9 +400,9 @@ var viewCheck = Vue.component('view-check', {
         },
 
         result: function() {
-            var result = checkresults.get(this.$route.params.id);
+            var results = checkresults.query('check_id', this.$route.params.id);
 
-            if (!result) {
+            if (results.length == 0) {
                 // Present an "empty" object to satisfy template requirements.
                 return {
                     error: null,
@@ -397,7 +410,8 @@ var viewCheck = Vue.component('view-check', {
                 };
             }
 
-            return result;
+            // This doesn't make much sense...
+            return results[0];
         }
     },
 

@@ -376,3 +376,7 @@ select:hover, .button:hover, .clickable:hover {
 .vis-timeline {
     border: 0px;
 }
+
+.vis-labelset .vis-label {
+    color: #f0f1f1;
+}

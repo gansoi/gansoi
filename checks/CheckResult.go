@@ -12,6 +12,7 @@ type (
 	CheckResult struct {
 		ID        int64               `json:"id,omitempty"`
 		CheckID   string              `json:"check_id,omitempty"`
+		HostID    string              `json:"host_id,omitempty"`
 		Node      string              `json:"node_id,omitempty"`
 		Error     string              `json:"error"`
 		TimeStamp time.Time           `json:"timestamp"`
