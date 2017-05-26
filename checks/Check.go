@@ -31,7 +31,6 @@ type (
 func RunCheck(transport transports.Transport, check *Check) (checkResult *CheckResult) {
 	agentResult := plugins.NewAgentResult()
 	checkResult = &CheckResult{
-		CheckID:   check.ID,
 		TimeStamp: time.Now(),
 		Results:   agentResult,
 	}

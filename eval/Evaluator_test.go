@@ -75,9 +75,9 @@ func TestEvaluatorEvaluate1Basics(t *testing.T) {
 	defer db.Close()
 
 	result := &checks.CheckResult{
-		TimeStamp: time.Now(),
-		CheckID:   "da",
-		Node:      "justone",
+		TimeStamp:   time.Now(),
+		CheckHostID: "da::",
+		Node:        "justone",
 	}
 
 	_, err := e.evaluate(result)

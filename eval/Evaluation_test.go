@@ -11,7 +11,7 @@ import (
 func TestLatestEvaluation(t *testing.T) {
 	db := boltdb.NewTestStore()
 	result := &checks.CheckResult{
-		CheckID: "hello",
+		CheckHostID: "hello::",
 	}
 
 	_, err := LatestEvaluation(db, result)
@@ -20,7 +20,7 @@ func TestLatestEvaluation(t *testing.T) {
 	}
 
 	eval1 := &Evaluation{
-		CheckID: "hello",
+		CheckHostID: "hello::",
 	}
 
 	err = db.Save(eval1)

@@ -55,10 +55,10 @@ func (e *Evaluator) evaluate(checkResult *checks.CheckResult) (*Evaluation, erro
 
 	// Get historyLength checkResults.
 	var history []checks.CheckResult
-	e.db.Find("CheckID", checkResult.CheckID, &history, e.historyLength, 0, true)
+	e.db.Find("CheckHostID", checkResult.CheckHostID, &history, e.historyLength, 0, true)
 
 	if len(history) < e.historyLength {
-		logger.Debug("evaluator", "Not enough history for %s yet", checkResult.CheckID)
+		logger.Debug("evaluator", "Not enough history for %s yet", checkResult.CheckHostID)
 	}
 
 	eval.History = statesFromHistory(history)
@@ -100,6 +100,6 @@ func (e *Evaluator) PostApply(leader bool, command database.Command, data interf
 		e.evaluate(data.(*checks.CheckResult))
 	case *Evaluation:
 		eval := data.(*Evaluation)
-		logger.Debug("eval", "%s: %s (%s) %v", eval.CheckID, eval.History.Reduce().ColorString(), eval.End.Sub(eval.Start).String(), eval.History)
+		logger.Debug("eval", "%s: %s (%s) %v", eval.CheckHostID, eval.History.Reduce().ColorString(), eval.End.Sub(eval.Start).String(), eval.History)
 	}
 }
