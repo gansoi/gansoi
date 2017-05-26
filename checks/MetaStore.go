@@ -22,7 +22,7 @@ type (
 	}
 
 	checkMeta struct {
-		check     *Check
+		check     Check
 		key       *metaKey
 		running   bool
 		runs      int
@@ -97,7 +97,7 @@ func (s *MetaStore) addCheck(clock time.Time, check *Check) {
 		meta := &checkMeta{
 			NextCheck: randomStartTime(clock, check.Interval),
 			interval:  check.Interval,
-			check:     check,
+			check:     *check,
 			key:       &key,
 		}
 
@@ -115,7 +115,7 @@ func (s *MetaStore) addCheck(clock time.Time, check *Check) {
 		meta := &checkMeta{
 			NextCheck: randomStartTime(clock, check.Interval),
 			interval:  check.Interval,
-			check:     check,
+			check:     *check,
 			key:       &key,
 		}
 

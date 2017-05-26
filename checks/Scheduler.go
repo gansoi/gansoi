@@ -92,7 +92,7 @@ func (s *Scheduler) runCheck(clock time.Time, meta *checkMeta) *CheckResult {
 		}
 	}
 
-	checkResult = RunCheck(transport, meta.check)
+	checkResult = RunCheck(transport, &meta.check)
 	checkResult.HostID = meta.key.hostID
 
 	stats.CounterInc("scheduler_inflight", -1)
