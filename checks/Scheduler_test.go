@@ -146,7 +146,7 @@ func TestSchedulerRunCheck(t *testing.T) {
 	clock := time.Now()
 
 	meta := &checkMeta{
-		check: &c,
+		check: c,
 		key:   &metaKey{},
 	}
 	result := s.runCheck(clock, meta)
