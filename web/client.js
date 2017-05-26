@@ -345,7 +345,7 @@ var viewCheck = Vue.component('view-check', {
                         content = host.host;
                     }
                     content += '&nbsp;';
-                    groups.add({id: item.host_id, content: content});
+                    groups.add({id: item.host_id, content: content, order: content});
                 }
 
                 return true;
