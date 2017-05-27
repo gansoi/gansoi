@@ -83,7 +83,9 @@
 <template id="template-edit-host">
 <div>
  <h2>
-  {{ title }} <button class="right button red" @click="showDeleteConfirm = true">Delete</button>
+  {{ title }}
+  <button v-if="host.id != ''" class="right button red" @click="showDeleteConfirm = true">Delete</button>
+  <button v-if="host.id == ''" class="right button" onclick="history.go(-1);">Cancel</button>
  </h2>
  <form>
   <fieldset>
@@ -234,7 +236,9 @@
 <template id="template-edit-check">
 <div>
  <h2>
-  {{ title }} <button class="right button red" @click="showDeleteConfirm = true">Delete</button>
+  {{ title }}
+  <button v-if="check.id != ''" class="right button red" @click="showDeleteConfirm = true">Delete</button>
+  <button v-if="check.id == ''" class="right button" onclick="history.go(-1);">Cancel</button>
  </h2>
  <form>
   <fieldset>
@@ -379,7 +383,9 @@
 <template id="template-edit-contact">
 <div>
  <h2>
-  {{ title }} <button class="right button red" @click="showDeleteConfirm = true">Delete</button>
+  {{ title }}
+  <button v-if="contact.id != ''" class="right button red" @click="showDeleteConfirm = true">Delete</button>
+  <button v-if="contact.id == ''" class="right button" onclick="history.go(-1);">Cancel</button>
  </h2>
  <form>
   <fieldset>
@@ -448,7 +454,9 @@
 <template id="template-edit-contactgroup">
 <div>
  <h2>
-  {{ title }} <button class="right button red" @click="showDeleteConfirm = true">Delete</button>
+  {{ title }}
+  <button v-if="contactgroup.id != ''" class="right button red" @click="showDeleteConfirm = true">Delete</button>
+  <button v-if="contactgroup.id == ''" class="right button" onclick="history.go(-1);">Cancel</button>
  </h2>
  <form>
   <fieldset>
