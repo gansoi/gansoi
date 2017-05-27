@@ -66,6 +66,8 @@
   <tr is="host-line" v-for="host in sorted" :host="host"></tr>
  </table>
  <router-link class="button" to="/host/edit/new">Add Host</router-link>
+ <h2>Public key</h2>
+ <iframe src="/ssh/pubkey" style="background:#fff; border:0px;" width="100%"></iframe>
 </div>
 </template>
 
