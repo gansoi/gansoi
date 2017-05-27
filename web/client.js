@@ -340,7 +340,7 @@ var viewCheck = Vue.component('view-check', {
 
                 if (!groups.get(item.host_id)) {
                     var host = hosts.get(item.host_id);
-                    var content;
+                    var content = '';
                     if (host) {
                         content = host.host;
                     }
