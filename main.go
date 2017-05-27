@@ -439,6 +439,12 @@ func runCore(_ *cobra.Command, _ []string) {
 		db.WriteTo(c.Writer)
 	})
 
+	engine.GET("/ssh/pubkey", func(c *gin.Context) {
+		publicKey := ssh.PublicKey()
+
+		c.Data(http.StatusOK, "text/plain", []byte(publicKey))
+	})
+
 	notifier, err := notify.NewNotifier(db)
 	if err != nil {
 		logger.Info("main", "Failed to start notifier: %s", err.Error())
