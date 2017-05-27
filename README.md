@@ -60,10 +60,10 @@ and developers. It's a just-working proof-of-concept.
 Checks could be self-contained and run on a Gansoi node - or they can run on a
 third party host. This will require a transport.
 
-- ssh - Gansoi should support SSH as a transport. It is universally supported
+- [x] ssh - Gansoi should support SSH as a transport. It is universally supported
   as a remote access protocol. Gansoi must support some form of keep-alive to
   avoid the constant reconnecting and handshake.
-- NRPE - This is the *industry standard* and we should support it.
+- [ ] NRPE - This is the *industry standard* and we should support it.
 
 ### Building and development
 
