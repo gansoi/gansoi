@@ -9,6 +9,7 @@ import (
 	"github.com/gansoi/gansoi/boltdb"
 	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/stats"
+	"github.com/gansoi/gansoi/transports/ssh"
 )
 
 type (
@@ -67,15 +68,10 @@ func TestSchedulerLoop(t *testing.T) {
 }
 
 func TestSchedulerLoopCheck(t *testing.T) {
-	mock := &mockAgent{
-		Panic: false,
-	}
-
 	c := &Check{
 		Interval:  time.Millisecond * 1,
-		Agent:     mock,
 		AgentID:   "mock",
-		Arguments: json.RawMessage("{}"),
+		Arguments: json.RawMessage(`{"panic": false}`),
 	}
 	c.ID = "hello"
 
@@ -104,14 +100,8 @@ func TestSchedulerLoopCheck(t *testing.T) {
 func TestSchedulerLoopCheckOverrun(t *testing.T) {
 	stats.CounterSet("scheduler_inflight_overrun", 0)
 
-	mock := &mockAgent{
-		Panic: false,
-		Delay: time.Second,
-	}
-
 	c := &Check{
 		Interval:  time.Millisecond * 1,
-		Agent:     mock,
 		AgentID:   "mock",
 		Arguments: json.RawMessage(`{"delay":510000000}`),
 	}
@@ -145,14 +135,10 @@ func TestSchedulerLoopCheckOverrun(t *testing.T) {
 }
 
 func TestSchedulerRunCheck(t *testing.T) {
-	mock := &mockAgent{
-		Panic: false,
-	}
-
 	c := Check{
-		Interval: time.Millisecond * 100,
-		Agent:    mock,
-		AgentID:  "mock",
+		Interval:  time.Millisecond * 100,
+		AgentID:   "mock",
+		Arguments: []byte("{}"),
 	}
 
 	db := boltdb.NewTestStore()
@@ -160,16 +146,62 @@ func TestSchedulerRunCheck(t *testing.T) {
 
 	clock := time.Now()
 
-	result := s.runCheck(clock, c, meta(clock, &c))
+	meta := &checkMeta{
+		check: c,
+		key:   &metaKey{},
+	}
+	result := s.runCheck(clock, meta)
 	ran, _ := result.Results["ran"].(bool)
+
+	if result.Error != "" {
+		t.Fatalf("runCheck() returned an error: %s", result.Error)
+	}
 
 	if !ran {
 		t.Fatalf("runCheck() did not execute the check")
 	}
 
 	// Now try to panic.
-	c.Agent.(*mockAgent).Panic = true
-	s.runCheck(clock, c, meta(clock, &c))
+	c.Arguments = []byte(`{"panic": true}`)
+	s.runCheck(clock, meta)
+}
+
+func TestSchedulerRunRemoteCheck(t *testing.T) {
+	c := Check{
+		Interval:  time.Millisecond * 100,
+		AgentID:   "mockremote",
+		Hosts:     []string{"hostid"},
+		Arguments: []byte("{}"),
+	}
+
+	db := boltdb.NewTestStore()
+	s := NewScheduler(db, "test")
+
+	clock := time.Now()
+
+	meta := &checkMeta{
+		check: c,
+		key: &metaKey{
+			checkID: c.ID,
+			hostID:  c.Hosts[0],
+		},
+	}
+	result := s.runCheck(clock, meta)
+
+	if result.Error == "" {
+		t.Fatalf("runCheck() did not return an error")
+	}
+
+	host := ssh.SSH{}
+	host.ID = "hostid"
+
+	db.Save(&host)
+
+	result = s.runCheck(clock, meta)
+
+	if result.Error != "" {
+		t.Fatalf("runCheck() returned an error")
+	}
 }
 
 func TestSpinFail(t *testing.T) {

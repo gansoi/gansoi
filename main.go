@@ -32,6 +32,7 @@ import (
 	"github.com/gansoi/gansoi/notify"
 	"github.com/gansoi/gansoi/plugins"
 	_ "github.com/gansoi/gansoi/plugins/agents/http"
+	_ "github.com/gansoi/gansoi/plugins/agents/linuxmemory"
 	_ "github.com/gansoi/gansoi/plugins/agents/mysql"
 	_ "github.com/gansoi/gansoi/plugins/agents/ping"
 	_ "github.com/gansoi/gansoi/plugins/agents/ssh"
@@ -39,6 +40,7 @@ import (
 	_ "github.com/gansoi/gansoi/plugins/notifiers/console"
 	_ "github.com/gansoi/gansoi/plugins/notifiers/email"
 	_ "github.com/gansoi/gansoi/plugins/notifiers/slack"
+	"github.com/gansoi/gansoi/transports/ssh"
 )
 
 var (
@@ -185,7 +187,8 @@ func runCheck(printSummary bool, arguments []string) {
 		os.Exit(3)
 	}
 
-	result := checks.RunCheck(&check)
+	// FIXME: Support remote hosts here!
+	result := checks.RunCheck(nil, &check)
 
 	if printSummary {
 		if result.Error != "" {
@@ -337,6 +340,12 @@ func runCore(_ *cobra.Command, _ []string) {
 	go func() {
 		for leader := range n.LeaderCh() {
 			if leader {
+				sshErr := ssh.Init(n)
+				if sshErr != nil {
+					logger.Info("main", "ssh.Init() error: %s", sshErr.Error())
+					os.Exit(1)
+				}
+
 				scheduler.Run()
 			} else {
 				scheduler.Stop()
@@ -371,6 +380,9 @@ func runCore(_ *cobra.Command, _ []string) {
 	restContactGroups := node.NewRestAPI(notify.ContactGroup{}, n)
 	restContactGroups.Router(api.Group("/contactgroups"))
 
+	restHosts := node.NewRestAPI(ssh.SSH{}, n)
+	restHosts.Router(api.Group("/hosts"))
+
 	// Endpoint for running a check on the cluster node.
 	api.POST("/test", func(c *gin.Context) {
 		var check checks.Check
@@ -379,7 +391,8 @@ func runCore(_ *cobra.Command, _ []string) {
 			c.AbortWithError(http.StatusBadRequest, e)
 		}
 
-		checkResult := checks.RunCheck(&check)
+		// FIXME: Support remote checks somehow.
+		checkResult := checks.RunCheck(nil, &check)
 		checkResult.Node = info.Self()
 
 		c.JSON(http.StatusOK, checkResult)
@@ -424,6 +437,12 @@ func runCore(_ *cobra.Command, _ []string) {
 		c.Header("Content-Type", "application/octet-stream")
 
 		db.WriteTo(c.Writer)
+	})
+
+	engine.GET("/ssh/pubkey", func(c *gin.Context) {
+		publicKey := ssh.PublicKey()
+
+		c.Data(http.StatusOK, "text/plain", []byte(publicKey))
 	})
 
 	notifier, err := notify.NewNotifier(db)

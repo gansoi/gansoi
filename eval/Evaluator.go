@@ -47,18 +47,18 @@ func (e *Evaluator) evaluate(checkResult *checks.CheckResult) (*Evaluation, erro
 	clock := time.Now()
 
 	// Get latest evaluation.
-	eval, _ := LatestEvaluation(e.db, checkResult.CheckID)
+	eval, _ := LatestEvaluation(e.db, checkResult)
 	if eval == nil {
-		eval = NewEvaluation(clock, checkResult.CheckID)
+		eval = NewEvaluation(clock, checkResult)
 	}
 	eval.End = clock
 
 	// Get historyLength checkResults.
 	var history []checks.CheckResult
-	e.db.Find("CheckID", checkResult.CheckID, &history, e.historyLength, 0, true)
+	e.db.Find("CheckHostID", checkResult.CheckHostID, &history, e.historyLength, 0, true)
 
 	if len(history) < e.historyLength {
-		logger.Debug("evaluator", "Not enough history for %s yet", checkResult.CheckID)
+		logger.Debug("evaluator", "Not enough history for %s yet", checkResult.CheckHostID)
 	}
 
 	eval.History = statesFromHistory(history)
@@ -72,7 +72,7 @@ func (e *Evaluator) evaluate(checkResult *checks.CheckResult) (*Evaluation, erro
 	if eval.State != state {
 		e.db.Save(eval)
 
-		nextEval := NewEvaluation(clock, checkResult.CheckID)
+		nextEval := NewEvaluation(clock, checkResult)
 		nextEval.State = state
 		nextEval.History = eval.History
 
@@ -100,6 +100,6 @@ func (e *Evaluator) PostApply(leader bool, command database.Command, data interf
 		e.evaluate(data.(*checks.CheckResult))
 	case *Evaluation:
 		eval := data.(*Evaluation)
-		logger.Debug("eval", "%s: %s (%s) %v", eval.CheckID, eval.History.Reduce().ColorString(), eval.End.Sub(eval.Start).String(), eval.History)
+		logger.Debug("eval", "%s: %s (%s) %v", eval.CheckHostID, eval.History.Reduce().ColorString(), eval.End.Sub(eval.Start).String(), eval.History)
 	}
 }

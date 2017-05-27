@@ -8,6 +8,7 @@ import (
 
 	"github.com/gansoi/gansoi/boltdb"
 	"github.com/gansoi/gansoi/plugins"
+	"github.com/gansoi/gansoi/transports"
 )
 
 type (
@@ -16,6 +17,8 @@ type (
 		Panic       bool          `json:"panic"`
 		Delay       time.Duration `json:"delay"`
 	}
+
+	mockRemoteAgent struct{}
 )
 
 func (m *mockAgent) Check(result plugins.AgentResult) error {
@@ -34,8 +37,15 @@ func (m *mockAgent) Check(result plugins.AgentResult) error {
 	return nil
 }
 
+func (m *mockRemoteAgent) RemoteCheck(transport transports.Transport, result plugins.AgentResult) error {
+	result.AddValue("ran", true)
+
+	return nil
+}
+
 func init() {
 	plugins.RegisterAgent("mock", mockAgent{})
+	plugins.RegisterAgent("mockremote", mockRemoteAgent{})
 }
 
 func TestCheckJsonInvalid(t *testing.T) {
@@ -47,9 +57,10 @@ func TestCheckJsonInvalid(t *testing.T) {
 
 	var check Check
 	for _, input := range cases {
-		err := json.Unmarshal([]byte(input), &check)
+		json.Unmarshal([]byte(input), &check)
+		result := RunCheck(nil, &check)
 
-		if err == nil {
+		if result.Error == "" {
 			t.Fatalf("Unmarshal did not catch broken json '%s'", input)
 		}
 	}
@@ -88,7 +99,7 @@ func TestRunCheck(t *testing.T) {
 		t.Fatalf("Unmarshal failed: %s", err.Error())
 	}
 
-	result := RunCheck(&check)
+	result := RunCheck(nil, &check)
 	if result.Results["ran"] != true {
 		t.Fatalf("Check failed to run")
 	}
@@ -110,7 +121,7 @@ func TestRunCheckError(t *testing.T) {
 			t.Fatalf("Unmarshal failed: %s", err.Error())
 		}
 
-		result := RunCheck(&check)
+		result := RunCheck(nil, &check)
 		if result.Error == "" {
 			t.Fatalf("Failed to return error for '%s'", input)
 		}
@@ -142,33 +153,5 @@ func TestCheckValidate(t *testing.T) {
 		if err != nil && !c.err {
 			t.Fatalf("%d: Wrongly catched validation error in %+v", i, c.in)
 		}
-	}
-}
-
-func TestAll(t *testing.T) {
-	db := boltdb.NewTestStore()
-	c := &Check{
-		AgentID:   "mock",
-		Arguments: json.RawMessage("{}"),
-	}
-
-	err := db.Save(c)
-	if err != nil {
-		t.Fatalf("Save() failed: %s", err.Error())
-	}
-
-	c.ID = ""
-	err = db.Save(c)
-	if err != nil {
-		t.Fatalf("Save() failed: %s", err.Error())
-	}
-
-	list, err := All(db)
-	if err != nil {
-		t.Fatalf("All() failed: %s", err.Error())
-	}
-
-	if len(list) != 2 {
-		t.Fatalf("Wrong lenght of list, got %d", len(list))
 	}
 }

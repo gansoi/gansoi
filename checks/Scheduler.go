@@ -6,6 +6,8 @@ import (
 	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/logger"
 	"github.com/gansoi/gansoi/stats"
+	"github.com/gansoi/gansoi/transports"
+	"github.com/gansoi/gansoi/transports/ssh"
 )
 
 type (
@@ -15,6 +17,7 @@ type (
 		nodeName string
 		stop     chan struct{}
 		db       database.Database
+		store    *MetaStore
 	}
 )
 
@@ -27,10 +30,13 @@ func init() {
 
 // NewScheduler instantiates a new scheduler.
 func NewScheduler(db database.Database, nodeName string) *Scheduler {
+	store, _ := newMetaStore(db)
+
 	s := &Scheduler{
 		nodeName: nodeName,
 		stop:     make(chan struct{}),
 		db:       db,
+		store:    store,
 	}
 
 	return s
@@ -61,46 +67,35 @@ func (s *Scheduler) loop() {
 }
 
 func (s *Scheduler) spin(clock time.Time) {
-	// Get a list of all checks.
-	all, err := All(s.db)
-	if err != nil {
-		logger.Info("scheduler", "All() failed: %s", err.Error())
+	meta := s.store.Next(clock)
+	if meta == nil {
 		return
 	}
 
-	for _, c := range all {
-		meta := meta(clock, &c)
-
-		// Calculate how much we should wait before executing the check. If
-		// the value is positive, it's in the future.
-		wait := meta.NextCheck.Sub(clock)
-
-		// If there's still time to wait - wait.
-		if wait > 0 {
-			continue
-		}
-
-		// If the last check is still running, abort.
-		if meta.running {
-			stats.CounterInc("scheduler_inflight_overrun", 1)
-			continue
-		}
-
-		meta.runs++
-		meta.running = true
-		meta.NextCheck = clock.Add(c.Interval)
-
-		stats.CounterInc("scheduler_inflight", 1)
-		go s.runCheck(clock, c, meta)
-	}
+	stats.CounterInc("scheduler_inflight", 1)
+	go s.runCheck(clock, meta)
 }
 
-func (s *Scheduler) runCheck(clock time.Time, check Check, meta *checkMeta) *CheckResult {
+func (s *Scheduler) runCheck(clock time.Time, meta *checkMeta) *CheckResult {
 	start := time.Now()
 
 	stats.CounterInc("scheduler_started", 1)
 
-	checkResult := RunCheck(&check)
+	var checkResult *CheckResult
+	var transport transports.Transport
+
+	if meta.key.hostID != "" {
+		remote := ssh.SSH{}
+		err := s.db.One("ID", meta.key.hostID, &remote)
+		if err == nil {
+			transport = &remote
+		}
+	}
+
+	checkResult = RunCheck(transport, &meta.check)
+	checkResult.CheckHostID = CheckHostID(meta.key.checkID, meta.key.hostID)
+	checkResult.CheckID = meta.key.checkID
+	checkResult.HostID = meta.key.hostID
 
 	stats.CounterInc("scheduler_inflight", -1)
 
@@ -108,14 +103,14 @@ func (s *Scheduler) runCheck(clock time.Time, check Check, meta *checkMeta) *Che
 
 	if checkResult.Error != "" {
 		stats.CounterInc("scheduler_failed", 1)
-		logger.Info("scheduler", "%s failed in %s: %s", check.ID, time.Since(start), checkResult.Error)
+		logger.Info("scheduler", "%s failed in %s: %s", meta.check.ID, time.Since(start), checkResult.Error)
 	} else {
-		logger.Debug("scheduler", "%s ran in %s: %+v", check.ID, time.Since(start), checkResult.Results)
+		logger.Debug("scheduler", "%s ran in %s: %+v", meta.check.ID, time.Since(start), checkResult.Results)
 	}
 
 	s.db.Save(checkResult)
 
-	meta.running = false
+	s.store.Done(meta)
 
 	return checkResult
 }

@@ -1,8 +1,6 @@
 package plugins
 
-import (
-	"reflect"
-)
+import "reflect"
 
 type (
 	// Agent should be implemented by all agents. An agent is the entity
@@ -15,6 +13,7 @@ type (
 	// AgentDescription describes an agent.
 	AgentDescription struct {
 		Name      string                `json:"name"`
+		Remote    bool                  `json:"remote"`
 		Arguments []ArgumentDescription `json:"arguments"`
 	}
 )
@@ -34,14 +33,14 @@ func RegisterAgent(name string, agent interface{}) {
 	agents[name] = reflect.TypeOf(agent)
 }
 
-// GetAgent will return an agent registred with the name.
-func GetAgent(name string) Agent {
+// Get will return an agent registered with the name.
+func GetAgent(name string) interface{} {
 	agent, found := agents[name]
 	if !found {
 		return nil
 	}
 
-	return reflect.New(agent).Interface().(Agent)
+	return reflect.New(agent).Interface()
 }
 
 // ListAgents will return a list of all agents.
@@ -49,8 +48,11 @@ func ListAgents() []AgentDescription {
 	list := make([]AgentDescription, 0, len(agents))
 
 	for name, typ := range agents {
+		_, remote := reflect.New(typ).Interface().(RemoteAgent)
+
 		list = append(list, AgentDescription{
 			Name:      name,
+			Remote:    remote,
 			Arguments: getArguments(typ),
 		})
 	}

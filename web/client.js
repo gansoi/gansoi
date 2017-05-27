@@ -4,9 +4,142 @@ var agents = new g.Collection('name');
 var notifiers = new g.Collection('name');
 var evaluations = new g.Collection('id');
 var lastEvaluations = new g.Collection('check_id');
-var checkresults = new g.Collection('check_id');
+var checkresults = new g.Collection('id');
 var contacts = new g.Collection('id');
 var contactgroups = new g.Collection('id');
+var hosts = new g.Collection('id');
+
+var listHosts = Vue.component('list-hosts', {
+    data: function() {
+        return {
+            hosts: hosts
+        };
+    },
+
+    computed: {
+        sorted: function() {
+            return this.hosts.dataset.get().sort(function(a, b) {
+                a = a.host;
+                b = b.host;
+                return (a === b ? 0 : a > b ? 1 : -1);
+            });
+        }
+    },
+
+    template: '#template-hosts'
+});
+
+Vue.component('host-line', {
+    props: {
+        host: {default: {id: 'unkn', host: ''}}
+    },
+
+    methods: {
+        viewHost: function() {
+            router.push('/host/view/' + this.host.id);
+        },
+    },
+
+    template: '#template-host-line'
+});
+
+var editHost = Vue.component('edit-host', {
+    data: function() {
+        return {
+            showDeleteConfirm: false,
+            title: 'Add host',
+            host: {
+                host: "",
+                port: 22,
+                username: "root"
+            }
+        };
+    },
+
+    created: function() {
+        // fetch the data when the view is created and the data is
+        // already being observed
+        this.fetchData();
+    },
+
+    watch: {
+        '$route': 'fetchData'
+    },
+
+    mounted: function() {
+        this.$refs.autofocus.focus();
+    },
+
+    methods: {
+        deleteHost: function(button) {
+            button.disabled = true;
+
+            Vue.http.delete('/api/hosts/' + this.$route.params.id);
+            router.push('/hosts/');
+        },
+
+        fetchData: function() {
+            var host = hosts.get(this.$route.params.id);
+
+            if (host != undefined) {
+                this.title = "Edit " + this.$route.params.id;
+                this.host = host;
+            }
+        },
+
+        save: function() {
+            this.$http.post('/api/hosts/', this.host).then(function(response) {
+                router.push('/hosts');
+            });
+        }
+    },
+
+    template: '#template-edit-host'
+});
+
+var viewHost = Vue.component('view-host', {
+    data: function() {
+        return {
+            hosts: hosts
+        };
+    },
+
+    computed: {
+        id: function() {
+            return this.$route.params.id;
+        },
+
+        host: function() {
+            return hosts.get(this.$route.params.id);
+        },
+    },
+
+    methods: {
+        edit: function(button) {
+            router.push('/host/edit/' + this.$route.params.id);
+        }
+    },
+
+    template: '#template-view-host'
+});
+
+Vue.component('g-host', {
+    props: ['id'],
+
+    computed: {
+        host: function() {
+            return hosts.get(this.id);
+        },
+    },
+
+    methods: {
+        view: function() {
+            router.push('/host/view/' + this.id);
+        },
+    },
+
+    template: '#template-g-host'
+});
 
 var listChecks = Vue.component('list-checks', {
     data: function() {
@@ -78,9 +211,11 @@ var editCheck = Vue.component('edit-check', {
             showDeleteConfirm: false,
             title: 'Add check',
             agents: agents.data,
+            hosts: hosts,
             contactgroups: contactgroups,
             check: {
                 interval: 30,
+                hosts: [],
                 contactgroups: [],
                 arguments: {},
                 agent: 'http',
@@ -157,6 +292,17 @@ var editCheck = Vue.component('edit-check', {
             }
 
             return agent.arguments;
+        },
+        remote: function() {
+            var agentId = this.check.agent;
+            var agent = agents.get(agentId);
+
+            // If the agent is unknown, return an empty array.
+            if (!agent) {
+                return false;
+            }
+
+            return agent.remote;
         }
     },
 
@@ -183,6 +329,7 @@ var viewCheck = Vue.component('view-check', {
         // start in the past.
         var first = now;
 
+        var groups = new vis.DataSet();
         var filter = function(item) {
             if (item.check_id === check_id) {
                 // We piggyback on the filter function to determine the start
@@ -190,6 +337,16 @@ var viewCheck = Vue.component('view-check', {
                 // again, we already set up the timeline.
                 var itemStart = new Date(item.start).getTime();
                 first = Math.min(itemStart, first);
+
+                if (!groups.get(item.host_id)) {
+                    var host = hosts.get(item.host_id);
+                    var content = '';
+                    if (host) {
+                        content = host.host;
+                    }
+                    content += '&nbsp;';
+                    groups.add({id: item.host_id, content: content, order: content});
+                }
 
                 return true;
             }
@@ -203,6 +360,7 @@ var viewCheck = Vue.component('view-check', {
                 id: 'id',
                 start: 'start',
                 end: 'end',
+                host_id: 'group',
                 state: 'className'
             }
         });
@@ -224,6 +382,7 @@ var viewCheck = Vue.component('view-check', {
         var timeline = new vis.Timeline(
             this.$refs.timeline,
             dataview,
+            groups.get(),
             options);
     },
 
@@ -241,9 +400,9 @@ var viewCheck = Vue.component('view-check', {
         },
 
         result: function() {
-            var result = checkresults.get(this.$route.params.id);
+            var results = checkresults.query('check_id', this.$route.params.id);
 
-            if (!result) {
+            if (results.length == 0) {
                 // Present an "empty" object to satisfy template requirements.
                 return {
                     error: null,
@@ -251,7 +410,8 @@ var viewCheck = Vue.component('view-check', {
                 };
             }
 
-            return result;
+            // This doesn't make much sense...
+            return results[0];
         }
     },
 
@@ -634,6 +794,7 @@ var init = g.waitGroup(function() {
     live.subscribe('evaluation', lastEvaluations);
     live.subscribe('contact', contacts);
     live.subscribe('contactgroup', contactgroups);
+    live.subscribe('host', hosts);
 
     const app = new Vue({
         data: {
@@ -683,12 +844,17 @@ restFetch(init, '/api/evaluations/', evaluations);
 restFetch(init, '/api/evaluations/', lastEvaluations); // FIXME: Don't request this twice!
 restFetch(init, '/api/contacts/', contacts);
 restFetch(init, '/api/contactgroups/', contactgroups);
+restFetch(init, '/api/hosts/', hosts);
 
 const router = new VueRouter({
     routes: [
         { path: '/', component: { template: '<h1>Hello, world.</h1>' } },
         { path: '/overview', component: { template: '#template-overview' } },
         { path: '/gansoi', component: listNodes },
+
+        { path: '/hosts', component: listHosts },
+        { path: '/host/view/:id', component: viewHost },
+        { path: '/host/edit/:id', component: editHost },
 
         { path: '/checks', component: listChecks },
         { path: '/check/view/:id', component: viewCheck },

@@ -2,7 +2,6 @@ package checks
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 
@@ -11,6 +10,7 @@ import (
 
 	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/plugins"
+	"github.com/gansoi/gansoi/transports"
 )
 
 type (
@@ -19,63 +19,18 @@ type (
 		database.Object `storm:"inline"`
 		Name            string          `json:"name" validate:"required"`
 		AgentID         string          `json:"agent" validate:"required"`
+		Hosts           []string        `json:"hosts"`
 		Interval        time.Duration   `json:"interval"`
 		Arguments       json.RawMessage `json:"arguments"`
-		Agent           plugins.Agent   `json:"-"`
 		Expressions     []string        `json:"expressions"`
 		ContactGroups   []string        `json:"contactgroups"`
 	}
-
-	checkProxy struct {
-		database.Object
-		Name          string          `json:"name"`
-		AgentID       string          `json:"agent"`
-		Interval      time.Duration   `json:"interval"`
-		Node          string          `json:"node"`
-		Arguments     json.RawMessage `json:"arguments"`
-		Expressions   []string        `json:"expressions"`
-		ContactGroups []string        `json:"contactgroups"`
-	}
 )
 
-// All returns a slice of all checks in db
-func All(db database.Database) ([]Check, error) {
-	var allChecks []Check
-	err := db.All(&allChecks, -1, 0, false)
-
-	return allChecks, err
-}
-
-// UnmarshalJSON implements json.Unmarshaler.
-func (c *Check) UnmarshalJSON(data []byte) error {
-	proxy := checkProxy{}
-
-	err := json.Unmarshal(data, &proxy)
-	if err != nil {
-		return err
-	}
-
-	c.ID = proxy.ID
-	c.Name = proxy.Name
-	c.AgentID = proxy.AgentID
-	c.Interval = proxy.Interval
-	c.Arguments = proxy.Arguments
-	c.Expressions = proxy.Expressions
-	c.ContactGroups = proxy.ContactGroups
-
-	c.Agent = plugins.GetAgent(c.AgentID)
-	if c.Agent == nil {
-		return errors.New("Agent not found")
-	}
-
-	return json.Unmarshal(c.Arguments, &c.Agent)
-}
-
 // RunCheck will run a check and return a CheckResult.
-func RunCheck(check *Check) (checkResult *CheckResult) {
+func RunCheck(transport transports.Transport, check *Check) (checkResult *CheckResult) {
 	agentResult := plugins.NewAgentResult()
 	checkResult = &CheckResult{
-		CheckID:   check.ID,
 		TimeStamp: time.Now(),
 		Results:   agentResult,
 	}
@@ -89,15 +44,37 @@ func RunCheck(check *Check) (checkResult *CheckResult) {
 		}
 	}()
 
-	e := check.Agent.Check(agentResult)
-
-	// If any expressions is defined, we try to evaluate them until one fails.
-	if len(check.Expressions) > 0 && e == nil {
-		e = check.Evaluate(agentResult)
+	agent := plugins.GetAgent(check.AgentID)
+	err := json.Unmarshal(check.Arguments, &agent)
+	if err != nil {
+		checkResult.Error = err.Error()
+		return checkResult
 	}
 
-	if e != nil {
-		checkResult.Error = e.Error()
+	switch agent.(type) {
+	case plugins.RemoteAgent:
+		if transport == nil {
+			checkResult.Error = "no host"
+			return checkResult
+		}
+
+		err = agent.(plugins.RemoteAgent).RemoteCheck(transport, agentResult)
+	case plugins.Agent:
+		err = agent.(plugins.Agent).Check(agentResult)
+	}
+
+	if err != nil {
+		checkResult.Error = err.Error()
+		return checkResult
+	}
+
+	// If any expressions is defined, we try to evaluate them until one fails.
+	if len(check.Expressions) > 0 && err == nil {
+		err = check.Evaluate(agentResult)
+	}
+
+	if err != nil {
+		checkResult.Error = err.Error()
 	}
 
 	return checkResult
