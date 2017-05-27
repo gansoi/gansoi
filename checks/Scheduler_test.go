@@ -9,6 +9,7 @@ import (
 	"github.com/gansoi/gansoi/boltdb"
 	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/stats"
+	"github.com/gansoi/gansoi/transports/ssh"
 )
 
 type (
@@ -163,6 +164,44 @@ func TestSchedulerRunCheck(t *testing.T) {
 	// Now try to panic.
 	c.Arguments = []byte(`{"panic": true}`)
 	s.runCheck(clock, meta)
+}
+
+func TestSchedulerRunRemoteCheck(t *testing.T) {
+	c := Check{
+		Interval:  time.Millisecond * 100,
+		AgentID:   "mockremote",
+		Hosts:     []string{"hostid"},
+		Arguments: []byte("{}"),
+	}
+
+	db := boltdb.NewTestStore()
+	s := NewScheduler(db, "test")
+
+	clock := time.Now()
+
+	meta := &checkMeta{
+		check: c,
+		key: &metaKey{
+			checkID: c.ID,
+			hostID:  c.Hosts[0],
+		},
+	}
+	result := s.runCheck(clock, meta)
+
+	if result.Error == "" {
+		t.Fatalf("runCheck() did not return an error")
+	}
+
+	host := ssh.SSH{}
+	host.ID = "hostid"
+
+	db.Save(&host)
+
+	result = s.runCheck(clock, meta)
+
+	if result.Error != "" {
+		t.Fatalf("runCheck() returned an error")
+	}
 }
 
 func TestSpinFail(t *testing.T) {

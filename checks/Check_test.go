@@ -8,6 +8,7 @@ import (
 
 	"github.com/gansoi/gansoi/boltdb"
 	"github.com/gansoi/gansoi/plugins"
+	"github.com/gansoi/gansoi/transports"
 )
 
 type (
@@ -16,6 +17,8 @@ type (
 		Panic       bool          `json:"panic"`
 		Delay       time.Duration `json:"delay"`
 	}
+
+	mockRemoteAgent struct{}
 )
 
 func (m *mockAgent) Check(result plugins.AgentResult) error {
@@ -34,8 +37,15 @@ func (m *mockAgent) Check(result plugins.AgentResult) error {
 	return nil
 }
 
+func (m *mockRemoteAgent) RemoteCheck(transport transports.Transport, result plugins.AgentResult) error {
+	result.AddValue("ran", true)
+
+	return nil
+}
+
 func init() {
 	plugins.RegisterAgent("mock", mockAgent{})
+	plugins.RegisterAgent("mockremote", mockRemoteAgent{})
 }
 
 func TestCheckJsonInvalid(t *testing.T) {
