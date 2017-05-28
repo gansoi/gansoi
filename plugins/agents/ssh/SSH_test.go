@@ -75,6 +75,16 @@ func TestCheckFail(t *testing.T) {
 	}
 }
 
+func acceptOneSSH(listener net.Listener, config *ssh.ServerConfig) {
+	go func(config ssh.ServerConfig) {
+		conn, _ := listener.Accept()
+		ssh.NewServerConn(conn, &config)
+		// Give the client some time.
+		time.Sleep(time.Millisecond * 50)
+		conn.Close()
+	}(*config)
+}
+
 func TestCheck(t *testing.T) {
 	config := &ssh.ServerConfig{
 		NoClientAuth: false,
@@ -93,15 +103,7 @@ func TestCheck(t *testing.T) {
 	}
 	defer listener.Close()
 
-	go func() {
-		for {
-			conn, _ := listener.Accept()
-			ssh.NewServerConn(conn, config)
-			// Give the client some time.
-			time.Sleep(time.Millisecond * 50)
-			conn.Close()
-		}
-	}()
+	acceptOneSSH(listener, config)
 
 	a := SSH{
 		Address: listener.Addr().String(),
@@ -122,6 +124,8 @@ func TestCheck(t *testing.T) {
 	}
 
 	config.NoClientAuth = true
+	acceptOneSSH(listener, config)
+
 	//	config.PasswordCallback = nil
 	err = a.Check(result)
 	if err != nil {
