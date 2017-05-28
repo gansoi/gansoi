@@ -29,7 +29,7 @@
 <template id="template-nodes">
 <div>
 <h2>Gansoi</h2>
-<h3>Nodes</h3>
+<h3>Core Nodes</h3>
 <table class="table">
  <tr>
   <th>Name</th>
@@ -55,7 +55,7 @@
 
 <template id="template-hosts">
 <div>
- <h2>Hosts</h2>
+ <h2>Remote Hosts</h2>
  <table class="table">
   <tr>
    <th>ID</th>
@@ -67,6 +67,10 @@
  </table>
  <router-link class="button" to="/host/edit/new">Add Host</router-link>
  <h2>Public key</h2>
+ <p>
+  This is the public SSH key used by this Gansoi cluster. It must be added to
+  <code>~/.ssh/authorized_keys</code> on all remote hosts.
+ </p>
  <iframe src="/ssh/pubkey" style="background:#fff; border:0px;" width="100%"></iframe>
 </div>
 </template>
@@ -93,19 +97,19 @@
     <tbody>
      <tr>
       <td><label>Hostname</label></td>
-      <td><input type="text" v-model="host.host" ref="autofocus"/></td>
+      <td><input type="text" v-model="host.host" ref="autofocus"/> Hostname or IP address</td>
      </tr>
      <tr>
       <td><label>Port</label></td>
-      <td><input type="number" min="1" max="65535" v-model="host.port"></td>
+      <td><input type="number" min="1" max="65535" v-model="host.port"> The port number of the SSH server</td>
      </tr>
      <tr>
       <td><label>Username</label></td>
-      <td><input type="text" v-model="host.username"/></td>
+      <td><input type="text" v-model="host.username"/> The login to use</td>
      </tr>
     </tbody>
    </table>
-   <input class="button green right" name="add" type="button" value="Save" v-on:click="save()" />
+   <input class="button green right" name="add" type="button" value="Save Host" v-on:click="save()" />
   </fieldset>
  </form>
  <g-modal v-if="showDeleteConfirm" @close="showDeleteConfirm = false">
@@ -157,7 +161,7 @@
   </tr>
   <tr is="check-line" v-for="check in sorted" :check="check"></tr>
  </table>
- <router-link class="button" id="dddd" to="/check/edit/new">Add Check</router-link>
+ <router-link class="button" to="/check/edit/new">Add Check</router-link>
 </div>
 </template>
 
@@ -310,7 +314,7 @@
     </tbody>
    </table>
    <input class="button" type="button" value="Test" v-on:click="testCheck()" />
-   <input class="button green right" name="add" type="button" value="Add check" v-on:click="addCheck()" />
+   <input class="button green right" name="add" type="button" value="Save Check" v-on:click="addCheck()" />
   </fieldset>
  </form>
  <g-modal v-if="showDeleteConfirm" @close="showDeleteConfirm = false">
@@ -440,7 +444,7 @@
   </tr>
   <tr is="contactgroup-line" v-for="contactgroup in contactgroups.data" :contactgroup="contactgroup"></tr>
  </table>
- <router-link class="button" to="/contactgroup/edit/new">Add Group</router-link>
+ <router-link class="button" to="/contactgroup/edit/new">Add Contact Group</router-link>
 </div>
 </template>
 

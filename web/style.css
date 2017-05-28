@@ -228,6 +228,7 @@ th {
 .table {
     border-spacing: 0px;
     border-collapse: separate;
+    margin-bottom: 5px;
 }
 
 .table tr {

@@ -13,9 +13,9 @@ type (
 	// Slack will notify Slack using an incoming webhook.
 	// Please see: https://api.slack.com/incoming-webhooks
 	Slack struct {
-		Username string `json:"username"`
-		URL      string `json:"url"`
-		Channel  string `json:"channel"`
+		Username string `json:"username" description:"The username to use in Slack, leave empty to use username defined in the Slack integration"`
+		URL      string `json:"url" description:"A web hook URL in the format https://hooks.slack.com/services/XXXXXX/YYYY/ZZZZZZ"`
+		Channel  string `json:"channel" description:"The channel to post notification in. Include #"`
 	}
 
 	attachment struct {

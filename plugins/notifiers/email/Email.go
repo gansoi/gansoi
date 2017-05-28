@@ -12,11 +12,11 @@ import (
 type (
 	// Email will send an email.
 	Email struct {
-		SMTP     string `json:"smtp"`
-		Username string `json:"username"`
+		SMTP     string `json:"smtp" description:"The address of a SMTP server to use (host:port)"`
+		Username string `json:"username" description:"Leave empty for no authentication"`
 		Password string `json:"password"`
-		From     string `json:"from"`
-		To       string `json:"to"`
+		From     string `json:"from" description:"A from: email address"`
+		To       string `json:"to" description:"A to: email address"`
 	}
 )
 
