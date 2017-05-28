@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -e
+
+if [ "$1" = "purge" ]; then
+    deluser --system gansoi || true
+    delgroup --system --only-if-empty gansoi || true
+fi

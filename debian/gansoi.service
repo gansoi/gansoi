@@ -1,0 +1,14 @@
+[Unit]
+Description=Gansoi node
+After=network.target
+
+[Service]
+User=gansoi
+Group=gansoi
+Type=simple
+EnvironmentFile=/etc/default/gansoi
+ExecStart=/usr/sbin/gansoi core run
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
