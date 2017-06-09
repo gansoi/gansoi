@@ -1,3 +1,5 @@
+DEB_VERSION = $(shell dpkg-parsechangelog -S version)
+
 all: clean gansoi
 
 gansoi:
@@ -14,6 +16,11 @@ docker-push: docker-image
 
 docker-run:
 	docker run --rm -p 80:80 -p 443:443 -e DEBUG=* abrander/gansoi
+
+deb:
+	dpkg-buildpackage -uc -B
+	rm ../gansoi_$(DEB_VERSION)_amd64.changes
+	mv ../gansoi_$(DEB_VERSION)_amd64.deb ./
 
 clean:
 	rm -f gansoi dockerroot/etc/ssl/certs/ca-certificates.crt

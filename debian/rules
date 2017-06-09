@@ -1,0 +1,12 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_install: install
+
+install:
+	mkdir -p debian/gansoi/usr/sbin debian/gansoi/etc debian/gansoi/usr/share/gansoi
+	install -m 755 gansoi debian/gansoi/usr/sbin
+	install -m 644 debian/gansoi.conf debian/gansoi/etc
+	cp -a web debian/gansoi/usr/share/gansoi

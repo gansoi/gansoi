@@ -1,0 +1,14 @@
+Source: gansoi
+Section: devel
+Priority: extra
+Maintainer: Anders Brander <anders@brander.dk>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.9.1
+Homepage: https://gansoi.com/
+
+Package: gansoi
+Architecture: any
+Depends: ca-certificates
+Description: Open Source infrastructure monitoring for a modern world
+ Gansoi is a modern monitoring solution inspired by classical network monitoring
+ software (Nagios and friends) updated to modern and best practices.

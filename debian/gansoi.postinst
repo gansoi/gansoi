@@ -1,0 +1,27 @@
+#!/bin/sh
+
+set -e
+
+if [ "$1" = "configure" ]; then
+    if ! getent group gansoi >/dev/null ; then
+        addgroup --system gansoi >/dev/null
+    fi
+
+    if ! getent passwd gansoi >/dev/null ; then
+        adduser >/dev/null \
+            --system \
+            --disabled-login \
+            --ingroup gansoi \
+            --home /var/lib/gansoi \
+            --gecos "Gansoi" \
+            --shell /bin/false \
+            gansoi
+    fi
+
+    setcap CAP_NET_BIND_SERVICE,CAP_NET_RAW=ep /usr/sbin/gansoi
+
+    # Initialize a new cluster.
+    sudo -u gansoi gansoi core init || /bin/true
+fi
+
+#DEBHELPER#
