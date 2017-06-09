@@ -32,6 +32,7 @@ import (
 	"github.com/gansoi/gansoi/notify"
 	"github.com/gansoi/gansoi/plugins"
 	_ "github.com/gansoi/gansoi/plugins/agents/http"
+	_ "github.com/gansoi/gansoi/plugins/agents/linuxload"
 	_ "github.com/gansoi/gansoi/plugins/agents/linuxmemory"
 	_ "github.com/gansoi/gansoi/plugins/agents/mysql"
 	_ "github.com/gansoi/gansoi/plugins/agents/ping"
