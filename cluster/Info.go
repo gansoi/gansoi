@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net"
+	"os"
+	"path"
 	"strings"
 	"sync"
+	"syscall"
 )
 
 type (
@@ -38,10 +41,24 @@ func NewInfo(path string) *Info {
 // Save will trigger a save.
 func (c *Info) Save() error {
 	c.RLock()
-	b, err := json.MarshalIndent(c, "", "\t")
+	b, _ := json.MarshalIndent(c, "", "\t")
 	c.RUnlock()
-	if err != nil {
-		return err
+
+	// We try to make the file owner by the directory owner, if the file
+	// doesn't exist.
+	if _, err := os.Stat(c.path); os.IsNotExist(err) {
+		var st syscall.Stat_t
+
+		// If the parent directory doesn't exist, we should return an error.
+		err = syscall.Stat(path.Dir(c.path), &st)
+		if err != nil {
+			return err
+		}
+
+		// We do this without any form of error handling, if it fails, it
+		// fails. Users can have reason for wanting this.
+		ioutil.WriteFile(c.path, []byte(""), 0600)
+		os.Chown(c.path, int(st.Uid), int(st.Gid))
 	}
 
 	return ioutil.WriteFile(c.path, b, 0600)
