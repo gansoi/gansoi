@@ -79,6 +79,8 @@ func (e *Evaluator) evaluate(checkResult *checks.CheckResult) (*Evaluation, erro
 		eval = nextEval
 	}
 
+	logger.Debug("eval", "%s: %s (%s) %v", eval.CheckHostID, eval.History.Reduce().ColorString(), eval.End.Sub(eval.Start).String(), eval.History)
+
 	return eval, e.db.Save(eval)
 }
 
@@ -98,8 +100,5 @@ func (e *Evaluator) PostApply(leader bool, command database.Command, data interf
 	switch data.(type) {
 	case *checks.CheckResult:
 		e.evaluate(data.(*checks.CheckResult))
-	case *Evaluation:
-		eval := data.(*Evaluation)
-		logger.Debug("eval", "%s: %s (%s) %v", eval.CheckHostID, eval.History.Reduce().ColorString(), eval.End.Sub(eval.Start).String(), eval.History)
 	}
 }
