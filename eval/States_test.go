@@ -155,3 +155,28 @@ func TestStatesJSON(t *testing.T) {
 		}
 	}
 }
+
+func TestStatesColorString(t *testing.T) {
+	cases := []struct {
+		input    States
+		expected int
+	}{
+		{States{}, 7},
+		{States{StateDown}, 21},
+		{States{StateUp}, 19},
+		{States{StateUnknown}, 24},
+		{States{StateDegraded}, 25},
+		{States{StateUp, StateDegraded}, 37},
+		{States{StateUp, StateUp}, 31},
+		{States{StateUp, StateUp, StateUp, StateDown}, 57},
+		{States{StateUnknown, StateDegraded, StateUp}, 54},
+	}
+
+	for _, dat := range cases {
+		result := dat.input.ColorString()
+
+		if len(result) != dat.expected {
+			t.Fatalf("Failed to ColorString encode [%v] correct. Got [%d], expected [%d]", dat.input, len(result), dat.expected)
+		}
+	}
+}

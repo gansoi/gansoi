@@ -50,6 +50,27 @@ func TestMarshalJSON(t *testing.T) {
 	}
 }
 
+func TestColorString(t *testing.T) {
+	cases := []struct {
+		input  State
+		output string
+	}{
+		{StateUnknown, blue + "Unknown" + reset},
+		{StateUp, green + "Up" + reset},
+		{StateDegraded, yellow + "Degraded" + reset},
+		{StateDown, red + "Down" + reset},
+		{State(39), "" + reset},
+	}
+
+	for _, dat := range cases {
+		out := dat.input.ColorString()
+
+		if out != dat.output {
+			t.Fatalf("Got wrong output: %s, expected %s", out, dat.output)
+		}
+	}
+}
+
 func TestUnmarshalJSON(t *testing.T) {
 	j := `{
         "s1": "up",

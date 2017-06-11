@@ -27,6 +27,14 @@ const (
 	stateMax State = iota
 )
 
+const (
+	red    = "\033[31m"
+	yellow = "\033[33m"
+	green  = "\033[32m"
+	blue   = "\033[34m"
+	reset  = "\033[0m"
+)
+
 var (
 	stateToJSON = map[State]string{
 		StateUnknown:  `""`,
@@ -41,45 +49,31 @@ var (
 		`"degraded"`: StateDegraded,
 		`"down"`:     StateDown,
 	}
+
+	stateToHuman = map[State]string{
+		StateUnknown:  "Unknown",
+		StateUp:       "Up",
+		StateDegraded: "Degraded",
+		StateDown:     "Down",
+	}
+
+	stateToColor = map[State]string{
+		StateUnknown:  blue,
+		StateUp:       green,
+		StateDegraded: yellow,
+		StateDown:     red,
+	}
 )
 
 // String implements GoStringer.
 func (s State) String() string {
-	switch s {
-	case StateUnknown:
-		return "Unknown"
-	case StateUp:
-		return "Up"
-	case StateDegraded:
-		return "Degraded"
-	case StateDown:
-		return "Down"
-	default:
-		return fmt.Sprintf("State-%d", s)
-	}
+	return stateToHuman[s]
 }
 
 // ColorString will return a colorized string representing the state. It will
 // be suitable for printing in an ANSI terminal.
 func (s State) ColorString() string {
-	const red = "\033[31m"
-	const yellow = "\033[33m"
-	const green = "\033[32m"
-	const blue = "\033[34m"
-	const reset = "\033[0m"
-
-	switch s {
-	case StateUnknown:
-		return blue + "Unknown" + reset
-	case StateUp:
-		return green + "Up" + reset
-	case StateDegraded:
-		return yellow + "Degraded" + reset
-	case StateDown:
-		return red + "Down" + reset
-	default:
-		return fmt.Sprintf("State-%d", s)
-	}
+	return stateToColor[s] + s.String() + reset
 }
 
 // Valid returns true if s is a valid state.
