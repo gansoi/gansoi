@@ -50,9 +50,9 @@ and developers. It's a just-working proof-of-concept.
 
 #### Alert integrations
 
-- [ ] Slack - it's what we all use and love.
+- [x] Slack - it's what we all use and love.
 - [ ] Pagerduty - oldtimers swear by this. Let's support it.
-- [ ] Email - CEO's want their alerts too.
+- [x] Email - CEO's want their alerts too.
 - [ ] Twilio voice calls - for waking up your ops team at 3 AM.
 
 #### Transports
