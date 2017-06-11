@@ -82,7 +82,10 @@ func nodeInit(info *Info, coreCA *ca.CA) ([]tls.Certificate, error) {
 		return nil, err
 	}
 
-	info.Save()
+	err = info.Save()
+	if err != nil {
+		return nil, err
+	}
 
 	return nodeSetup(info, coreCA)
 }
