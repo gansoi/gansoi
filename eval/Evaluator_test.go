@@ -155,4 +155,41 @@ func TestEvaluatorEvaluate1(t *testing.T) {
 	}
 }
 
+func TestEvaluatorPostApply(t *testing.T) {
+	db, e := newE(t, []string{"justone"})
+	defer db.Close()
+
+	result := &checks.CheckResult{
+		TimeStamp:   time.Now(),
+		CheckHostID: "da::",
+		Node:        "justone",
+	}
+
+	e.PostApply(false, database.CommandSave, result, nil)
+
+	pe := []Evaluation{}
+	err := db.All(&pe, -1, 0, false)
+	if err != nil {
+		t.Fatalf("db.All() failed: %s", err.Error())
+	}
+
+	if len(pe) != 0 {
+		t.Fatalf("Got wrong number of evaluations, got %d (%v)", len(pe), pe)
+	}
+
+	e.PostApply(true, database.CommandDelete, result, nil)
+	db.All(&pe, -1, 0, false)
+
+	if len(pe) != 0 {
+		t.Fatalf("Got wrong number of evaluations, got %d (%v)", len(pe), pe)
+	}
+
+	e.PostApply(true, database.CommandSave, result, nil)
+	db.All(&pe, -1, 0, false)
+
+	if len(pe) != 1 {
+		t.Fatalf("Got wrong number of evaluations, got %d (%v)", len(pe), pe)
+	}
+}
+
 var _ database.Listener = (*Evaluator)(nil)
