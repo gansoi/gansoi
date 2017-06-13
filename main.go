@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
-	"net"
 	"net/http"
 	"os"
 	"path"
@@ -256,12 +255,6 @@ func joinCore(_ *cobra.Command, arguments []string) {
 	// Check that we have all arguments.
 	if len(arguments) < 2 {
 		logger.Info("join", "Too few arguments")
-		os.Exit(1)
-	}
-
-	ip := net.ParseIP(arguments[0])
-	if ip == nil {
-		logger.Info("join", "%s does not look like an IP address", arguments[0])
 		os.Exit(1)
 	}
 
