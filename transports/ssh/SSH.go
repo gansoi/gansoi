@@ -7,10 +7,10 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
+	"strings"
 	"sync"
 
 	"github.com/gansoi/gansoi/database"
@@ -24,8 +24,7 @@ type (
 	SSH struct {
 		database.Object `storm:"inline"`
 
-		Host     string `json:"host" description:"Hostname or IP adress to connect to"`
-		Port     uint16 `json:"port" description:"TCP port to connect to" default:"22"`
+		Address  string `json:"address" description:"Hostname or IP adress to connect to (1.2.3.4 or 1.2.3.4:22)"`
 		Username string `json:"username" description:"Username"`
 	}
 
@@ -108,12 +107,21 @@ func PublicKey() string {
 	return string(bytes.TrimSpace(ssh.MarshalAuthorizedKey(signer.PublicKey()))) + " https://gansoi.com/\n"
 }
 
+// defaultPort will append the default ssh port to a hostname if needed.
+func defaultPort(address string) string {
+	if !strings.ContainsRune(address, ':') {
+		return address + ":22"
+	}
+
+	return address
+}
+
 // Connect to a remote ssh server using public key authentication
 func (s *SSH) connect() (*ssh.Client, error) {
 	signerLock.Lock()
 	defer signerLock.Unlock()
 
-	dialString := fmt.Sprintf("%s:%d", s.Host, s.Port)
+	dialString := defaultPort(s.Address)
 	logger.Debug("ssh", "Connecting to %s as %s", dialString, s.Username)
 
 	if signer == nil {
@@ -145,7 +153,7 @@ func (s *SSH) Exec(cmd string, arguments ...string) (io.Reader, io.Reader, error
 		cmd += " " + arg
 	}
 
-	logger.Debug("ssh", "Executing command '%s' on %s:%d as %s", cmd, s.Host, s.Port, s.Username)
+	logger.Debug("ssh", "Executing command '%s' on %s as %s", cmd, s.Address, s.Username)
 	conn, err := connect(*s)
 	if err != nil {
 		return nil, nil, err

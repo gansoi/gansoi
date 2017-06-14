@@ -40,7 +40,7 @@ func loop() {
 			if t.Sub(conn.lastUse) > closeAfter && conn.refCount == 0 && conn.client != nil {
 				conn.client.Close()
 				conn.client = nil
-				logger.Debug("ssh", "Closing unused connection %s:%d", s.Host, s.Port)
+				logger.Debug("ssh", "Closing unused connection %s", s.Address)
 			}
 		}
 

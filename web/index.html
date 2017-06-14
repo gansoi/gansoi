@@ -59,8 +59,7 @@
  <table class="table">
   <tr>
    <th>ID</th>
-   <th>Hostname</th>
-   <th>Port</th>
+   <th>Address</th>
    <th>Username</th>
   </tr>
   <tr is="host-line" v-for="host in sorted" :host="host"></tr>
@@ -78,8 +77,7 @@
 <template id="template-host-line">
 <tr class="clickable" v-on:click="viewHost()">
  <td>{{ host.id }}</td>
- <td>{{ host.host }}</td>
- <td>{{ host.port }}</td>
+ <td>{{ host.address }}</td>
  <td>{{ host.username }}</td>
 </tr>
 </template>
@@ -96,12 +94,8 @@
    <table>
     <tbody>
      <tr>
-      <td><label>Hostname</label></td>
-      <td><input type="text" v-model="host.host" ref="autofocus"/> Hostname or IP address</td>
-     </tr>
-     <tr>
-      <td><label>Port</label></td>
-      <td><input type="number" min="1" max="65535" v-model="host.port"> The port number of the SSH server</td>
+      <td><label>Address</label></td>
+      <td><input type="text" v-model="host.address" ref="autofocus"/> Hostname or address with optional port</td>
      </tr>
      <tr>
       <td><label>Username</label></td>
@@ -113,7 +107,7 @@
   </fieldset>
  </form>
  <g-modal v-if="showDeleteConfirm" @close="showDeleteConfirm = false">
-  <h3 slot="header">Delete host {{ host.host }}?</h3>
+  <h3 slot="header">Delete host {{ host.address }}?</h3>
   <p slot="body">Do you really want to delete this host? Think about it, it cannot be undone.</p>
   <div slot="footer">
    <button class="right button red" v-on:click="deleteHost(this)">Really delete host</button>
@@ -132,12 +126,8 @@
  <table>
   <tbody v-if="host">
    <tr>
-    <td><label>Name</label></td>
-    <td>{{ host.host }}</td>
-   </tr>
-   <tr>
-    <td><label>Port</label></td>
-    <td>{{ host.port }}</td>
+    <td><label>Address</label></td>
+    <td>{{ host.address }}</td>
    </tr>
    <tr>
     <td><label>Username</label></td>
@@ -277,7 +267,7 @@
       <td><label>Hosts</label></td>
       <td>
        <select v-model="check.hosts" multiple>
-        <option v-for="host in hosts.data" :value="host.id">{{ host.host }}</option>
+        <option v-for="host in hosts.data" :value="host.id">{{ host.address }}</option>
        </select>
       </td>
      </tr>
@@ -519,7 +509,7 @@
 
 <template id="template-g-host">
  <span v-on:click="view()" class="clickable">
-  {{ host.host }}
+  {{ host.address }}
  </span>
 </template>
 

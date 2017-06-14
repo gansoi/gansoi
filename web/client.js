@@ -19,8 +19,8 @@ var listHosts = Vue.component('list-hosts', {
     computed: {
         sorted: function() {
             return this.hosts.dataset.get().sort(function(a, b) {
-                a = a.host;
-                b = b.host;
+                a = a.address;
+                b = b.address;
                 return (a === b ? 0 : a > b ? 1 : -1);
             });
         }
@@ -31,7 +31,7 @@ var listHosts = Vue.component('list-hosts', {
 
 Vue.component('host-line', {
     props: {
-        host: {default: {id: 'unkn', host: ''}}
+        host: {default: {id: 'unkn', address: ''}}
     },
 
     methods: {
@@ -49,8 +49,7 @@ var editHost = Vue.component('edit-host', {
             showDeleteConfirm: false,
             title: 'Add host',
             host: {
-                host: "",
-                port: 22,
+                address: "",
                 username: "root"
             }
         };
@@ -342,7 +341,7 @@ var viewCheck = Vue.component('view-check', {
                     var host = hosts.get(item.host_id);
                     var content = '';
                     if (host) {
-                        content = host.host;
+                        content = host.address;
                     }
                     content += '&nbsp;';
                     groups.add({id: item.host_id, content: content, order: content});
