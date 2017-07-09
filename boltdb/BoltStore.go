@@ -2,6 +2,7 @@ package boltdb
 
 import (
 	"encoding/json"
+	"expvar"
 	"fmt"
 	"io"
 	"math/rand"
@@ -16,7 +17,6 @@ import (
 	"github.com/hashicorp/raft"
 
 	"github.com/gansoi/gansoi/database"
-	"github.com/gansoi/gansoi/stats"
 )
 
 type (
@@ -30,12 +30,12 @@ type (
 	}
 )
 
-func init() {
-	stats.CounterInit("database_saves")
-	stats.CounterInit("database_deletes")
-	stats.CounterInit("database_applied")
-	stats.CounterInit("database_snapshot")
-}
+var (
+	saves    = expvar.NewInt("database_saves")
+	deletes  = expvar.NewInt("database_deletes")
+	applied  = expvar.NewInt("database_applied")
+	snapshot = expvar.NewInt("database_snapshot")
+)
 
 // NewBoltStore will instantiate a new BoltStore. path will be created if it
 // doesn't exist.
@@ -101,10 +101,10 @@ func (d *BoltStore) ProcessLogEntry(entry *database.LogEntry) error {
 	switch entry.Command {
 	case database.CommandSave:
 		v, _ = entry.Payload()
-		stats.CounterInc("database_saves", 1)
+		saves.Add(1)
 		err = d.Save(v)
 	case database.CommandDelete:
-		stats.CounterInc("database_deletes", 1)
+		deletes.Add(1)
 		v, _ = entry.Payload()
 		err = d.Delete(v)
 	default:
@@ -126,7 +126,7 @@ func (d *BoltStore) ProcessLogEntry(entry *database.LogEntry) error {
 
 // Apply implements raft.FSM.
 func (d *BoltStore) Apply(l *raft.Log) interface{} {
-	stats.CounterInc("database_applied", 1)
+	applied.Add(1)
 	entry := &database.LogEntry{}
 	err := json.Unmarshal(l.Data, entry)
 	if err != nil {
@@ -140,7 +140,7 @@ func (d *BoltStore) Apply(l *raft.Log) interface{} {
 
 // Snapshot implements raft.FSM.
 func (d *BoltStore) Snapshot() (raft.FSMSnapshot, error) {
-	stats.CounterInc("database_snapshot", 1)
+	snapshot.Add(1)
 	return &Snapshot{db: d}, nil
 }
 

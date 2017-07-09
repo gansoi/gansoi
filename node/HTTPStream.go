@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
+	"expvar"
 	"fmt"
 	"net"
 	"net/http"
@@ -13,7 +14,6 @@ import (
 	"github.com/gansoi/gansoi/ca"
 	"github.com/gansoi/gansoi/cluster"
 	"github.com/gansoi/gansoi/logger"
-	"github.com/gansoi/gansoi/stats"
 )
 
 // HTTPStream implements a raft stream for use with Golang's net/http.
@@ -27,12 +27,12 @@ type HTTPStream struct {
 	rootCAs      *x509.CertPool
 }
 
-func init() {
-	stats.CounterInit("http_dialed")
-	stats.CounterInit("http_failed")
-	stats.CounterInit("http_served")
-	stats.CounterInit("http_accepted")
-}
+var (
+	dialed   = expvar.NewInt("http_dialed")
+	failed   = expvar.NewInt("http_failed")
+	served   = expvar.NewInt("http_served")
+	accepted = expvar.NewInt("http_accepted")
+)
 
 // NewHTTPStream will instantiate a new HTTPStream.
 func NewHTTPStream(addr string, certificates []tls.Certificate, coreCA *ca.CA) (*HTTPStream, error) {
@@ -68,7 +68,7 @@ func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, erro
 		address += ":4934"
 	}
 
-	stats.CounterInc("http_dialed", 1)
+	dialed.Add(1)
 
 	logger.Debug("httpstream", "Dialing %s", address)
 
@@ -81,7 +81,7 @@ func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, erro
 	conn, err = tls.DialWithDialer(&dial, "tcp", address, conf)
 
 	if err != nil {
-		stats.CounterInc("http_failed", 1)
+		failed.Add(1)
 		fmt.Printf("ERRRRRROR %s\n", err.Error())
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, erro
 	if err != nil {
 		conn.Close()
 
-		stats.CounterInc("http_failed", 1)
+		failed.Add(1)
 		return nil, err
 	}
 
@@ -106,7 +106,7 @@ func (h *HTTPStream) Accept() (net.Conn, error) {
 		return nil, errors.New("Server is shutting down")
 	}
 
-	stats.CounterInc("http_accepted", 1)
+	accepted.Add(1)
 
 	return <-h.accepted, nil
 }
@@ -136,7 +136,7 @@ func (h *HTTPStream) Network() string {
 
 // ServeHTTP implements the http.Handler interface.
 func (h *HTTPStream) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	stats.CounterInc("http_served", 1)
+	served.Add(1)
 
 	if h.closed {
 		http.Error(w, "Server is shutting down", http.StatusServiceUnavailable)

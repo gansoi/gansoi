@@ -1,6 +1,7 @@
 package notify
 
 import (
+	"expvar"
 	"fmt"
 	"sync"
 
@@ -8,7 +9,6 @@ import (
 	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/eval"
 	"github.com/gansoi/gansoi/logger"
-	"github.com/gansoi/gansoi/stats"
 )
 
 type (
@@ -21,11 +21,9 @@ type (
 var (
 	stateCacheLock sync.RWMutex
 	stateCache     = make(map[string]eval.State)
-)
 
-func init() {
-	stats.CounterInit("notification_sent")
-}
+	sent = expvar.NewInt("notification_sent")
+)
 
 // NewNotifier will start a new notifier service.
 func NewNotifier(db database.Database) (*Notifier, error) {
@@ -111,7 +109,7 @@ func (n *Notifier) gotEvaluation(e *eval.Evaluation) error {
 
 		contacts, _ := group.GetContacts(n.db)
 		for _, contact := range contacts {
-			stats.CounterInc("notification_sent", 1)
+			sent.Add(1)
 			logger.Info("notify", "[%s] Notifying '%s' using %s", e.CheckHostID, contact.ID, contact.Notifier)
 
 			go contact.Notify(text)

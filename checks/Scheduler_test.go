@@ -8,7 +8,6 @@ import (
 
 	"github.com/gansoi/gansoi/boltdb"
 	"github.com/gansoi/gansoi/database"
-	"github.com/gansoi/gansoi/stats"
 	"github.com/gansoi/gansoi/transports/ssh"
 )
 
@@ -98,7 +97,7 @@ func TestSchedulerLoopCheck(t *testing.T) {
 }
 
 func TestSchedulerLoopCheckOverrun(t *testing.T) {
-	stats.CounterSet("scheduler_inflight_overrun", 0)
+	inflightOverrun.Set(0)
 
 	c := &Check{
 		Interval:  time.Millisecond * 1,
@@ -128,8 +127,8 @@ func TestSchedulerLoopCheckOverrun(t *testing.T) {
 		t.Fatalf("Did not run test at all")
 	}
 
-	overruns := stats.CounterGet("scheduler_inflight_overrun")
-	if overruns == 0 {
+	overruns := inflightOverrun.String()
+	if overruns == "0" {
 		t.Fatalf("Scheduler did not detect overrun")
 	}
 }

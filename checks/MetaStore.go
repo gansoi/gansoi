@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/gansoi/gansoi/database"
-	"github.com/gansoi/gansoi/stats"
 )
 
 type (
@@ -139,7 +138,7 @@ func (s *MetaStore) Next(clock time.Time) *checkMeta {
 		// ... and if the value is negative, we better get on with it :)
 		if wait < 0 {
 			if meta.running {
-				stats.CounterInc("scheduler_inflight_overrun", 1)
+				inflightOverrun.Add(1)
 				continue
 			}
 

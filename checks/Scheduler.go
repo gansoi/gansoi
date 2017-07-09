@@ -1,11 +1,11 @@
 package checks
 
 import (
+	"expvar"
 	"time"
 
 	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/logger"
-	"github.com/gansoi/gansoi/stats"
 	"github.com/gansoi/gansoi/transports"
 	"github.com/gansoi/gansoi/transports/ssh"
 )
@@ -21,12 +21,12 @@ type (
 	}
 )
 
-func init() {
-	stats.CounterInit("scheduler_inflight")
-	stats.CounterInit("scheduler_inflight_overrun")
-	stats.CounterInit("scheduler_started")
-	stats.CounterInit("scheduler_failed")
-}
+var (
+	inflight        = expvar.NewInt("scheduler_inflight")
+	inflightOverrun = expvar.NewInt("scheduler_inflight_overrun")
+	started         = expvar.NewInt("scheduler_started")
+	failed          = expvar.NewInt("scheduler_failed")
+)
 
 // NewScheduler instantiates a new scheduler.
 func NewScheduler(db database.Database, nodeName string) *Scheduler {
@@ -72,14 +72,14 @@ func (s *Scheduler) spin(clock time.Time) {
 		return
 	}
 
-	stats.CounterInc("scheduler_inflight", 1)
+	inflight.Add(1)
 	go s.runCheck(clock, meta)
 }
 
 func (s *Scheduler) runCheck(clock time.Time, meta *checkMeta) *CheckResult {
 	start := time.Now()
 
-	stats.CounterInc("scheduler_started", 1)
+	started.Add(1)
 
 	var checkResult *CheckResult
 	var transport transports.Transport
@@ -97,12 +97,12 @@ func (s *Scheduler) runCheck(clock time.Time, meta *checkMeta) *CheckResult {
 	checkResult.CheckID = meta.key.checkID
 	checkResult.HostID = meta.key.hostID
 
-	stats.CounterInc("scheduler_inflight", -1)
+	inflight.Add(-1)
 
 	checkResult.Node = s.nodeName
 
 	if checkResult.Error != "" {
-		stats.CounterInc("scheduler_failed", 1)
+		failed.Add(1)
 		logger.Info("scheduler", "%s failed in %s: %s", meta.check.ID, time.Since(start), checkResult.Error)
 	} else {
 		logger.Debug("scheduler", "%s ran in %s: %+v", meta.check.ID, time.Since(start), checkResult.Results)
