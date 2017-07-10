@@ -43,7 +43,7 @@ func newMetaStore(db database.ReadWriteBroadcaster) (*MetaStore, error) {
 }
 
 // PostApply implements database.Listener.
-func (s *MetaStore) PostApply(leader bool, command database.Command, data interface{}, err error) {
+func (s *MetaStore) PostApply(leader bool, command database.Command, data interface{}) {
 	clock := time.Now()
 
 	check, isCheck := data.(*Check)

@@ -216,7 +216,7 @@ func (n *Node) apply(entry *database.LogEntry) error {
 	n.listenersLock.RLock()
 	for _, listener := range n.listeners {
 		data, _ := entry.Payload()
-		go listener.PostApply(n.leader, entry.Command, data, err)
+		go listener.PostApply(n.leader, entry.Command, data)
 	}
 	n.listenersLock.RUnlock()
 

@@ -35,7 +35,7 @@ func NewNotifier(db database.Reader) (*Notifier, error) {
 }
 
 // PostApply implements database.Listener.
-func (n *Notifier) PostApply(leader bool, command database.Command, data interface{}, err error) {
+func (n *Notifier) PostApply(leader bool, command database.Command, data interface{}) {
 	if !leader {
 		return
 	}

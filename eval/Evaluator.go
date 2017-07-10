@@ -85,7 +85,7 @@ func (e *Evaluator) evaluate(checkResult *checks.CheckResult) (*Evaluation, erro
 }
 
 // PostApply implements databse.Listener.
-func (e *Evaluator) PostApply(leader bool, command database.Command, data interface{}, err error) {
+func (e *Evaluator) PostApply(leader bool, command database.Command, data interface{}) {
 	// If we're not the leader, we abort. Only the leader should evaluate
 	// check results.
 	if !leader {

@@ -36,7 +36,7 @@ func NewLive() *Live {
 }
 
 // PostApply implements database.Listener.
-func (l *Live) PostApply(leader bool, command database.Command, data interface{}, err error) {
+func (l *Live) PostApply(leader bool, command database.Command, data interface{}) {
 	// Interesting events for now.
 	m := map[string]string{
 		"*ssh.SSH":             "host",

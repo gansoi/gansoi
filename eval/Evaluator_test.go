@@ -165,7 +165,7 @@ func TestEvaluatorPostApply(t *testing.T) {
 		Node:        "justone",
 	}
 
-	e.PostApply(false, database.CommandSave, result, nil)
+	e.PostApply(false, database.CommandSave, result)
 
 	pe := []Evaluation{}
 	err := db.All(&pe, -1, 0, false)
@@ -177,14 +177,14 @@ func TestEvaluatorPostApply(t *testing.T) {
 		t.Fatalf("Got wrong number of evaluations, got %d (%v)", len(pe), pe)
 	}
 
-	e.PostApply(true, database.CommandDelete, result, nil)
+	e.PostApply(true, database.CommandDelete, result)
 	db.All(&pe, -1, 0, false)
 
 	if len(pe) != 0 {
 		t.Fatalf("Got wrong number of evaluations, got %d (%v)", len(pe), pe)
 	}
 
-	e.PostApply(true, database.CommandSave, result, nil)
+	e.PostApply(true, database.CommandSave, result)
 	db.All(&pe, -1, 0, false)
 
 	if len(pe) != 1 {

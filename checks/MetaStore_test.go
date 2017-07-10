@@ -21,14 +21,14 @@ func TestPostApply(t *testing.T) {
 		Interval: time.Second * 61,
 	}
 
-	s.PostApply(false, database.CommandSave, c, nil)
+	s.PostApply(false, database.CommandSave, c)
 }
 
 func TestPostApplyNil(t *testing.T) {
 	db := boltdb.NewTestStore()
 
 	s, _ := newMetaStore(db)
-	s.PostApply(false, database.CommandSave, nil, nil)
+	s.PostApply(false, database.CommandSave, nil)
 }
 
 func TestAddCheck(t *testing.T) {
