@@ -97,7 +97,7 @@ func NewNode(stream *HTTPStream, datadir string, db database.Database, fsm raft.
 
 	transport := raft.NewNetworkTransportWithLogger(stream, 1, 0, logger.DebugLogger("raft-transport"))
 
-	ss, err := raft.NewFileSnapshotStoreWithLogger(datadir, 5, logger.DebugLogger("raft-store"))
+	ss, err := raft.NewFileSnapshotStoreWithLogger(datadir, 2, logger.DebugLogger("raft-store"))
 	if err != nil {
 		return nil, err
 	}
