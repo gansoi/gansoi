@@ -16,7 +16,7 @@ type (
 	Scheduler struct {
 		nodeName string
 		stop     chan struct{}
-		db       database.Database
+		db       database.ReadWriter
 		store    *MetaStore
 	}
 )
@@ -29,7 +29,7 @@ var (
 )
 
 // NewScheduler instantiates a new scheduler.
-func NewScheduler(db database.Database, nodeName string) *Scheduler {
+func NewScheduler(db database.ReadWriteBroadcaster, nodeName string) *Scheduler {
 	store, _ := newMetaStore(db)
 
 	s := &Scheduler{

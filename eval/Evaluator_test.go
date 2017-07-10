@@ -56,7 +56,7 @@ func (p *peerStore) Peers() ([]string, error) {
 	return p.peers, nil
 }
 
-func newE(t *testing.T, nodes []string) (*boltdb.BoltStore, *Evaluator) {
+func newE(t *testing.T, nodes []string) (*boltdb.TestStore, *Evaluator) {
 	peers := &peerStore{}
 	peers.SetPeers(nodes)
 

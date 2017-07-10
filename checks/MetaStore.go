@@ -30,7 +30,7 @@ type (
 	}
 )
 
-func newMetaStore(db database.Database) (*MetaStore, error) {
+func newMetaStore(db database.ReadWriteBroadcaster) (*MetaStore, error) {
 	s := &MetaStore{
 		store: make(map[metaKey]*checkMeta),
 	}
@@ -60,7 +60,7 @@ func (s *MetaStore) PostApply(leader bool, command database.Command, data interf
 	}
 }
 
-func (s *MetaStore) populate(db database.Database) error {
+func (s *MetaStore) populate(db database.Reader) error {
 	clock := time.Now()
 	var allChecks []Check
 	err := db.All(&allChecks, -1, 0, false)

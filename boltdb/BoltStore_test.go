@@ -49,7 +49,7 @@ func TestBoltStoreSave(t *testing.T) {
 	}
 	d.ID = "bah"
 
-	err := db.Save(&d)
+	err := db.save(&d)
 	if err != nil {
 		t.Fatalf("Save() failed: %s", err.Error())
 	}
@@ -63,7 +63,7 @@ func TestBoltStoreOne(t *testing.T) {
 	}
 	d.ID = "bah"
 
-	err := db.Save(&d)
+	err := db.save(&d)
 	if err != nil {
 		t.Fatalf("Save() failed: %s", err.Error())
 	}
@@ -97,7 +97,7 @@ func TestBoltStoreAll(t *testing.T) {
 		t.Fatalf("All() returned wrong number of results, expected 0, got %d", len(all))
 	}
 
-	err = db.Save(&d)
+	err = db.save(&d)
 	if err != nil {
 		t.Fatalf("Save() failed: %s", err.Error())
 	}
@@ -124,13 +124,13 @@ func TestBoltStoreDelete(t *testing.T) {
 	}
 	d.ID = "bah"
 
-	err := db.Delete(&d)
+	err := db.delete(&d)
 	if err == nil {
 		t.Fatalf("Deleting non-existing record did not fail")
 	}
 
-	db.Save(&d)
-	err = db.Delete(&d)
+	db.save(&d)
+	err = db.delete(&d)
 	if err != nil {
 		t.Fatalf("Delete() failed: %s", err.Error())
 	}
@@ -221,7 +221,7 @@ func TestDatabaseWriteTo(t *testing.T) {
 	}
 	d.ID = "bah"
 
-	err := db.Save(&d)
+	err := db.save(&d)
 	if err != nil {
 		t.Fatalf("Save() failed: %s", err.Error())
 	}
@@ -259,5 +259,6 @@ func TestDatabaseWriteTo(t *testing.T) {
 	os.Remove(backupPath)
 }
 
-// Make sure we implement the needed interface.
-var _ database.Database = (*BoltStore)(nil)
+// Make sure we implement the needed interfaces.
+var _ database.Reader = (*BoltStore)(nil)
+var _ raft.FSM = (*BoltStore)(nil)

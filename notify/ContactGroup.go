@@ -18,7 +18,7 @@ type (
 )
 
 // LoadContactGroup will read a contact from db.
-func LoadContactGroup(db database.Database, ID string) (*ContactGroup, error) {
+func LoadContactGroup(db database.Reader, ID string) (*ContactGroup, error) {
 	var group ContactGroup
 
 	err := db.One("ID", ID, &group)
@@ -30,7 +30,7 @@ func LoadContactGroup(db database.Database, ID string) (*ContactGroup, error) {
 }
 
 // GetContacts returns the list of contacts in g.
-func (g *ContactGroup) GetContacts(db database.Database) ([]*Contact, error) {
+func (g *ContactGroup) GetContacts(db database.Reader) ([]*Contact, error) {
 	var contacts []*Contact
 	for _, memberID := range g.Members {
 		contact, err := LoadContact(db, memberID)
@@ -45,7 +45,7 @@ func (g *ContactGroup) GetContacts(db database.Database) ([]*Contact, error) {
 }
 
 // Validate implements database.Validator.
-func (g *ContactGroup) Validate(db database.Database) error {
+func (g *ContactGroup) Validate(db database.Reader) error {
 	v := validator.New()
 	err := v.Struct(g)
 	if err != nil {

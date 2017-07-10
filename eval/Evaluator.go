@@ -11,14 +11,14 @@ import (
 type (
 	// Evaluator will evaluate check results from all nodes on the leader node.
 	Evaluator struct {
-		db            database.Database
+		db            database.ReadWriter
 		historyLength int
 	}
 )
 
 // NewEvaluator will instantiate a new Evaluator listening to cluster changes,
 // and evaluating results as they arrive.
-func NewEvaluator(db database.Database) *Evaluator {
+func NewEvaluator(db database.ReadWriter) *Evaluator {
 	e := &Evaluator{
 		db:            db,
 		historyLength: 5,

@@ -108,7 +108,7 @@ func (c *Check) Evaluate(result plugins.AgentResult) error {
 }
 
 // Validate implements database.Validator.
-func (c *Check) Validate(db database.Database) error {
+func (c *Check) Validate(db database.Reader) error {
 	v := validator.New()
 	return v.Struct(c)
 }

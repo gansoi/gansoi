@@ -439,7 +439,7 @@ func runCore(_ *cobra.Command, _ []string) {
 		c.Data(http.StatusOK, "text/plain", []byte(publicKey))
 	})
 
-	notifier, err := notify.NewNotifier(db)
+	notifier, err := notify.NewNotifier(n)
 	if err != nil {
 		logger.Info("main", "Failed to start notifier: %s", err.Error())
 	}

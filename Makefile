@@ -24,3 +24,6 @@ deb:
 
 clean:
 	rm -f gansoi dockerroot/etc/ssl/certs/ca-certificates.crt
+
+test:
+	go test ./...

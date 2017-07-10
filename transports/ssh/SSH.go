@@ -28,7 +28,7 @@ type (
 		Username string `json:"username" description:"Username"`
 	}
 
-	// This is a cheap hack to use database.Database as a key/value store for
+	// This is a cheap hack to use database.ReadWriter as a key/value store for
 	// our private key.
 	keyStorage struct {
 		ID       string `storm:"id"`
@@ -68,7 +68,7 @@ func generateKey() []byte {
 
 // Init will initiate internal structures for the SSH transport including
 // generating a private key.
-func Init(db database.Database) error {
+func Init(db database.ReadWriter) error {
 	signerLock.Lock()
 	defer signerLock.Unlock()
 

@@ -37,7 +37,7 @@ func NewEvaluation(clock time.Time, result *checks.CheckResult) *Evaluation {
 }
 
 // LatestEvaluation retrieves the latest evaluation if any.
-func LatestEvaluation(db database.Database, result *checks.CheckResult) (*Evaluation, error) {
+func LatestEvaluation(db database.Reader, result *checks.CheckResult) (*Evaluation, error) {
 	if result.CheckHostID == "" {
 		return nil, database.ErrNotFound
 	}

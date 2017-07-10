@@ -21,7 +21,7 @@ type (
 )
 
 // LoadContact will read a contact from db.
-func LoadContact(db database.Database, ID string) (*Contact, error) {
+func LoadContact(db database.Reader, ID string) (*Contact, error) {
 	var contact Contact
 
 	err := db.One("ID", ID, &contact)
@@ -48,7 +48,7 @@ func (c *Contact) Notify(text string) error {
 }
 
 // Validate implements database.Validator.
-func (c *Contact) Validate(db database.Database) error {
+func (c *Contact) Validate(db database.Reader) error {
 	v := validator.New()
 	return v.Struct(c)
 }

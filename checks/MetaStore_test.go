@@ -55,3 +55,5 @@ func TestRemoteCheck(t *testing.T) {
 	s.addCheck(time.Now(), c)
 	s.removeCheck(c)
 }
+
+var _ database.Listener = (*MetaStore)(nil)

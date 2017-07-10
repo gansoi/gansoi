@@ -3,6 +3,8 @@ package node
 import (
 	"sync"
 	"testing"
+
+	"github.com/gansoi/gansoi/database"
 )
 
 func TestNodeLeaderChange(t *testing.T) {
@@ -24,3 +26,7 @@ func TestNodeLeaderChange(t *testing.T) {
 	// Wait for goroutine listening for changes.
 	lock.Lock()
 }
+
+// Make sure we implement the needed interfaces.
+var _ database.ReadWriter = (*Node)(nil)
+var _ database.Broadcaster = (*Node)(nil)

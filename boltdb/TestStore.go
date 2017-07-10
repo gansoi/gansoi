@@ -1,0 +1,42 @@
+package boltdb
+
+import (
+	"fmt"
+	"math/rand"
+	"os"
+	"path"
+
+	"github.com/gansoi/gansoi/database"
+)
+
+type (
+	// TestStore can be used when testing database functions.
+	TestStore struct {
+		BoltStore
+	}
+)
+
+// NewTestStore returns a store suited for testing.
+func NewTestStore() *TestStore {
+	p := path.Join(os.TempDir(), fmt.Sprintf(".gansoi-test-%d.db", rand.Int63()))
+	d := BoltStore{}
+
+	d.open(p)
+	os.Remove(p)
+
+	return &TestStore{d}
+}
+
+// Save will save an object to the database.
+func (t *TestStore) Save(data interface{}) error {
+	return t.save(data)
+}
+
+// Delete an object from the database.
+func (t *TestStore) Delete(data interface{}) error {
+	return t.delete(data)
+}
+
+// RegisterListener implements database.Broadcaster - but does nothing.
+func (t *TestStore) RegisterListener(listener database.Listener) {
+}

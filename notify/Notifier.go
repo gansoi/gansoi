@@ -14,7 +14,7 @@ import (
 type (
 	// Notifier takes care of notifying all contacts in a relevant ContactGroup.
 	Notifier struct {
-		db database.Database
+		db database.Reader
 	}
 )
 
@@ -26,7 +26,7 @@ var (
 )
 
 // NewNotifier will start a new notifier service.
-func NewNotifier(db database.Database) (*Notifier, error) {
+func NewNotifier(db database.Reader) (*Notifier, error) {
 	n := &Notifier{
 		db: db,
 	}

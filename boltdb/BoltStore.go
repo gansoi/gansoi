@@ -5,9 +5,7 @@ import (
 	"expvar"
 	"fmt"
 	"io"
-	"math/rand"
 	"os"
-	"path"
 	"sync"
 	"time"
 
@@ -21,12 +19,10 @@ import (
 
 type (
 	// BoltStore is the lowest level of the gansoi database, it represent the
-	// on-disk database. BoltStore implements raft.FSM and database.Database.
+	// on-disk database. BoltStore implements raft.FSM and database.Reader.
 	BoltStore struct {
-		dbMutex       sync.RWMutex
-		db            *storm.DB
-		listenersLock sync.RWMutex
-		listeners     []database.Listener
+		dbMutex sync.RWMutex
+		db      *storm.DB
 	}
 )
 
@@ -48,17 +44,6 @@ func NewBoltStore(path string) (*BoltStore, error) {
 	}
 
 	return d, nil
-}
-
-// NewTestStore returns a store suited for testing.
-func NewTestStore() *BoltStore {
-	p := path.Join(os.TempDir(), fmt.Sprintf(".gansoi-test-%d.db", rand.Int63()))
-	d := &BoltStore{}
-
-	d.open(p)
-	os.Remove(p)
-
-	return d
 }
 
 // Close will close the database. Accessing the database after this will
@@ -102,24 +87,14 @@ func (d *BoltStore) ProcessLogEntry(entry *database.LogEntry) error {
 	case database.CommandSave:
 		v, _ = entry.Payload()
 		saves.Add(1)
-		err = d.Save(v)
+		err = d.save(v)
 	case database.CommandDelete:
 		deletes.Add(1)
 		v, _ = entry.Payload()
-		err = d.Delete(v)
+		err = d.delete(v)
 	default:
 		err = fmt.Errorf("not implemented")
 	}
-
-	go func(command database.Command, data interface{}, err error) {
-		d.listenersLock.RLock()
-
-		for _, listener := range d.listeners {
-			go listener.PostApply(false, command, data, err)
-		}
-
-		d.listenersLock.RUnlock()
-	}(entry.Command, v, err)
 
 	return err
 }
@@ -184,7 +159,7 @@ func (d *BoltStore) Restore(source io.ReadCloser) error {
 }
 
 // Save will save an object to the database.
-func (d *BoltStore) Save(data interface{}) error {
+func (d *BoltStore) save(data interface{}) error {
 	idsetter, ok := data.(database.IDSetter)
 	if ok {
 		idsetter.SetID()
@@ -246,16 +221,8 @@ func (d *BoltStore) Find(field string, value interface{}, to interface{}, limit 
 }
 
 // Delete deletes a record from the store.
-func (d *BoltStore) Delete(data interface{}) error {
+func (d *BoltStore) delete(data interface{}) error {
 	return d.db.DeleteStruct(data)
-}
-
-// RegisterListener implements database.Database.
-func (d *BoltStore) RegisterListener(listener database.Listener) {
-	d.listenersLock.Lock()
-	defer d.listenersLock.Unlock()
-
-	d.listeners = append(d.listeners, listener)
 }
 
 // WriteTo implements io.WriterTo. WriteTo will write a consitent snapshot of

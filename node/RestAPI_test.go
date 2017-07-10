@@ -31,7 +31,7 @@ type (
 	}
 )
 
-func (d *data) Validate(db database.Database) error {
+func (d *data) Validate(db database.Reader) error {
 	if d.A == "" {
 		return errors.New("A cannot be empty")
 	}
@@ -79,9 +79,7 @@ func (f *failDB) Delete(data interface{}) error {
 	return f.err
 }
 
-func (f *failDB) RegisterListener(listener database.Listener) {
-}
-
+var _ database.ReadWriter = (*failDB)(nil)
 var _ database.Validator = (*data)(nil)
 
 func init() {
@@ -100,7 +98,7 @@ func TestNewRestAPI(t *testing.T) {
 	}
 }
 
-func request(db database.Database, method string, URI string, body []byte) *httptest.ResponseRecorder {
+func request(db database.ReadWriter, method string, URI string, body []byte) *httptest.ResponseRecorder {
 	r := NewRestAPI(data{}, db)
 	router := gin.New()
 	router.Use(gin.ErrorLogger())

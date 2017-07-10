@@ -24,7 +24,7 @@ import (
 type (
 	// Node represents a single gansoi node.
 	Node struct {
-		db            database.Database
+		db            database.Reader
 		raft          *raft.Raft
 		leader        bool
 		leadersChans  []chan bool
@@ -58,7 +58,7 @@ func init() {
 }
 
 // NewNode will initialize a new node.
-func NewNode(stream *HTTPStream, datadir string, db database.Database, fsm raft.FSM, peers *cluster.Info, pair []tls.Certificate, coreCA *ca.CA) (*Node, error) {
+func NewNode(stream *HTTPStream, datadir string, db database.Reader, fsm raft.FSM, peers *cluster.Info, pair []tls.Certificate, coreCA *ca.CA) (*Node, error) {
 	started := time.Now()
 
 	tr := &http.Transport{
@@ -74,8 +74,6 @@ func NewNode(stream *HTTPStream, datadir string, db database.Database, fsm raft.
 		db:     db,
 		client: &http.Client{Transport: tr},
 	}
-
-	db.RegisterListener(n)
 
 	// Raft config.
 	conf := raft.DefaultConfig()
@@ -187,6 +185,7 @@ func (n *Node) nodesHandler(c *gin.Context) {
 // apply will apply the log entry to the local Raft node if it's leader, will
 // forward to leader otherwise.
 func (n *Node) apply(entry *database.LogEntry) error {
+	var err error
 	// Only attempt this if the cluster is stable with a leader.
 	if n.raft.Leader() == "" {
 		applyNoleader.Add(1)
@@ -201,16 +200,25 @@ func (n *Node) apply(entry *database.LogEntry) error {
 		l := n.raft.Leader()
 		u := "https://" + l + n.basePath + "/apply"
 
-		_, err := n.client.Post(u, "gansoi/entry", r)
+		_, err = n.client.Post(u, "gansoi/entry", r)
 
 		// FIXME: Implement some kind of retry logic here.
 
-		return err
+		if err != nil {
+			return err
+		}
+	} else {
+		applyDirect.Add(1)
+
+		n.raft.Apply(entry.Byte(), time.Minute)
 	}
 
-	applyDirect.Add(1)
-
-	n.raft.Apply(entry.Byte(), time.Minute)
+	n.listenersLock.RLock()
+	for _, listener := range n.listeners {
+		data, _ := entry.Payload()
+		go listener.PostApply(n.leader, entry.Command, data, err)
+	}
+	n.listenersLock.RUnlock()
 
 	return nil
 }
@@ -265,18 +273,6 @@ func (n *Node) RegisterListener(listener database.Listener) {
 	defer n.listenersLock.Unlock()
 
 	n.listeners = append(n.listeners, listener)
-}
-
-// PostApply satisfies the database.Listener interface.
-func (n *Node) PostApply(_ bool, command database.Command, data interface{}, err error) {
-	n.listenersLock.RLock()
-	defer n.listenersLock.RUnlock()
-
-	for _, listener := range n.listeners {
-		// We ignore the leader argument from caller. The caller is most likely
-		// a local database that is unaware of raft leadership.
-		go listener.PostApply(n.leader, command, data, err)
-	}
 }
 
 // Router can be used to assign a Gin routergroup.

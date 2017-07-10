@@ -12,13 +12,13 @@ type (
 	// RestAPI is a generic way to build a REST-based API for the cluster
 	// database.
 	RestAPI struct {
-		db  database.Database
+		db  database.ReadWriter
 		typ reflect.Type
 	}
 )
 
 // NewRestAPI will instantiate a new RestAPI.
-func NewRestAPI(typ interface{}, db database.Database) *RestAPI {
+func NewRestAPI(typ interface{}, db database.ReadWriter) *RestAPI {
 	return &RestAPI{
 		db:  db,
 		typ: reflect.TypeOf(typ),
