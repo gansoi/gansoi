@@ -74,6 +74,17 @@ func TestLoadContact(t *testing.T) {
 	}
 }
 
+func TestContactUnknownNotifier(t *testing.T) {
+	c := &Contact{
+		Notifier: "nonexisting",
+	}
+
+	err := c.Notify("test")
+	if err == nil {
+		t.Fatalf("Notify() failed to error on unknown notifier")
+	}
+}
+
 func TestContactValidate(t *testing.T) {
 	db := boltdb.NewTestStore()
 
