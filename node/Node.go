@@ -185,7 +185,6 @@ func (n *Node) nodesHandler(c *gin.Context) {
 // apply will apply the log entry to the local Raft node if it's leader, will
 // forward to leader otherwise.
 func (n *Node) apply(entry *database.LogEntry) error {
-	var err error
 	// Only attempt this if the cluster is stable with a leader.
 	if n.raft.Leader() == "" {
 		applyNoleader.Add(1)
@@ -200,25 +199,16 @@ func (n *Node) apply(entry *database.LogEntry) error {
 		l := n.raft.Leader()
 		u := "https://" + l + n.basePath + "/apply"
 
-		_, err = n.client.Post(u, "gansoi/entry", r)
+		_, err := n.client.Post(u, "gansoi/entry", r)
 
 		// FIXME: Implement some kind of retry logic here.
 
-		if err != nil {
-			return err
-		}
-	} else {
-		applyDirect.Add(1)
-
-		n.raft.Apply(entry.Byte(), time.Minute)
+		return err
 	}
 
-	n.listenersLock.RLock()
-	for _, listener := range n.listeners {
-		data, _ := entry.Payload()
-		go listener.PostApply(n.leader, entry.Command, data)
-	}
-	n.listenersLock.RUnlock()
+	applyDirect.Add(1)
+
+	n.raft.Apply(entry.Byte(), time.Minute)
 
 	return nil
 }
@@ -275,6 +265,18 @@ func (n *Node) RegisterListener(listener database.Listener) {
 	n.listeners = append(n.listeners, listener)
 }
 
+// PostApply satisfies the database.Listener interface.
+func (n *Node) PostApply(_ bool, command database.Command, data interface{}) {
+	n.listenersLock.RLock()
+	defer n.listenersLock.RUnlock()
+
+	for _, listener := range n.listeners {
+		// We ignore the leader argument from caller. The caller is most likely
+		// a local database that is unaware of raft leadership.
+		go listener.PostApply(n.leader, command, data)
+	}
+}
+
 // Router can be used to assign a Gin routergroup.
 func (n *Node) Router(router *gin.RouterGroup) {
 	n.basePath = router.BasePath()
@@ -298,4 +300,10 @@ func (n *Node) LeaderCh() <-chan bool {
 	n.leadersChans = append(n.leadersChans, ch)
 
 	return ch
+}
+
+// LastIndex returns the last Raft index in stable storage, either from the
+// last log or from the last snapshot.
+func (n *Node) LastIndex() uint64 {
+	return n.raft.LastIndex()
 }

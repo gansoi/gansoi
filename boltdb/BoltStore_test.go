@@ -261,4 +261,5 @@ func TestDatabaseWriteTo(t *testing.T) {
 
 // Make sure we implement the needed interfaces.
 var _ database.Reader = (*BoltStore)(nil)
+var _ database.Broadcaster = (*BoltStore)(nil)
 var _ raft.FSM = (*BoltStore)(nil)

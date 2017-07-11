@@ -325,6 +325,12 @@ func runCore(_ *cobra.Command, _ []string) {
 		logger.Info("main", "%s", err.Error())
 		os.Exit(1)
 	}
+	db.RegisterListener(n)
+
+	// Do not broadcast any applies while catching up. When first booting raft
+	// may choose to restore from an old snapshot and replay entries from the
+	// log. Since they happened in the past, we don't want to head about them.
+	db.BroadcastFrom(n.LastIndex())
 
 	e := eval.NewEvaluator(n)
 	n.RegisterListener(e)

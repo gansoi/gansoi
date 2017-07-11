@@ -5,8 +5,10 @@ import (
 	"expvar"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/asdine/storm"
@@ -21,8 +23,11 @@ type (
 	// BoltStore is the lowest level of the gansoi database, it represent the
 	// on-disk database. BoltStore implements raft.FSM and database.Reader.
 	BoltStore struct {
-		dbMutex sync.RWMutex
-		db      *storm.DB
+		dbMutex       sync.RWMutex
+		db            *storm.DB
+		broadcastFrom uint64
+		listenersLock sync.RWMutex
+		listeners     []database.Listener
 	}
 )
 
@@ -36,7 +41,9 @@ var (
 // NewBoltStore will instantiate a new BoltStore. path will be created if it
 // doesn't exist.
 func NewBoltStore(path string) (*BoltStore, error) {
-	d := &BoltStore{}
+	d := &BoltStore{
+		broadcastFrom: math.MaxUint64,
+	}
 
 	err := d.open(path)
 	if err != nil {
@@ -110,7 +117,25 @@ func (d *BoltStore) Apply(l *raft.Log) interface{} {
 		return nil
 	}
 
-	return d.ProcessLogEntry(entry)
+	result := d.ProcessLogEntry(entry)
+
+	if l.Index >= atomic.LoadUint64(&d.broadcastFrom) {
+		d.listenersLock.RLock()
+		for _, listener := range d.listeners {
+			payload, _ := entry.Payload()
+			go listener.PostApply(false, entry.Command, payload)
+		}
+		d.listenersLock.RUnlock()
+	}
+
+	return result
+}
+
+// BroadcastFrom will set a broadcast "epoch". Raft logs before this epoch
+// will not trigger a PostApply() broadcast. If this is never called nothing
+// will be broadcast.
+func (d *BoltStore) BroadcastFrom(index uint64) {
+	atomic.StoreUint64(&d.broadcastFrom, index)
 }
 
 // Snapshot implements raft.FSM.
@@ -223,6 +248,14 @@ func (d *BoltStore) Find(field string, value interface{}, to interface{}, limit 
 // Delete deletes a record from the store.
 func (d *BoltStore) delete(data interface{}) error {
 	return d.db.DeleteStruct(data)
+}
+
+// RegisterListener implements database.Database.
+func (d *BoltStore) RegisterListener(listener database.Listener) {
+	d.listenersLock.Lock()
+	defer d.listenersLock.Unlock()
+
+	d.listeners = append(d.listeners, listener)
 }
 
 // WriteTo implements io.WriterTo. WriteTo will write a consitent snapshot of
