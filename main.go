@@ -236,6 +236,9 @@ func initCore(cmd *cobra.Command, _ []string) {
 	info := cluster.NewInfo(path.Join(conf.DataDir, "cluster.json"))
 	core := cluster.NewCore(info)
 
+	self := cluster.DefaultPort(conf.Bind)
+	info.SetSelf(self)
+
 	err := core.Bootstrap()
 	bailIfError(err)
 
@@ -251,6 +254,9 @@ func joinCore(_ *cobra.Command, arguments []string) {
 	conf := loadConfig()
 	info := cluster.NewInfo(path.Join(conf.DataDir, "cluster.json"))
 	core := cluster.NewCore(info)
+
+	self := cluster.DefaultPort(conf.Bind)
+	info.SetSelf(self)
 
 	// Check that we have all arguments.
 	if len(arguments) < 2 {
