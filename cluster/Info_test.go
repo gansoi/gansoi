@@ -168,4 +168,10 @@ func TestInfoIP(t *testing.T) {
 	if ip != nil {
 		t.Fatalf("Returned something for failing host in Self(), got %s", ip)
 	}
+
+	i.SetSelf("127.0.0.3:4934")
+	ip = i.IP()
+	if ip.String() != "127.0.0.3" {
+		t.Fatalf("Failed to resolve self to IP, got %s", ip.String())
+	}
 }
