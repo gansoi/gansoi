@@ -135,7 +135,10 @@ func NewNode(stream *HTTPStream, datadir string, db database.Reader, fsm raft.FS
 				ni.Name = peers.Self()
 				ni.Raft = n.raft.Stats()
 
-				n.Save(&ni)
+				err := n.Save(&ni)
+				if err != nil {
+					logger.Info("node", "Error from cluster save: %s", err.Error())
+				}
 			}
 		}
 	}()
