@@ -20,10 +20,8 @@ type (
 var (
 	poolLock sync.Mutex
 	pool     = make(map[SSH]*connection)
-)
 
-const (
-	closeAfter time.Duration = time.Second * 30
+	closeAfter = time.Second * 30
 )
 
 func init() {
@@ -31,7 +29,7 @@ func init() {
 }
 
 func loop() {
-	ticker := time.Tick(time.Second)
+	ticker := time.Tick(closeAfter / 10)
 
 	for t := range ticker {
 		poolLock.Lock()

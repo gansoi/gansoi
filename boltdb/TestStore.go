@@ -1,6 +1,7 @@
 package boltdb
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"os"
@@ -13,6 +14,7 @@ type (
 	// TestStore can be used when testing database functions.
 	TestStore struct {
 		BoltStore
+		FailSave bool
 	}
 )
 
@@ -24,11 +26,17 @@ func NewTestStore() *TestStore {
 	d.open(p)
 	os.Remove(p)
 
-	return &TestStore{d}
+	return &TestStore{
+		BoltStore: d,
+	}
 }
 
 // Save will save an object to the database.
 func (t *TestStore) Save(data interface{}) error {
+	if t.FailSave {
+		return errors.New("failed")
+	}
+
 	return t.save(data)
 }
 
