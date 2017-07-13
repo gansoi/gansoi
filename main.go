@@ -37,6 +37,7 @@ import (
 	_ "github.com/gansoi/gansoi/plugins/agents/ping"
 	_ "github.com/gansoi/gansoi/plugins/agents/ssh"
 	_ "github.com/gansoi/gansoi/plugins/agents/tcpport"
+	_ "github.com/gansoi/gansoi/plugins/agents/unixclock"
 	_ "github.com/gansoi/gansoi/plugins/notifiers/console"
 	_ "github.com/gansoi/gansoi/plugins/notifiers/email"
 	_ "github.com/gansoi/gansoi/plugins/notifiers/slack"
