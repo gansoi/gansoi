@@ -1,7 +1,6 @@
 package ssh
 
 import (
-	"io/ioutil"
 	"reflect"
 	"testing"
 
@@ -194,41 +193,6 @@ func TestExecFail(t *testing.T) {
 	_, _, err = s.Exec("echo test")
 	if err == nil {
 		t.Errorf("Exec() did not catch exec error")
-	}
-}
-
-func TestSSHOpen(t *testing.T) {
-	serv := server{
-		acceptPublicKey: true,
-		execReply:       []byte("test output"),
-		execStatus:      0,
-	}
-	addr := serv.listen("127.0.0.1:0")
-	defer serv.quit()
-
-	s := &SSH{
-		Address: addr,
-	}
-
-	rc, err := s.Open("/doesnt-matter-for-this-test")
-	if err != nil {
-		t.Fatalf("Open() returned an error: %s", err.Error())
-	}
-
-	b, err := ioutil.ReadAll(rc)
-	if err != nil {
-		t.Fatalf("Failed to read from Reader: %s", err.Error())
-	}
-	rc.Close()
-
-	if !reflect.DeepEqual(b, serv.execReply) {
-		t.Fatalf("Open() did not return the expected output")
-	}
-
-	serv.failExec = true
-	_, err = s.Open("/doesnt-matter-for-this-test")
-	if err == nil {
-		t.Fatalf("Open() did not return an error")
 	}
 }
 

@@ -178,19 +178,12 @@ func (s *SSH) Exec(cmd string, arguments ...string) (io.Reader, io.Reader, error
 	return &stdoutBuf, &stderrBuf, nil
 }
 
-// Open will open a remote file for reading.
-func (s *SSH) Open(path string) (io.ReadCloser, error) {
+// ReadFile will read a complete file from the remote.
+func (s *SSH) ReadFile(path string) ([]byte, error) {
 	// Cat is not much worse than scp for single files. "scp -t" will also
 	// spawn a process. Cat will do just fine for now. Maybe at some future
 	// point, we could implement a persistent SCP client..?
 	r, _, err := s.Exec("/bin/cat", path)
-
-	return ioutil.NopCloser(r), err
-}
-
-// ReadFile will read a complete file from the remote.
-func (s *SSH) ReadFile(path string) ([]byte, error) {
-	r, err := s.Open(path)
 	if err != nil {
 		return nil, err
 	}
