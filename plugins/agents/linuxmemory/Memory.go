@@ -12,6 +12,7 @@ import (
 )
 
 type (
+	// Memory will check basic memory usage on a remote host.
 	Memory struct{}
 )
 
@@ -24,6 +25,7 @@ func init() {
 	plugins.RegisterAgent("linuxmemory", Memory{})
 }
 
+// RemoteCheck implements plugins.RemoteAgent.
 func (m *Memory) RemoteCheck(transport transports.Transport, result plugins.AgentResult) error {
 	contents, err := transport.ReadFile("/proc/meminfo")
 	if err != nil {

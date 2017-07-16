@@ -33,7 +33,7 @@ func RegisterAgent(name string, agent interface{}) {
 	agents[name] = reflect.TypeOf(agent)
 }
 
-// Get will return an agent registered with the name.
+// GetAgent will return an agent registered with the name.
 func GetAgent(name string) interface{} {
 	agent, found := agents[name]
 	if !found {

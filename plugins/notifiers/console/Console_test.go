@@ -29,7 +29,7 @@ func TestNotify(t *testing.T) {
 	w.Close()
 
 	if !strings.Contains(string(buf[:n]), "hellohello") {
-		t.Fatalf("Output did nto contain our log entry")
+		t.Fatalf("Output did not contain our log entry")
 	}
 }
 

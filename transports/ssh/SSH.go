@@ -24,7 +24,7 @@ type (
 	SSH struct {
 		database.Object `storm:"inline"`
 
-		Address  string `json:"address" description:"Hostname or IP adress to connect to (1.2.3.4 or 1.2.3.4:22)"`
+		Address  string `json:"address" description:"Hostname or IP address to connect to (1.2.3.4 or 1.2.3.4:22)"`
 		Username string `json:"username" description:"Username"`
 	}
 

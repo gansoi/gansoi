@@ -66,7 +66,7 @@ var (
 	previousID int32
 
 	// ErrICMPServiceUnavailable will be returned if the process doesn't have
-	// sufficient priveledges.
+	// sufficient privileges.
 	ErrICMPServiceUnavailable = errors.New("ICMP service unavailable")
 
 	// This will be set as true in init() if ICMP is allowed.
