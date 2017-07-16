@@ -24,6 +24,18 @@ func TestTestStoreSave(t *testing.T) {
 	db.Close()
 }
 
+func TestTestStoreSaveFail(t *testing.T) {
+	db := NewTestStore()
+	db.FailSave = true
+
+	err := db.Save(nil)
+	if err == nil {
+		t.Fatalf("Save() failed to return error")
+	}
+
+	db.Close()
+}
+
 func TestTestStoreRegisterListener(t *testing.T) {
 	db := NewTestStore()
 	db.RegisterListener(nil)
