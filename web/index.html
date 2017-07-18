@@ -103,7 +103,9 @@
      </tr>
     </tbody>
    </table>
-   <input class="button green right" name="add" type="button" value="Save Host" v-on:click="save()" />
+   <div v-if="error" class="red">ERROR: {{ error }}</div>
+   <button class="button" v-on:click="testHost($event.target)">Test<span v-if="testOk" style="color:#0d0;"> &#10004;</span></button>
+   <input class="button green right" name="add" type="button" value="Save Host" v-on:click="save(this)" />
   </fieldset>
  </form>
  <g-modal v-if="showDeleteConfirm" @close="showDeleteConfirm = false">
@@ -135,6 +137,8 @@
    </tr>
   </tbody>
  </table>
+ <div v-if="error" class="red">ERROR: {{ error }}</div>
+ <button class="button" v-on:click="testHost($event.target)">Test<span v-if="testOk" style="color:#0d0;"> &#10004;</span></button>
 </div>
 </template>
 

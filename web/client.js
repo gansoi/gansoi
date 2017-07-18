@@ -43,6 +43,17 @@ Vue.component('host-line', {
     template: '#template-host-line'
 });
 
+var testHost = function() {
+    this.testOk = false;
+
+    this.$http.post('/api/testhost', this.host).then(function(response) {
+        this.testOk = true;
+        this.error = '';
+    }, function(response) {
+        this.error = response.body;
+    });
+};
+
 var editHost = Vue.component('edit-host', {
     data: function() {
         return {
@@ -51,7 +62,9 @@ var editHost = Vue.component('edit-host', {
             host: {
                 address: "",
                 username: "root"
-            }
+            },
+            error: '',
+            testOk: false
         };
     },
 
@@ -86,6 +99,8 @@ var editHost = Vue.component('edit-host', {
             }
         },
 
+        testHost: testHost,
+
         save: function() {
             this.$http.post('/api/hosts/', this.host).then(function(response) {
                 router.push('/hosts');
@@ -99,7 +114,9 @@ var editHost = Vue.component('edit-host', {
 var viewHost = Vue.component('view-host', {
     data: function() {
         return {
-            hosts: hosts
+            hosts: hosts,
+            error: '',
+            testOk: false
         };
     },
 
@@ -116,7 +133,9 @@ var viewHost = Vue.component('view-host', {
     methods: {
         edit: function(button) {
             router.push('/host/edit/' + this.$route.params.id);
-        }
+        },
+
+        testHost: testHost
     },
 
     template: '#template-view-host'

@@ -422,6 +422,23 @@ func runCore(_ *cobra.Command, _ []string) {
 		c.JSON(http.StatusOK, nil)
 	})
 
+	api.POST("/testhost", func(c *gin.Context) {
+		var host ssh.SSH
+		e := c.BindJSON(&host)
+		if e != nil {
+			c.AbortWithError(http.StatusBadRequest, e)
+			return
+		}
+
+		_, _, e = host.Exec("echo", "remote host access test")
+		if e != nil {
+			c.AbortWithError(http.StatusGatewayTimeout, e)
+			return
+		}
+
+		c.JSON(http.StatusOK, nil)
+	})
+
 	api.GET("/agents", func(c *gin.Context) {
 		descriptions := plugins.ListAgents()
 
