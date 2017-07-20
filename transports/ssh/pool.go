@@ -2,6 +2,7 @@ package ssh
 
 import (
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"golang.org/x/crypto/ssh"
@@ -14,9 +15,21 @@ type (
 		connectLock sync.Mutex
 		lastUse     time.Time
 		client      *ssh.Client
-		refCount    int
+		refCount    int32
 	}
 )
+
+func (c *connection) ref() {
+	atomic.AddInt32(&c.refCount, 1)
+}
+
+func (c *connection) unref() {
+	atomic.AddInt32(&c.refCount, -1)
+}
+
+func (c *connection) count() int {
+	return int(atomic.LoadInt32(&c.refCount))
+}
 
 var (
 	poolLock sync.Mutex
@@ -36,13 +49,16 @@ func loop() {
 		poolLock.Lock()
 
 		for s, conn := range pool {
-			conn.connectLock.Lock()
-			if t.Sub(conn.lastUse) > closeAfter && conn.refCount == 0 && conn.client != nil {
-				conn.client.Close()
-				conn.client = nil
-				logger.Debug("ssh", "Closing unused connection %s", s.Address)
+			if conn.count() == 0 {
+				conn.connectLock.Lock()
+				if conn.client != nil && t.Sub(conn.lastUse) > closeAfter {
+					conn.client.Close()
+					conn.client = nil
+					logger.Debug("ssh", "Closing unused connection %s", s.Address)
+				}
+
+				conn.connectLock.Unlock()
 			}
-			conn.connectLock.Unlock()
 		}
 
 		poolLock.Unlock()
@@ -54,19 +70,20 @@ func connect(s SSH) (*ssh.Client, error) {
 	conn, found := pool[s]
 	if !found {
 		conn = &connection{}
+		conn.ref()
 
 		pool[s] = conn
 	}
 
+	poolLock.Unlock()
+
 	conn.connectLock.Lock()
 	defer conn.connectLock.Unlock()
-
-	poolLock.Unlock()
 
 	conn.lastUse = time.Now()
 
 	if conn.client != nil {
-		conn.refCount++
+		conn.ref()
 
 		return conn.client, nil
 	}
@@ -76,7 +93,6 @@ func connect(s SSH) (*ssh.Client, error) {
 		return nil, err
 	}
 
-	conn.refCount++
 	conn.client = client
 
 	return client, nil
@@ -90,7 +106,7 @@ func done(s SSH) {
 	conn, found := pool[s]
 	if found && conn.client != nil {
 		conn.lastUse = time.Now()
-		conn.refCount--
+		conn.unref()
 	}
 
 	if !found {
