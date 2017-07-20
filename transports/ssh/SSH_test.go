@@ -3,6 +3,7 @@ package ssh
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gansoi/gansoi/boltdb"
 	"github.com/gansoi/gansoi/transports"
@@ -91,6 +92,48 @@ func TestSSHConnect(t *testing.T) {
 	}
 
 	client, err := s.connect()
+	if err != nil {
+		t.Fatalf("connect() returned an error: %s", err.Error())
+	}
+
+	if client == nil {
+		t.Fatalf("connect() returned a nil client")
+	}
+}
+
+func TestSSHConnectSlow(t *testing.T) {
+	servSlow := server{
+		acceptPublicKey: true,
+		acceptWait:      time.Millisecond * 300,
+	}
+	addrSlow := servSlow.listen("127.0.0.1:0")
+	defer servSlow.quit()
+
+	servFast := server{
+		acceptPublicKey: true,
+	}
+	addrFast := servFast.listen("127.0.0.1:0")
+	defer servFast.quit()
+
+	s1 := &SSH{
+		Address: addrSlow,
+	}
+	go func() {
+		s1.connect()
+	}()
+	time.Sleep(time.Millisecond * 20)
+
+	s2 := &SSH{
+		Address: addrFast,
+	}
+
+	t0 := time.Now()
+	client, err := s2.connect()
+	elapsed := time.Now().Sub(t0)
+	if elapsed >= time.Millisecond*150 {
+		t.Fatalf("fast connect (%s) appeared to be waiting for slow connect (%s), waited for %v", s2.Address, s1.Address, elapsed)
+	}
+
 	if err != nil {
 		t.Fatalf("connect() returned an error: %s", err.Error())
 	}

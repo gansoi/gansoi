@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -21,6 +22,7 @@ type (
 		failChannel     bool
 		failSession     bool
 		failExec        bool
+		acceptWait      time.Duration
 	}
 )
 
@@ -74,6 +76,8 @@ func (s *server) loop() {
 	config.AddHostKey(key)
 
 	for {
+		time.Sleep(s.acceptWait)
+
 		conn, err := s.listener.Accept()
 		if err != nil {
 			return

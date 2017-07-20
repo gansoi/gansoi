@@ -118,13 +118,12 @@ func defaultPort(address string) string {
 
 // Connect to a remote ssh server using public key authentication
 func (s *SSH) connect() (*ssh.Client, error) {
-	signerLock.Lock()
-	defer signerLock.Unlock()
-
 	dialString := defaultPort(s.Address)
 	logger.Debug("ssh", "Connecting to %s as %s", dialString, s.Username)
 
+	signerLock.Lock()
 	if signer == nil {
+		signerLock.Unlock()
 		return nil, ErrNotReady
 	}
 
@@ -133,6 +132,7 @@ func (s *SSH) connect() (*ssh.Client, error) {
 		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // FIXME
 	}
+	signerLock.Unlock()
 
 	client, err := ssh.Dial("tcp", dialString, config)
 	if err != nil {

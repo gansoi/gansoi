@@ -11,9 +11,10 @@ import (
 
 type (
 	connection struct {
-		lastUse  time.Time
-		client   *ssh.Client
-		refCount int
+		connectLock sync.Mutex
+		lastUse     time.Time
+		client      *ssh.Client
+		refCount    int
 	}
 )
 
@@ -35,11 +36,13 @@ func loop() {
 		poolLock.Lock()
 
 		for s, conn := range pool {
+			conn.connectLock.Lock()
 			if t.Sub(conn.lastUse) > closeAfter && conn.refCount == 0 && conn.client != nil {
 				conn.client.Close()
 				conn.client = nil
 				logger.Debug("ssh", "Closing unused connection %s", s.Address)
 			}
+			conn.connectLock.Unlock()
 		}
 
 		poolLock.Unlock()
@@ -48,11 +51,21 @@ func loop() {
 
 func connect(s SSH) (*ssh.Client, error) {
 	poolLock.Lock()
-	defer poolLock.Unlock()
-
 	conn, found := pool[s]
-	if found && conn.client != nil {
-		conn.lastUse = time.Now()
+	if !found {
+		conn = &connection{}
+
+		pool[s] = conn
+	}
+
+	conn.connectLock.Lock()
+	defer conn.connectLock.Unlock()
+
+	poolLock.Unlock()
+
+	conn.lastUse = time.Now()
+
+	if conn.client != nil {
 		conn.refCount++
 
 		return conn.client, nil
@@ -63,11 +76,8 @@ func connect(s SSH) (*ssh.Client, error) {
 		return nil, err
 	}
 
-	pool[s] = &connection{
-		client:   client,
-		lastUse:  time.Now(),
-		refCount: 1,
-	}
+	conn.refCount++
+	conn.client = client
 
 	return client, nil
 }
