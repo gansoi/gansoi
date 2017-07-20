@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"compress/gzip"
 	"crypto/sha256"
 	"crypto/tls"
 	"encoding/json"
@@ -461,6 +462,21 @@ func runCore(_ *cobra.Command, _ []string) {
 		c.Header("Content-Type", "application/octet-stream")
 
 		db.WriteTo(c.Writer)
+	})
+
+	api.GET("/backup.gz", func(c *gin.Context) {
+		t := time.Now()
+		filename := fmt.Sprintf("gansoi-backup-%04d%02d%02d-%02d%02d%02d.db.gz",
+			t.Year(), t.Month(), t.Day(),
+			t.Hour(), t.Minute(), t.Second())
+
+		c.Header("Content-Disposition", "attachment; filename="+filename)
+		c.Header("Content-Type", "application/octet-stream")
+
+		writer := gzip.NewWriter(c.Writer)
+
+		db.WriteTo(writer)
+		writer.Close()
 	})
 
 	engine.GET("/ssh/pubkey", func(c *gin.Context) {
