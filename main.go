@@ -394,13 +394,28 @@ func runCore(_ *cobra.Command, _ []string) {
 	// Endpoint for running a check on the cluster node.
 	api.POST("/test", func(c *gin.Context) {
 		var check checks.Check
+		var checkResult *checks.CheckResult
 		e := c.BindJSON(&check)
 		if e != nil {
 			c.AbortWithError(http.StatusBadRequest, e)
 		}
 
-		// FIXME: Support remote checks somehow.
-		checkResult := checks.RunCheck(nil, &check)
+		if len(check.Hosts) > 0 {
+			host := ssh.SSH{}
+
+			// Try the first host only. This should be good enough for now.
+			e = db.One("ID", check.Hosts[0], &host)
+			if e != nil {
+				c.AbortWithError(http.StatusBadRequest, e)
+				return
+			}
+
+			checkResult = checks.RunCheck(&host, &check)
+			checkResult.HostID = check.Hosts[0]
+		} else {
+			checkResult = checks.RunCheck(nil, &check)
+		}
+
 		checkResult.Node = info.Self()
 
 		c.JSON(http.StatusOK, checkResult)
