@@ -363,7 +363,12 @@ var viewCheck = Vue.component('view-check', {
                         content = host.address;
                     }
                     content += '&nbsp;';
-                    groups.add({id: item.host_id, content: content, order: content});
+
+                    groups.add({
+                        id: item.host_id,
+                        content: content,
+                        order: content
+                    });
                 }
 
                 return true;
@@ -384,7 +389,7 @@ var viewCheck = Vue.component('view-check', {
         });
 
         // One week ago default.
-        var start = now - (7*24*60*60*1000);
+        var start = now - (7 * 24 * 60 * 60 * 1000);
 
         // If the first evaluation if newer than a week, we use that as a
         // starting point instead.
@@ -392,7 +397,7 @@ var viewCheck = Vue.component('view-check', {
 
         var options = {
             start: new Date(start),
-            end: new Date(now + (60*60*1000)), // one hour
+            end: new Date(now + (60 * 60 * 1000)), // one hour
             editable: false,
             type: 'background'
         };
@@ -791,8 +796,8 @@ Vue.component('g-modal', {
         }
     },
 
-    created: function () {
-        document.addEventListener("keydown", this.keyDown);
+    created: function() {
+        document.addEventListener('keydown', this.keyDown);
     },
 
     destroyed: function() {
