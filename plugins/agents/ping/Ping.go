@@ -3,19 +3,15 @@ package ping
 import (
 	"time"
 
-	"github.com/gansoi/gansoi/logger"
 	"github.com/gansoi/gansoi/plugins"
 )
 
 func init() {
-	if Available() {
-		plugins.RegisterAgent("ping", Ping{})
-
-		i = NewICMPService()
+	if available {
 		i.Start()
-	} else {
-		logger.Info("ping", "ICMP ping not available")
 	}
+
+	plugins.RegisterAgent("ping", Ping{})
 }
 
 type (
@@ -27,11 +23,15 @@ type (
 )
 
 var (
-	i *ICMPService
+	i = NewICMPService()
 )
 
 // Check implements plugins.Agent.
 func (p *Ping) Check(result plugins.AgentResult) error {
+	if !available {
+		return ErrICMPServiceUnavailable
+	}
+
 	status, err := i.Ping(p.Target, p.Count, time.Second*5)
 	if err != nil {
 		return err
