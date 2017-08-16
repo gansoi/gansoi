@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/Knetic/govaluate"
-	"gopkg.in/go-playground/validator.v8"
+	"gopkg.in/go-playground/validator.v9"
 
 	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/plugins"
@@ -109,6 +109,6 @@ func (c *Check) Evaluate(result plugins.AgentResult) error {
 
 // Validate implements database.Validator.
 func (c *Check) Validate(db database.Reader) error {
-	v := validator.New(&validator.Config{TagName: "validate"})
+	v := validator.New()
 	return v.Struct(c)
 }
