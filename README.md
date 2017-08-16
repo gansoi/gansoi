@@ -67,7 +67,7 @@ third party host. This will require a transport.
 
 ### Building and development
 
-Go 1.6 or newer is required for building Gansoi.
+Go 1.8 or newer is required for building Gansoi.
 
 `go get ./...` should get all dependencies.
 

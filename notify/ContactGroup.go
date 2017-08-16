@@ -3,7 +3,7 @@ package notify
 import (
 	"fmt"
 
-	"gopkg.in/go-playground/validator.v8"
+	"gopkg.in/go-playground/validator.v9"
 
 	"github.com/gansoi/gansoi/database"
 )
@@ -46,7 +46,7 @@ func (g *ContactGroup) GetContacts(db database.Reader) ([]*Contact, error) {
 
 // Validate implements database.Validator.
 func (g *ContactGroup) Validate(db database.Reader) error {
-	v := validator.New(&validator.Config{TagName: "validate"})
+	v := validator.New()
 	err := v.Struct(g)
 	if err != nil {
 		return err
