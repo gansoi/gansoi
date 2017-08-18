@@ -47,6 +47,7 @@ and developers. It's a just-working proof-of-concept.
 - [ ] No false positives - the system should never cry wolf.
 - [x] Easy encryption - should support Let’s Encrypt out of the box.
 - [x] Future-proof - Everything must support IPv6 out of the box.
+- [x] Binary outcome - either a human should do something or not.
 
 #### Alert integrations
 
