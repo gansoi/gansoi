@@ -48,5 +48,5 @@ func LatestEvaluation(db database.Reader, result *checks.CheckResult) (*Evaluati
 		return nil, database.ErrNotFound
 	}
 
-	return &results[0], database.ErrNotFound
+	return &results[0], nil
 }
