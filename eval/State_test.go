@@ -12,7 +12,6 @@ func TestValid(t *testing.T) {
 	}{
 		{StateUnknown, true},
 		{StateUp, true},
-		{StateDegraded, true},
 		{StateDown, true},
 		{State(39), false},
 	}
@@ -33,7 +32,6 @@ func TestMarshalJSON(t *testing.T) {
 	}{
 		{StateUnknown, `""`},
 		{StateUp, `"up"`},
-		{StateDegraded, `"degraded"`},
 		{StateDown, `"down"`},
 		{State(39), `""`},
 	}
@@ -57,7 +55,6 @@ func TestColorString(t *testing.T) {
 	}{
 		{StateUnknown, blue + "Unknown" + reset},
 		{StateUp, green + "Up" + reset},
-		{StateDegraded, yellow + "Degraded" + reset},
 		{StateDown, red + "Down" + reset},
 		{State(39), "" + reset},
 	}
@@ -75,8 +72,7 @@ func TestUnmarshalJSON(t *testing.T) {
 	j := `{
         "s1": "up",
         "s2": "down",
-        "s3": "",
-        "s4": "degraded"
+        "s3": ""
         }`
 
 	out := make(map[string]State)
@@ -86,7 +82,7 @@ func TestUnmarshalJSON(t *testing.T) {
 		t.Fatalf("JSON unmarshal failed: %s", err.Error())
 	}
 
-	if out["s1"] != StateUp || out["s2"] != StateDown || out["s3"] != StateUnknown || out["s4"] != StateDegraded {
+	if out["s1"] != StateUp || out["s2"] != StateDown || out["s3"] != StateUnknown {
 		t.Fatalf("Failed to decode JSON properly")
 	}
 

@@ -85,11 +85,6 @@ func (n *Notifier) gotEvaluation(e *eval.Evaluation) error {
 		return nil
 	}
 
-	if duration < check.Interval*2 && state == eval.StateDegraded {
-		logger.Info("notify", "[%s] Ignoring %s for less than two cycles when degraded %s", e.CheckHostID, state, e.History.ColorString())
-		return nil
-	}
-
 	logger.Info("notify", "%s is %s %s", e.CheckHostID, state, e.History.ColorString())
 
 	if len(check.ContactGroups) == 0 {

@@ -113,7 +113,7 @@ func TestEvaluatorEvaluate1Basics(t *testing.T) {
 	}
 }
 
-func TestEvaluatorEvaluate1(t *testing.T) {
+func TestEvaluatorEvaluate(t *testing.T) {
 	db, e := newE(t, []string{"justone"})
 	defer db.Close()
 
@@ -128,16 +128,29 @@ func TestEvaluatorEvaluate1(t *testing.T) {
 		{checks.CheckResult{}, StateUp},
 		{checks.CheckResult{}, StateUp},
 		{checks.CheckResult{}, StateUp},
-		{checks.CheckResult{Error: "error"}, StateDegraded},
-		{checks.CheckResult{Error: "error"}, StateDegraded},
-		{checks.CheckResult{Error: "error"}, StateDegraded},
-		{checks.CheckResult{}, StateDegraded},
-		{checks.CheckResult{Error: "error"}, StateDegraded},
-		{checks.CheckResult{}, StateDegraded},
-		{checks.CheckResult{}, StateDegraded},
-		{checks.CheckResult{}, StateDegraded},
-		{checks.CheckResult{}, StateDegraded},
+		{checks.CheckResult{Error: "error"}, StateUp},
+		{checks.CheckResult{Error: "error"}, StateUp},
+		{checks.CheckResult{Error: "error"}, StateDown},
+		{checks.CheckResult{}, StateDown},
+		{checks.CheckResult{Error: "error"}, StateDown},
+		{checks.CheckResult{}, StateDown},
 		{checks.CheckResult{}, StateUp},
+		{checks.CheckResult{}, StateUp},
+		{checks.CheckResult{Error: "error"}, StateUp},
+		{checks.CheckResult{}, StateUp},
+		{checks.CheckResult{Error: "error"}, StateUp},
+		{checks.CheckResult{}, StateUp},
+		{checks.CheckResult{}, StateUp},
+		{checks.CheckResult{Error: "error"}, StateUp},
+		{checks.CheckResult{}, StateUp},
+		{checks.CheckResult{}, StateUp},
+		{checks.CheckResult{Error: "error"}, StateUp},
+		{checks.CheckResult{Error: "error"}, StateDown},
+		{checks.CheckResult{Error: "error"}, StateDown},
+		{checks.CheckResult{Error: "error"}, StateDown},
+		{checks.CheckResult{}, StateDown},
+		{checks.CheckResult{}, StateDown},
+		{checks.CheckResult{Error: "error"}, StateDown},
 		{checks.CheckResult{}, StateUp},
 		{checks.CheckResult{}, StateUp},
 	}

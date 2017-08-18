@@ -16,9 +16,6 @@ const (
 	// StateUp is a Check that is OK or "green".
 	StateUp State = iota
 
-	// StateDegraded is a Check that is not completely ok or "yellow".
-	StateDegraded State = iota
-
 	// StateDown is a Check with failed conditions.
 	StateDown State = iota
 
@@ -28,40 +25,35 @@ const (
 )
 
 const (
-	red    = "\033[31m"
-	yellow = "\033[33m"
-	green  = "\033[32m"
-	blue   = "\033[34m"
-	reset  = "\033[0m"
+	red   = "\033[31m"
+	green = "\033[32m"
+	blue  = "\033[34m"
+	reset = "\033[0m"
 )
 
 var (
 	stateToJSON = map[State]string{
-		StateUnknown:  `""`,
-		StateUp:       `"up"`,
-		StateDegraded: `"degraded"`,
-		StateDown:     `"down"`,
+		StateUnknown: `""`,
+		StateUp:      `"up"`,
+		StateDown:    `"down"`,
 	}
 
 	jsonToState = map[string]State{
-		`""`:         StateUnknown,
-		`"up"`:       StateUp,
-		`"degraded"`: StateDegraded,
-		`"down"`:     StateDown,
+		`""`:     StateUnknown,
+		`"up"`:   StateUp,
+		`"down"`: StateDown,
 	}
 
 	stateToHuman = map[State]string{
-		StateUnknown:  "Unknown",
-		StateUp:       "Up",
-		StateDegraded: "Degraded",
-		StateDown:     "Down",
+		StateUnknown: "Unknown",
+		StateUp:      "Up",
+		StateDown:    "Down",
 	}
 
 	stateToColor = map[State]string{
-		StateUnknown:  blue,
-		StateUp:       green,
-		StateDegraded: yellow,
-		StateDown:     red,
+		StateUnknown: blue,
+		StateUp:      green,
+		StateDown:    red,
 	}
 )
 

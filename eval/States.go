@@ -50,10 +50,11 @@ func (s *States) Last(n int) *States {
 
 // Reduce reduces the slice of states to a single state according to a very
 // simple algorithm:
-// If there's noe states stores, the result is StateUnknown.
-// If any of the states are StateUnknown, return StateUnknown.
-// If all states are the same, the result is that state.
-// If the contained states are mixed, the result are StateDegraded.
+// 1) If there's no states stored, return StateUnknown.
+// 2) If any state is StateUnknown, return StateUnknown.
+// 3) If no state is StateUnknown, and there is a majority that majority is
+//    returned.
+// 4) If none of 1-3 is satisfied, StateUnknown will we returned.
 func (s *States) Reduce() State {
 	l := len(*s)
 
@@ -68,16 +69,12 @@ func (s *States) Reduce() State {
 	}
 
 	for state, count := range hist {
-		if state >= stateMax {
-			return StateUnknown
-		}
-
-		if count == l {
+		if count > l/2 {
 			return state
 		}
 	}
 
-	return StateDegraded
+	return StateUnknown
 }
 
 // ColorString will return a nicely colored array.
