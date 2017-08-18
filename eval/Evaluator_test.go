@@ -16,10 +16,6 @@ type (
 	mockAgent struct {
 		ReturnError bool `json:"return_error"`
 	}
-
-	peerStore struct {
-		peers []string
-	}
 )
 
 var (
@@ -46,20 +42,7 @@ func init() {
 	check.ID = "test"
 }
 
-func (p *peerStore) SetPeers(peers []string) error {
-	p.peers = peers
-
-	return nil
-}
-
-func (p *peerStore) Peers() ([]string, error) {
-	return p.peers, nil
-}
-
-func newE(t *testing.T, nodes []string) (*boltdb.TestStore, *Evaluator) {
-	peers := &peerStore{}
-	peers.SetPeers(nodes)
-
+func newE(t *testing.T) (*boltdb.TestStore, *Evaluator) {
 	db := boltdb.NewTestStore()
 
 	e := NewEvaluator(db)
@@ -71,7 +54,7 @@ func newE(t *testing.T, nodes []string) (*boltdb.TestStore, *Evaluator) {
 }
 
 func TestEvaluatorEvaluate1Basics(t *testing.T) {
-	db, e := newE(t, []string{"justone"})
+	db, e := newE(t)
 	defer db.Close()
 
 	result := &checks.CheckResult{
@@ -114,7 +97,7 @@ func TestEvaluatorEvaluate1Basics(t *testing.T) {
 }
 
 func TestEvaluatorEvaluate(t *testing.T) {
-	db, e := newE(t, []string{"justone"})
+	db, e := newE(t)
 	defer db.Close()
 
 	cases := []struct {
@@ -169,7 +152,7 @@ func TestEvaluatorEvaluate(t *testing.T) {
 }
 
 func TestEvaluatorPostApply(t *testing.T) {
-	db, e := newE(t, []string{"justone"})
+	db, e := newE(t)
 	defer db.Close()
 
 	result := &checks.CheckResult{
