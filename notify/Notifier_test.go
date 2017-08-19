@@ -5,7 +5,6 @@ import (
 	"errors"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/gansoi/gansoi/boltdb"
 	"github.com/gansoi/gansoi/checks"
@@ -143,14 +142,11 @@ func TestGotEvaluation(t *testing.T) {
 			t.Fatalf("Save() failed: %s", err.Error())
 		}
 
-		time.Sleep(time.Millisecond * 15)
-		e.PostApply(true, database.CommandSave, result)
-		evaluation, err := eval.LatestEvaluation(db, result)
+		evaluation, err := e.Evaluate(result)
 		if err != nil {
-			t.Fatalf("LatestEvaluation() failed: %s", err.Error())
+			t.Fatalf("Evaluate() failed: %s", err.Error())
 		}
 
-		time.Sleep(time.Millisecond * 15)
 		n.PostApply(true, database.CommandSave, evaluation)
 		//		err = n.gotEvaluation(evaluation)
 		if err != nil {

@@ -56,8 +56,6 @@ func (n *Notifier) gotEvaluation(e *eval.Evaluation) error {
 		return err
 	}
 
-	state := e.History.Last(3).Reduce()
-
 	// For how long have we had this state?
 	duration := e.End.Sub(e.Start)
 
@@ -69,26 +67,26 @@ func (n *Notifier) gotEvaluation(e *eval.Evaluation) error {
 
 	// If nothing changed since last evaluation, we can safely abort since
 	// there's nothing to notify about.
-	if state == lastState {
-		logger.Debug("notify", "[%s] Ignoring unchanged state (Last: %s, Current: %s, Duration: %s) %s", e.CheckHostID, lastState, state, duration.String(), e.History.ColorString())
+	if e.State == lastState {
+		logger.Debug("notify", "[%s] Ignoring unchanged state (Last: %s, Current: %s, Duration: %s) %s", e.CheckHostID, lastState, e.State, duration.String(), e.History.ColorString())
 		return nil
 	}
 
 	stateCacheLock.Lock()
-	stateCache[e.CheckHostID] = state
+	stateCache[e.CheckHostID] = e.State
 	stateCacheLock.Unlock()
 
 	// If we arrive here we know that state has changed since last evaluation.
 	// If we changed from StateUnknown, we ignore this state change because it
 	// is caused by a check "coming online".
 	if lastState == eval.StateUnknown {
-		logger.Info("notify", "[%s] Ignoring %s when previous state is %s %v", e.CheckHostID, state, lastState, e.History.ColorString())
+		logger.Info("notify", "[%s] Ignoring %s when previous state is %s %v", e.CheckHostID, e.State, lastState, e.History.ColorString())
 		return nil
 	}
 
-	logger.Info("notify", "%s is %s %s", e.CheckHostID, state, e.History.ColorString())
+	logger.Info("notify", "%s is %s %s", e.CheckHostID, e.State, e.History.ColorString())
 
-	text := fmt.Sprintf("%s is %s", e.CheckHostID, state.String())
+	text := fmt.Sprintf("%s is %s", e.CheckHostID, e.State.String())
 
 	targetGroups := check.ContactGroups
 	for _, groupID := range targetGroups {
@@ -103,7 +101,7 @@ func (n *Notifier) gotEvaluation(e *eval.Evaluation) error {
 			sent.Add(1)
 			logger.Info("notify", "[%s] Notifying '%s' using %s", e.CheckHostID, contact.ID, contact.Notifier)
 
-			go contact.Notify(text)
+			contact.Notify(text)
 		}
 	}
 
