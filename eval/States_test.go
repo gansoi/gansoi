@@ -71,7 +71,6 @@ func TestLast(t *testing.T) {
 	}{
 		{States{}, 0, States{}},
 		{States{StateDown}, 0, States{}},
-		{States{StateDown, StateDegraded}, 0, States{}},
 		{States{StateDown, StateUp}, 1, States{StateDown}},
 		{States{StateDown, StateUp}, 2, States{StateDown, StateUp}},
 		{States{StateDown, StateUp}, 3, States{StateDown, StateUp}},
@@ -87,7 +86,7 @@ func TestLast(t *testing.T) {
 	}
 }
 
-func TestEvaluate(t *testing.T) {
+func TestReduce(t *testing.T) {
 	cases := []struct {
 		input    States
 		expected State
@@ -95,14 +94,15 @@ func TestEvaluate(t *testing.T) {
 		{States{}, StateUnknown},
 		{States{StateDown}, StateDown},
 		{States{StateUp}, StateUp},
+		{States{StateUp, StateDown}, StateUnknown},
 		{States{StateUnknown}, StateUnknown},
-		{States{StateDegraded}, StateDegraded},
-		{States{StateUp, StateDegraded}, StateDegraded},
+		{States{StateUnknown, StateUp}, StateUnknown},
+		{States{StateUnknown, StateUp, StateDown, StateUp, StateUp}, StateUnknown},
 		{States{StateUp, StateUp}, StateUp},
-		{States{StateUp, StateUp, StateUp, StateDown}, StateDegraded},
-		{States{StateUnknown, StateDegraded, StateUp}, StateUnknown},
-		{States{State(34)}, StateUnknown},
-		{States{StateUp, StateUp, StateUp, State(35)}, StateUnknown},
+		{States{StateUp, StateUp, StateUp, StateDown}, StateUp},
+		{States{StateUnknown, StateDown, StateUp}, StateUnknown},
+		{States{State(34)}, State(34)},
+		{States{StateUp, StateUp, StateUp, State(35)}, StateUp},
 	}
 
 	for _, dat := range cases {
@@ -123,11 +123,10 @@ func TestStatesJSON(t *testing.T) {
 		{States{StateDown}, []byte(`["down"]`)},
 		{States{StateUp}, []byte(`["up"]`)},
 		{States{StateUnknown}, []byte(`[""]`)},
-		{States{StateDegraded}, []byte(`["degraded"]`)},
-		{States{StateUp, StateDegraded}, []byte(`["up","degraded"]`)},
+		{States{StateUp, StateDown}, []byte(`["up","down"]`)},
 		{States{StateUp, StateUp}, []byte(`["up","up"]`)},
 		{States{StateUp, StateUp, StateUp, StateDown}, []byte(`["up","up","up","down"]`)},
-		{States{StateUnknown, StateDegraded, StateUp}, []byte(`["","degraded","up"]`)},
+		{States{StateUnknown, StateDown, StateUp}, []byte(`["","down","up"]`)},
 	}
 
 	for _, dat := range cases {
@@ -165,11 +164,8 @@ func TestStatesColorString(t *testing.T) {
 		{States{StateDown}, 21},
 		{States{StateUp}, 19},
 		{States{StateUnknown}, 24},
-		{States{StateDegraded}, 25},
-		{States{StateUp, StateDegraded}, 37},
 		{States{StateUp, StateUp}, 31},
 		{States{StateUp, StateUp, StateUp, StateDown}, 57},
-		{States{StateUnknown, StateDegraded, StateUp}, 54},
 	}
 
 	for _, dat := range cases {

@@ -43,7 +43,7 @@ func statesFromHistory(history []checks.CheckResult) States {
 }
 
 // evaluate will FIXME
-func (e *Evaluator) evaluate(checkResult *checks.CheckResult) (*Evaluation, error) {
+func (e *Evaluator) Evaluate(checkResult *checks.CheckResult) (*Evaluation, error) {
 	clock := time.Now()
 
 	// Get latest evaluation.
@@ -79,7 +79,7 @@ func (e *Evaluator) evaluate(checkResult *checks.CheckResult) (*Evaluation, erro
 		eval = nextEval
 	}
 
-	logger.Debug("eval", "%s: %s (%s) %v", eval.CheckHostID, eval.History.Reduce().ColorString(), eval.End.Sub(eval.Start).String(), eval.History)
+	logger.Debug("eval", "%s: %s (%s) %s", eval.CheckHostID, eval.History.Reduce().ColorString(), eval.End.Sub(eval.Start).String(), eval.History.ColorString())
 
 	return eval, e.db.Save(eval)
 }
@@ -99,6 +99,6 @@ func (e *Evaluator) PostApply(leader bool, command database.Command, data interf
 
 	switch data.(type) {
 	case *checks.CheckResult:
-		e.evaluate(data.(*checks.CheckResult))
+		e.Evaluate(data.(*checks.CheckResult))
 	}
 }

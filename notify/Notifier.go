@@ -51,53 +51,42 @@ func (n *Notifier) PostApply(leader bool, command database.Command, data interfa
 
 func (n *Notifier) gotEvaluation(e *eval.Evaluation) error {
 	var check checks.Check
-	err := n.db.One("ID", e.CheckHostID, &check)
+	err := n.db.One("ID", e.CheckID, &check)
 	if err != nil {
 		return err
 	}
 
-	state := e.History.Last(3).Reduce()
-
-	if state == eval.StateUnknown {
-		logger.Debug("notify", "[%s] Ignoring %s %s", e.CheckHostID, state.String(), e.History.ColorString())
-		return nil
-	}
-
+	// For how long have we had this state?
 	duration := e.End.Sub(e.Start)
 
+	// Retrieve the last known state of the check. If the last state is
+	// unknown, StateUnknown will be used.
 	stateCacheLock.RLock()
 	lastState := stateCache[e.CheckHostID]
 	stateCacheLock.RUnlock()
 
-	if state == lastState {
-		logger.Debug("notify", "[%s] Ignoring unchanged state (Last: %s, Current: %s, Duration: %s) %s", e.CheckHostID, lastState, state, duration.String(), e.History.ColorString())
-		// Nothing changed. Abort.
+	// If nothing changed since last evaluation, we can safely abort since
+	// there's nothing to notify about.
+	if e.State == lastState {
+		logger.Debug("notify", "[%s] Ignoring unchanged state (Last: %s, Current: %s, Duration: %s) %s", e.CheckHostID, lastState, e.State, duration.String(), e.History.ColorString())
 		return nil
 	}
 
 	stateCacheLock.Lock()
-	stateCache[e.CheckHostID] = state
+	stateCache[e.CheckHostID] = e.State
 	stateCacheLock.Unlock()
 
+	// If we arrive here we know that state has changed since last evaluation.
+	// If we changed from StateUnknown, we ignore this state change because it
+	// is caused by a check "coming online".
 	if lastState == eval.StateUnknown {
-		logger.Info("notify", "[%s] Ignoring %s when previous state is %s %v", e.CheckHostID, state, lastState, e.History.ColorString())
-		// Last state was unknown. Maybe we just started. Don't notify.
+		logger.Info("notify", "[%s] Ignoring %s when previous state is %s %v", e.CheckHostID, e.State, lastState, e.History.ColorString())
 		return nil
 	}
 
-	if duration < check.Interval*2 && state == eval.StateDegraded {
-		logger.Info("notify", "[%s] Ignoring %s for less than two cycles when degraded %s", e.CheckHostID, state, e.History.ColorString())
-		return nil
-	}
+	logger.Info("notify", "%s is %s %s", e.CheckHostID, e.State, e.History.ColorString())
 
-	logger.Info("notify", "%s is %s %s", e.CheckHostID, state, e.History.ColorString())
-
-	if len(check.ContactGroups) == 0 {
-		logger.Info("notify", "[%s] No-one to nofity, aborting", e.CheckHostID)
-		return nil
-	}
-
-	text := fmt.Sprintf("%s is %s", e.CheckHostID, state.String())
+	text := fmt.Sprintf("%s is %s", e.CheckHostID, e.State.String())
 
 	targetGroups := check.ContactGroups
 	for _, groupID := range targetGroups {
@@ -112,7 +101,7 @@ func (n *Notifier) gotEvaluation(e *eval.Evaluation) error {
 			sent.Add(1)
 			logger.Info("notify", "[%s] Notifying '%s' using %s", e.CheckHostID, contact.ID, contact.Notifier)
 
-			go contact.Notify(text)
+			contact.Notify(text)
 		}
 	}
 

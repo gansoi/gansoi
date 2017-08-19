@@ -16,10 +16,6 @@ type (
 	mockAgent struct {
 		ReturnError bool `json:"return_error"`
 	}
-
-	peerStore struct {
-		peers []string
-	}
 )
 
 var (
@@ -46,20 +42,7 @@ func init() {
 	check.ID = "test"
 }
 
-func (p *peerStore) SetPeers(peers []string) error {
-	p.peers = peers
-
-	return nil
-}
-
-func (p *peerStore) Peers() ([]string, error) {
-	return p.peers, nil
-}
-
-func newE(t *testing.T, nodes []string) (*boltdb.TestStore, *Evaluator) {
-	peers := &peerStore{}
-	peers.SetPeers(nodes)
-
+func newE(t *testing.T) (*boltdb.TestStore, *Evaluator) {
 	db := boltdb.NewTestStore()
 
 	e := NewEvaluator(db)
@@ -71,7 +54,7 @@ func newE(t *testing.T, nodes []string) (*boltdb.TestStore, *Evaluator) {
 }
 
 func TestEvaluatorEvaluate1Basics(t *testing.T) {
-	db, e := newE(t, []string{"justone"})
+	db, e := newE(t)
 	defer db.Close()
 
 	result := &checks.CheckResult{
@@ -80,7 +63,7 @@ func TestEvaluatorEvaluate1Basics(t *testing.T) {
 		Node:        "justone",
 	}
 
-	_, err := e.evaluate(result)
+	_, err := e.Evaluate(result)
 	if err != nil {
 		t.Fatalf("evaluate() failed: %s", err.Error())
 	}
@@ -98,7 +81,7 @@ func TestEvaluatorEvaluate1Basics(t *testing.T) {
 	// Move one minute into the future.
 	result.TimeStamp = result.TimeStamp.Add(time.Minute)
 
-	_, err = e.evaluate(result)
+	_, err = e.Evaluate(result)
 	if err != nil {
 		t.Fatalf("evaluate() failed: %s", err.Error())
 	}
@@ -113,8 +96,8 @@ func TestEvaluatorEvaluate1Basics(t *testing.T) {
 	}
 }
 
-func TestEvaluatorEvaluate1(t *testing.T) {
-	db, e := newE(t, []string{"justone"})
+func TestEvaluatorEvaluate(t *testing.T) {
+	db, e := newE(t)
 	defer db.Close()
 
 	cases := []struct {
@@ -128,16 +111,29 @@ func TestEvaluatorEvaluate1(t *testing.T) {
 		{checks.CheckResult{}, StateUp},
 		{checks.CheckResult{}, StateUp},
 		{checks.CheckResult{}, StateUp},
-		{checks.CheckResult{Error: "error"}, StateDegraded},
-		{checks.CheckResult{Error: "error"}, StateDegraded},
-		{checks.CheckResult{Error: "error"}, StateDegraded},
-		{checks.CheckResult{}, StateDegraded},
-		{checks.CheckResult{Error: "error"}, StateDegraded},
-		{checks.CheckResult{}, StateDegraded},
-		{checks.CheckResult{}, StateDegraded},
-		{checks.CheckResult{}, StateDegraded},
-		{checks.CheckResult{}, StateDegraded},
+		{checks.CheckResult{Error: "error"}, StateUp},
+		{checks.CheckResult{Error: "error"}, StateUp},
+		{checks.CheckResult{Error: "error"}, StateDown},
+		{checks.CheckResult{}, StateDown},
+		{checks.CheckResult{Error: "error"}, StateDown},
+		{checks.CheckResult{}, StateDown},
 		{checks.CheckResult{}, StateUp},
+		{checks.CheckResult{}, StateUp},
+		{checks.CheckResult{Error: "error"}, StateUp},
+		{checks.CheckResult{}, StateUp},
+		{checks.CheckResult{Error: "error"}, StateUp},
+		{checks.CheckResult{}, StateUp},
+		{checks.CheckResult{}, StateUp},
+		{checks.CheckResult{Error: "error"}, StateUp},
+		{checks.CheckResult{}, StateUp},
+		{checks.CheckResult{}, StateUp},
+		{checks.CheckResult{Error: "error"}, StateUp},
+		{checks.CheckResult{Error: "error"}, StateDown},
+		{checks.CheckResult{Error: "error"}, StateDown},
+		{checks.CheckResult{Error: "error"}, StateDown},
+		{checks.CheckResult{}, StateDown},
+		{checks.CheckResult{}, StateDown},
+		{checks.CheckResult{Error: "error"}, StateDown},
 		{checks.CheckResult{}, StateUp},
 		{checks.CheckResult{}, StateUp},
 	}
@@ -148,7 +144,7 @@ func TestEvaluatorEvaluate1(t *testing.T) {
 			t.Fatalf("Save() failed: %s", err.Error())
 		}
 
-		e, _ := e.evaluate(&c.in)
+		e, _ := e.Evaluate(&c.in)
 		if e.State != c.state {
 			t.Fatalf("evaluate() [%d] concluded wrong state. Got %s, expected %s", i, e.State.ColorString(), c.state.ColorString())
 		}
@@ -156,7 +152,7 @@ func TestEvaluatorEvaluate1(t *testing.T) {
 }
 
 func TestEvaluatorPostApply(t *testing.T) {
-	db, e := newE(t, []string{"justone"})
+	db, e := newE(t)
 	defer db.Close()
 
 	result := &checks.CheckResult{
