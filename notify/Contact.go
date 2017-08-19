@@ -39,7 +39,7 @@ func (c *Contact) Notify(text string) error {
 		return fmt.Errorf("Unknown notifier: %s", c.Notifier)
 	}
 
-	err := json.Unmarshal(c.Arguments, &notifier)
+	err := json.Unmarshal(c.Arguments, notifier)
 	if err != nil {
 		return err
 	}
