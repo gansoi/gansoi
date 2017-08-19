@@ -51,20 +51,12 @@ func (n *Notifier) PostApply(leader bool, command database.Command, data interfa
 
 func (n *Notifier) gotEvaluation(e *eval.Evaluation) error {
 	var check checks.Check
-	// FIXME: Does this EVER find anything?
 	err := n.db.One("ID", e.CheckID, &check)
 	if err != nil {
 		return err
 	}
 
 	state := e.History.Last(3).Reduce()
-
-	// If the state is unknown do nothing. It means that the check has not been
-	// live long enough to conclude anything.
-	if state == eval.StateUnknown {
-		logger.Debug("notify", "[%s] Ignoring %s %s", e.CheckHostID, state.String(), e.History.ColorString())
-		return nil
-	}
 
 	// For how long have we had this state?
 	duration := e.End.Sub(e.Start)
