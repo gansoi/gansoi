@@ -63,7 +63,7 @@ func TestEvaluatorEvaluate1Basics(t *testing.T) {
 		Node:        "justone",
 	}
 
-	_, err := e.evaluate(result)
+	_, err := e.Evaluate(result)
 	if err != nil {
 		t.Fatalf("evaluate() failed: %s", err.Error())
 	}
@@ -81,7 +81,7 @@ func TestEvaluatorEvaluate1Basics(t *testing.T) {
 	// Move one minute into the future.
 	result.TimeStamp = result.TimeStamp.Add(time.Minute)
 
-	_, err = e.evaluate(result)
+	_, err = e.Evaluate(result)
 	if err != nil {
 		t.Fatalf("evaluate() failed: %s", err.Error())
 	}
@@ -144,7 +144,7 @@ func TestEvaluatorEvaluate(t *testing.T) {
 			t.Fatalf("Save() failed: %s", err.Error())
 		}
 
-		e, _ := e.evaluate(&c.in)
+		e, _ := e.Evaluate(&c.in)
 		if e.State != c.state {
 			t.Fatalf("evaluate() [%d] concluded wrong state. Got %s, expected %s", i, e.State.ColorString(), c.state.ColorString())
 		}
