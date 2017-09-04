@@ -128,4 +128,48 @@ func TestCheck(t *testing.T) {
 	ts.Close()
 }
 
+func TestCheckHost(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(okHandler))
+	a := &HTTP{
+		Host: "127.0.0.1",
+		URL:  ts.URL + "/",
+	}
+
+	result := plugins.NewAgentResult()
+	err := a.Check(result)
+	if err != nil {
+		t.Fatalf("Check failed: %s", err.Error())
+	}
+
+	a = &HTTP{
+		Host: "127.0.0.1:0",
+		URL:  ts.URL + "/",
+	}
+
+	result = plugins.NewAgentResult()
+	err = a.Check(result)
+	if err == nil {
+		t.Fatalf("Check failed to detect failure")
+	}
+	ts.Close()
+}
+
+func TestSickRedirect(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "://no-protocol", 301)
+	}))
+
+	a := &HTTP{
+		URL:            ts.URL + "/",
+		FollowRedirect: true,
+	}
+
+	result := plugins.NewAgentResult()
+	err := a.Check(result)
+	if err == nil {
+		t.Fatalf("Failed at detecting sick redirect")
+	}
+	ts.Close()
+}
+
 var _ plugins.Agent = (*HTTP)(nil)
