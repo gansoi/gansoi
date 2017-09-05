@@ -15,7 +15,10 @@ type (
 // SetID will assign a random ID to o if none is set.
 func (o *Object) SetID() {
 	if o.ID == "" {
-		o.ID = ca.RandomString(24)
+		// This is a nasty hack to work around an issue in Storm.
+		// We need to prepend an ascii character below 't' until
+		// https://github.com/asdine/storm/issues/184 is somehow resolved.
+		o.ID = "a" + ca.RandomString(23)
 	}
 }
 
