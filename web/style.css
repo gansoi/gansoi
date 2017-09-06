@@ -9,6 +9,11 @@ body {
     font-family: source-sans-pro, sans-serif;
     position: relative;
     -webkit-font-smoothing: antialiased;
+    d_isplay: flex;
+}
+
+#app {
+    width: 100%;
 }
 
 .right {
@@ -317,6 +322,11 @@ th {
     cursor: pointer;
 }
 
+a.clickable {
+    color: #f0f1f1;
+    text-decoration: none;
+}
+
 select:hover, .button:hover, .clickable:hover {
     /* THis is a hack to allow the element to regain its normal bakground */
     background-image: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.1));
@@ -367,11 +377,11 @@ select:hover, .button:hover, .clickable:hover {
 }
 
 .vis-item.vis-background.down {
-    background-color: rgba(255, 0, 0, 0.4);
+    background-color: rgba(170, 0, 0, 0.4);
 }
 
 .vis-item.vis-background.up {
-    background-color: rgba(0, 255, 0, 0.4);
+    background-color: rgba(0, 150, 0, 0.4);
 }
 
 .vis-timeline {
@@ -380,4 +390,25 @@ select:hover, .button:hover, .clickable:hover {
 
 .vis-labelset .vis-label {
     color: #f0f1f1;
+}
+
+.vis-foreground > .vis-group, .vis-label, .vis-labelset .vis-label, .vis-panel.vis-center, .vis-panel.vis-left, .vis-panel.vis-right {
+    background-color: #454646;
+    border-top: 1px solid #616363;
+    border-bottom: 1px solid rgba(0,0,0, 0.25);
+    border-left: 1px solid #616363;
+}
+
+.vis-foreground > .vis-group, .vis-label {
+    border-right: 1px solid #333434;
+}
+
+.vis-panel.vis-bottom {
+    border-left-style: none;
+}
+
+.vis-current-time {
+    color: #ee0;
+    background-color: #ee0;
+    width: 1px;
 }
