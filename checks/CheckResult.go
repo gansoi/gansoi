@@ -11,7 +11,7 @@ type (
 	// node has executed the check.
 	CheckResult struct {
 		ID          int64               `json:"id,omitempty"`
-		CheckHostID string              `json:"check_host_id,omitempty"`
+		CheckHostID string              `json:"check_host_id,omitempty" storm:"index"`
 		CheckID     string              `json:"check_id" storm:"index"`
 		HostID      string              `json:"host_id"`
 		Node        string              `json:"node_id,omitempty"`

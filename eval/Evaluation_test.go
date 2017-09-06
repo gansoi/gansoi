@@ -32,4 +32,9 @@ func TestLatestEvaluation(t *testing.T) {
 	if err != nil && err != database.ErrNotFound {
 		t.Fatalf("LatestEvaluation() failed: %s", err.Error())
 	}
+
+	_, err = LatestEvaluation(db, &checks.CheckResult{})
+	if err == nil {
+		t.Fatalf("LatestEvaluation() did not fail when for empty query")
+	}
 }
