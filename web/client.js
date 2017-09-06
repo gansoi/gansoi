@@ -160,20 +160,64 @@ Vue.component('g-host', {
 });
 
 var listChecks = Vue.component('list-checks', {
-    data: function() {
-        return {
-            checks: checks
-        };
-    },
+    mounted: function() {
+        var now = new Date().getTime();
 
-    computed: {
-        sorted: function() {
-            return checks.dataset.get().sort(function(a, b) {
-                a = a.name;
-                b = b.name;
-                return (a === b ? 0 : a > b ? 1 : -1);
-            });
-        }
+        // We seed "first" by the time as of now. If we see an item that is
+        // older, we update first. This is to determine when the first
+        // evaluation period started. This should be safe as all evaluations
+        // start in the past.
+        var first = now;
+
+        var filter = function(item) {
+            // We piggyback on the filter function to determine the start
+            // time of all evaluations. It doesn't matter if this gets run
+            // again, we already set up the timeline.
+            var itemStart = new Date(item.start).getTime();
+            first = Math.min(itemStart, first);
+
+            return true;
+        };
+
+        var dataview = new vis.DataView(evaluations.dataset, {
+            filter: filter,
+            fields: {
+                id: 'id',
+                start: 'start',
+                end: 'end',
+                state: 'className',
+                check_id: 'group'
+            }
+        });
+
+        var groupTemplate = function(item, _) {
+            return '<a class="clickable" href="#/check/view/' +
+                item.id + '">' +
+                item.name + '</a>';
+        };
+
+        // One week ago default.
+        var start = now - (7 * 24 * 60 * 60 * 1000);
+
+        // If the first evaluation if newer than a week, we use that as a
+        // starting point instead.
+        start = Math.max(first, start);
+
+        var options = {
+            start: new Date(start),
+            min: new Date(start),
+            end: new Date(now + (60 * 60 * 1000)),
+            editable: false,
+            type: 'background',
+            groupOrder: 'name',
+            groupTemplate: groupTemplate
+        };
+
+        var timeline = new vis.Timeline(
+            this.$refs.timeline,
+            dataview,
+            checks.dataset, // group by checks.
+            options);
     },
 
     template: '#template-checks'
@@ -187,40 +231,6 @@ var listNodes = Vue.component('list-nodes', {
     },
 
     template: '#template-nodes'
-});
-
-Vue.component('check-line', {
-    props: {
-        check: {default: {id: 'unkn', name: ''}}
-    },
-
-    methods: {
-        viewCheck: function() {
-            router.push('/check/view/' + this.check.id);
-        },
-    },
-
-    computed: {
-        evaluation: function() {
-            return lastEvaluations.get(this.check.id);
-        },
-
-        klass: function() {
-            var e = this.evaluation;
-
-            if (!e) {
-                return 'state unknown';
-            }
-
-            if (e.history && e.history.length > 0) {
-                return 'state ' + e.history[0];
-            }
-
-            return 'state unknown';
-        }
-    },
-
-    template: '#template-check-line'
 });
 
 var editCheck = Vue.component('edit-check', {

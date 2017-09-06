@@ -145,29 +145,9 @@
 <template id="template-checks">
 <div>
  <h2>Checks</h2>
- <table class="table">
-  <tr>
-   <th>ID</th>
-   <th>Name</th>
-   <th>Agent</th>
-   <th>Interval</th>
-   <th>Age</th>
-  </tr>
-  <tr is="check-line" v-for="check in sorted" :check="check"></tr>
- </table>
+ <p ref="timeline"></p>
  <router-link class="button" to="/check/edit/new">Add Check</router-link>
 </div>
-</template>
-
-<template id="template-check-line">
-<tr class="clickable" :class="klass" v-on:click="viewCheck()">
- <td>{{ check.id }}</td>
- <td>{{ check.name }}</td>
- <td>{{ check.agent }}</td>
- <td>{{ check.interval / 1000000000 }}</td>
- <td v-if="evaluation"><g-time-since :time="evaluation.end"></g-time-since></td>
- <td v-if="!evaluation">-</td>
-</tr>
 </template>
 
 <template id="template-view-check">
