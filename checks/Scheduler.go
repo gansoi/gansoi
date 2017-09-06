@@ -67,13 +67,10 @@ func (s *Scheduler) loop() {
 }
 
 func (s *Scheduler) spin(clock time.Time) {
-	meta := s.store.Next(clock)
-	if meta == nil {
-		return
+	for meta := s.store.Next(clock); meta != nil; meta = s.store.Next(clock) {
+		inflight.Add(1)
+		go s.runCheck(clock, meta)
 	}
-
-	inflight.Add(1)
-	go s.runCheck(clock, meta)
 }
 
 func (s *Scheduler) runCheck(clock time.Time, meta *checkMeta) *CheckResult {
