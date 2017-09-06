@@ -176,6 +176,10 @@ var listChecks = Vue.component('list-checks', {
             var itemStart = new Date(item.start).getTime();
             first = Math.min(itemStart, first);
 
+            // vis.js can appararently sort these much faster :)
+            item.start = new Date(item.start).valueOf();
+            item.end = new Date(item.end).valueOf();
+
             return true;
         };
 
@@ -213,11 +217,21 @@ var listChecks = Vue.component('list-checks', {
             groupTemplate: groupTemplate
         };
 
+        // When vis.js loads it's data, it will create lots of reflows. This
+        // trick allows us to avoid all these reflows during initial rendering
+        // with the price of some occasional jiggering when adding the timeline
+        // to the DOM. I think it's worth it. For my tests with ~5000 entries
+        // the load time went from over 30 seconds to under 900ms.
+        var fragment = new DocumentFragment();
+
         var timeline = new vis.Timeline(
-            this.$refs.timeline,
+            fragment,
             dataview,
             checks.dataset, // group by checks.
             options);
+
+        // Insert the graph into the main DOM.
+        this.$refs.timeline.replaceWith(fragment);
     },
 
     template: '#template-checks'
