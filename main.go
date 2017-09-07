@@ -357,9 +357,15 @@ func runCore(_ *cobra.Command, _ []string) {
 	db.BroadcastFrom(n.LastIndex())
 
 	e := eval.NewEvaluator(n)
-	n.RegisterListener(e)
 
 	scheduler := checks.NewScheduler(n, info.Self())
+
+	go func() {
+		for {
+			result := <-scheduler.Results
+			e.Evaluate(result)
+		}
+	}()
 
 	go func() {
 		for leader := range n.LeaderCh() {

@@ -81,24 +81,7 @@ func (e *Evaluator) Evaluate(checkResult *checks.CheckResult) (*Evaluation, erro
 
 	logger.Debug("eval", "%s: %s (%s) %s", eval.CheckHostID, eval.History.Reduce().ColorString(), eval.End.Sub(eval.Start).String(), eval.History.ColorString())
 
-	return eval, e.db.Save(eval)
-}
+	err := e.db.Save(eval)
 
-// PostApply implements databse.Listener.
-func (e *Evaluator) PostApply(leader bool, command database.Command, data interface{}) {
-	// If we're not the leader, we abort. Only the leader should evaluate
-	// check results.
-	if !leader {
-		return
-	}
-
-	// We're only interested in saves for now.
-	if command != database.CommandSave {
-		return
-	}
-
-	switch data.(type) {
-	case *checks.CheckResult:
-		e.Evaluate(data.(*checks.CheckResult))
-	}
+	return eval, err
 }

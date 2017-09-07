@@ -167,10 +167,10 @@ func TestGotEvaluation(t *testing.T) {
 	result := checks.RunCheck(nil, check)
 	result.CheckHostID = checks.CheckHostID(check.GetID(), "")
 	result.CheckID = check.GetID()
-	e.PostApply(true, database.CommandSave, result)
+	e.Evaluate(result)
 	evaluation, _ := eval.LatestEvaluation(db, result)
 	evaluation.CheckID = "nonexisting"
-	n.PostApply(true, database.CommandSave, evaluation)
+	e.Evaluate(result)
 }
 
 var _ database.Listener = (*Notifier)(nil)
