@@ -32,6 +32,7 @@ import (
 	"github.com/gansoi/gansoi/node"
 	"github.com/gansoi/gansoi/notify"
 	"github.com/gansoi/gansoi/plugins"
+	_ "github.com/gansoi/gansoi/plugins/agents/error"
 	_ "github.com/gansoi/gansoi/plugins/agents/http"
 	_ "github.com/gansoi/gansoi/plugins/agents/linuxload"
 	_ "github.com/gansoi/gansoi/plugins/agents/linuxmemory"
