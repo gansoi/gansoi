@@ -53,35 +53,32 @@ func (e *Evaluator) Evaluate(checkResult *checks.CheckResult) (*Evaluation, erro
 	}
 	eval.End = clock
 
-	// Get historyLength checkResults.
-	var history []checks.CheckResult
-	e.db.Find("CheckHostID", checkResult.CheckHostID, &history, e.historyLength, 0, true)
-
-	if len(history) < e.historyLength {
-		logger.Debug("evaluator", "Not enough history for %s yet", checkResult.CheckHostID)
+	if len(eval.Results) >= e.historyLength {
+		eval.Results = eval.Results[len(eval.Results)-e.historyLength+1 : 5]
 	}
 
-	eval.History = statesFromHistory(history)
+	results := append(eval.Results, *checkResult)
+	history := statesFromHistory(results)
 
 	state := StateUnknown
-	if len(history) == e.historyLength {
-		state = eval.History.Reduce()
+	if len(results) == e.historyLength {
+		state = history.Reduce()
 	}
 
 	// If the state has changed, we allocate a new evaluation and end the old.
 	if eval.State != state {
-		e.db.Save(eval)
+		eval.Save(e.db)
 
 		nextEval := NewEvaluation(clock, checkResult)
 		nextEval.State = state
-		nextEval.History = eval.History
 
 		eval = nextEval
 	}
 
+	eval.History = history
+	eval.Results = results
+
 	logger.Debug("eval", "%s: %s (%s) %s", eval.CheckHostID, eval.History.Reduce().ColorString(), eval.End.Sub(eval.Start).String(), eval.History.ColorString())
 
-	err := e.db.Save(eval)
-
-	return eval, err
+	return eval, eval.Save(e.db)
 }
