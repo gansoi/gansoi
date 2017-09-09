@@ -32,6 +32,7 @@ import (
 	"github.com/gansoi/gansoi/node"
 	"github.com/gansoi/gansoi/notify"
 	"github.com/gansoi/gansoi/plugins"
+	_ "github.com/gansoi/gansoi/plugins/agents/error"
 	_ "github.com/gansoi/gansoi/plugins/agents/http"
 	_ "github.com/gansoi/gansoi/plugins/agents/linuxload"
 	_ "github.com/gansoi/gansoi/plugins/agents/linuxmemory"
@@ -357,9 +358,15 @@ func runCore(_ *cobra.Command, _ []string) {
 	db.BroadcastFrom(n.LastIndex())
 
 	e := eval.NewEvaluator(n)
-	n.RegisterListener(e)
 
 	scheduler := checks.NewScheduler(n, info.Self())
+
+	go func() {
+		for {
+			result := <-scheduler.Results
+			e.Evaluate(result)
+		}
+	}()
 
 	go func() {
 		for leader := range n.LeaderCh() {

@@ -14,6 +14,7 @@ type (
 	// Scheduler takes care of scheduling checks on the local node. For now
 	// it will spin four times each second.
 	Scheduler struct {
+		Results  chan *CheckResult
 		nodeName string
 		stop     chan struct{}
 		db       database.ReadWriter
@@ -33,6 +34,7 @@ func NewScheduler(db database.ReadWriteBroadcaster, nodeName string) *Scheduler 
 	store, _ := newMetaStore(db)
 
 	s := &Scheduler{
+		Results:  make(chan *CheckResult, 1000),
 		nodeName: nodeName,
 		stop:     make(chan struct{}),
 		db:       db,
@@ -106,6 +108,7 @@ func (s *Scheduler) runCheck(clock time.Time, meta *checkMeta) *CheckResult {
 	}
 
 	s.db.Save(checkResult)
+	s.Results <- checkResult
 
 	s.store.Done(meta)
 

@@ -8,7 +8,6 @@ import (
 
 	"github.com/gansoi/gansoi/boltdb"
 	"github.com/gansoi/gansoi/checks"
-	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/plugins"
 )
 
@@ -150,42 +149,3 @@ func TestEvaluatorEvaluate(t *testing.T) {
 		}
 	}
 }
-
-func TestEvaluatorPostApply(t *testing.T) {
-	db, e := newE(t)
-	defer db.Close()
-
-	result := &checks.CheckResult{
-		TimeStamp:   time.Now(),
-		CheckHostID: "da::",
-		Node:        "justone",
-	}
-
-	e.PostApply(false, database.CommandSave, result)
-
-	pe := []Evaluation{}
-	err := db.All(&pe, -1, 0, false)
-	if err != nil {
-		t.Fatalf("db.All() failed: %s", err.Error())
-	}
-
-	if len(pe) != 0 {
-		t.Fatalf("Got wrong number of evaluations, got %d (%v)", len(pe), pe)
-	}
-
-	e.PostApply(true, database.CommandDelete, result)
-	db.All(&pe, -1, 0, false)
-
-	if len(pe) != 0 {
-		t.Fatalf("Got wrong number of evaluations, got %d (%v)", len(pe), pe)
-	}
-
-	e.PostApply(true, database.CommandSave, result)
-	db.All(&pe, -1, 0, false)
-
-	if len(pe) != 1 {
-		t.Fatalf("Got wrong number of evaluations, got %d (%v)", len(pe), pe)
-	}
-}
-
-var _ database.Listener = (*Evaluator)(nil)
