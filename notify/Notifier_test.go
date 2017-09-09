@@ -173,4 +173,16 @@ func TestGotEvaluation(t *testing.T) {
 	e.Evaluate(result)
 }
 
+func TestPostApply(t *testing.T) {
+	db := boltdb.NewTestStore()
+
+	n, _ := NewNotifier(db)
+	n.PostApply(true, database.CommandSave, &eval.Evaluation{})
+
+	err := n.gotEvaluation(&eval.Evaluation{})
+	if err == nil {
+		t.Fatalf("gotEvaluation() failed to detect null-valued input")
+	}
+}
+
 var _ database.Listener = (*Notifier)(nil)
