@@ -180,7 +180,9 @@ var listChecks = Vue.component('list-checks', {
             item.start = new Date(item.start).valueOf();
             item.end = new Date(item.end).valueOf();
 
-            return true;
+            // If the evaluation has a "host_id" it means that it describes
+            // a part of a check. We ignore these in the overview.
+            return (item.host_id == '');
         };
 
         var dataview = new vis.DataView(evaluations.dataset, {
@@ -372,6 +374,13 @@ var viewCheck = Vue.component('view-check', {
         var first = now;
 
         var groups = new vis.DataSet();
+
+        groups.add({
+            id: '',
+            content: "State",
+            order: '000000000000'
+        });
+
         var filter = function(item) {
             if (item.check_id === check_id) {
                 // We piggyback on the filter function to determine the start

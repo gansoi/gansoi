@@ -19,6 +19,7 @@ type (
 		State       State                `json:"state"`
 		Start       time.Time            `json:"start"`
 		End         time.Time            `json:"end"`
+		Hosts       map[string]State     `json:"hosts"`
 		Results     []checks.CheckResult `json:"-"`
 	}
 )
@@ -41,6 +42,7 @@ func NewEvaluation(clock time.Time, result *checks.CheckResult) *Evaluation {
 		HostID:      result.HostID,
 		Start:       clock,
 		End:         clock,
+		Hosts:       make(map[string]State),
 	}
 }
 
