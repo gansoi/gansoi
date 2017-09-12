@@ -80,5 +80,60 @@ func (e *Evaluator) Evaluate(checkResult *checks.CheckResult) (*Evaluation, erro
 
 	logger.Debug("eval", "%s: %s (%s) %s", eval.CheckHostID, eval.History.Reduce().ColorString(), eval.End.Sub(eval.Start).String(), eval.History.ColorString())
 
+	if eval.HostID != "" {
+		e.evaluteHost(eval)
+	}
+
+	return eval, eval.Save(e.db)
+}
+
+func (e *Evaluator) evaluteHost(hostEval *Evaluation) (*Evaluation, error) {
+	result := &checks.CheckResult{
+		CheckID:     hostEval.CheckID,
+		CheckHostID: checks.CheckHostID(hostEval.CheckID, ""),
+	}
+
+	eval, _ := LatestEvaluation(e.db, result)
+	if eval == nil {
+		eval = NewEvaluation(hostEval.Start, result)
+		eval.History = States{StateUnknown}
+	}
+	eval.End = hostEval.End
+
+	var check checks.Check
+	err := e.db.One("ID", eval.CheckID, &check)
+	if err != nil {
+		return nil, err
+	}
+
+	eval.Hosts[hostEval.HostID] = hostEval.State
+
+	var state State
+	states := make(map[State]int)
+	for _, key := range check.Hosts {
+		states[eval.Hosts[key]]++
+	}
+
+	switch true {
+	case states[StateUnknown] > 0:
+		state = StateUnknown
+	case states[StateDown] > 0:
+		state = StateDown
+	case states[StateUp] == len(check.Hosts):
+		state = StateUp
+	}
+
+	// If the state has changed, we allocate a new evaluation and end the old.
+	if eval.State != state {
+		eval.Save(e.db)
+
+		nextEval := NewEvaluation(hostEval.End, result)
+		nextEval.State = state
+		nextEval.History = States{state}
+		nextEval.Hosts = eval.Hosts
+
+		eval = nextEval
+	}
+
 	return eval, eval.Save(e.db)
 }
