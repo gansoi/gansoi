@@ -149,3 +149,71 @@ func TestEvaluatorEvaluate(t *testing.T) {
 		}
 	}
 }
+
+func TestEvaluatorEvaluateHost(t *testing.T) {
+	db, e := newE(t)
+	defer db.Close()
+
+	c := &checks.Check{
+		Hosts: []string{"hostid1", "hostid2"},
+	}
+	c.ID = "cid1"
+
+	db.Save(c)
+
+	cases := []struct {
+		in     checks.CheckResult
+		state1 State
+		state2 State
+	}{
+		{checks.CheckResult{CheckID: "unknown-check", CheckHostID: "bbb", HostID: "hostid1"}, StateUnknown, StateUnknown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid1"}, StateUnknown, StateUnknown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid2"}, StateUnknown, StateUnknown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid1"}, StateUnknown, StateUnknown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid2"}, StateUp, StateUnknown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid1"}, StateUp, StateUnknown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid2"}, StateUp, StateUnknown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid1", Error: "error"}, StateUp, StateUnknown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid2", Error: "error"}, StateUp, StateUnknown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid1", Error: "error"}, StateDown, StateDown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid2"}, StateDown, StateDown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid1", Error: "error"}, StateDown, StateDown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid2"}, StateDown, StateDown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid1"}, StateUp, StateUp},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid2"}, StateUp, StateUp},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid1", Error: "error"}, StateUp, StateUp},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid2"}, StateUp, StateUp},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid1", Error: "error"}, StateUp, StateUp},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid2"}, StateUp, StateUp},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid1"}, StateUp, StateUp},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid2", Error: "error"}, StateUp, StateUp},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid1"}, StateUp, StateUp},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid2"}, StateUp, StateUp},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid1", Error: "error"}, StateUp, StateUp},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid2", Error: "error"}, StateDown, StateDown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid1", Error: "error"}, StateDown, StateDown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid2", Error: "error"}, StateDown, StateDown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid1"}, StateDown, StateDown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid2"}, StateDown, StateDown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid1", Error: "error"}, StateDown, StateDown},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid2"}, StateUp, StateUp},
+		{checks.CheckResult{CheckID: "cid1", CheckHostID: "bbb", HostID: "hostid1"}, StateUp, StateUp},
+	}
+
+	for i, c := range cases {
+		err := db.Save(&c.in)
+		if err != nil {
+			t.Fatalf("Save() failed: %s", err.Error())
+		}
+
+		e1, _ := e.Evaluate(&c.in)
+		if e1.State != c.state1 {
+			t.Fatalf("Evaluate() [%d] concluded wrong state. Got %s, expected %s", i, e1.State.ColorString(), c.state1.ColorString())
+		}
+
+		e2, err := e.evaluteHost(e1)
+		if err == nil && e2.State != c.state2 {
+			t.Fatalf("evaluteHost() [%d] concluded wrong state. Got %s, expected %s", i, e2.State.ColorString(), c.state2.ColorString())
+		}
+	}
+}
