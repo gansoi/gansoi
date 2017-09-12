@@ -106,9 +106,6 @@ func (e *Evaluator) evaluteHost(hostEval *Evaluation) (*Evaluation, error) {
 		return nil, err
 	}
 
-	if eval.Hosts == nil {
-		eval.Hosts = make(map[string]State)
-	}
 	eval.Hosts[hostEval.HostID] = hostEval.State
 
 	var state State
