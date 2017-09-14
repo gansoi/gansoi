@@ -4,6 +4,8 @@
  */
 g.live = function() {
     var socket;
+    var reconnect = 0;
+    var audio = new g.audio();
 
     /**
      * Open the websocket connection.
@@ -15,6 +17,7 @@ g.live = function() {
             socket = new WebSocket('ws://' + g.getHost() + '/api/live');
         }
 
+        socket.onopen = onopen;
         socket.onclose = onclose;
         socket.onmessage = onmessage;
     };
@@ -33,12 +36,27 @@ g.live = function() {
         }
     };
 
+    var onopen = function(event) {
+        if (reconnect > 0) {
+            audio.play('connected');
+        }
+
+        reconnect = 0;
+    };
+
     /**
      * Use as onclose callback from websocket, will try to reconnect after
      * two and a half second.
      * @param {!CloseEvent} event
      */
     var onclose = function(event) {
+        // Play a audible message at every tenth reconnect attempt.
+        if (reconnect % 10 == 0) {
+            audio.play('connection-lost');
+        }
+
+        reconnect++;
+
         setTimeout(function() {
             open();
         }, 2500);
