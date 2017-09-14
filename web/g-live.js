@@ -7,6 +7,10 @@ g.live = function() {
     var reconnect = 0;
     var audio = new g.audio();
 
+    // We need to preload this. If we lose the connection to Gansoi we must
+    // have this ready.
+    audio.preload('connection-lost');
+
     /**
      * Open the websocket connection.
      */
