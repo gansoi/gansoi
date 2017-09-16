@@ -10,6 +10,7 @@
     <div id="app">
         <div class="buttonbar">
          <router-link class="button" id="overview" to="/overview">Overview</router-link>
+         <router-link class="button" id="settings" to="/settings">Settings</router-link>
          <router-link class="button" id="gansoi" to="/gansoi">Gansoi</router-link>
          <router-link class="button" id="hosts" to="/hosts">Hosts</router-link>
          <router-link class="button" id="checks" to="/checks">Checks</router-link>
@@ -20,10 +21,23 @@
     </div>
 
  <div id="main"></div>
+ <audio id="audio-attention" src="/audio/attention.wav" preload="auto"></audio>
+ <audio id="audio-connected" src="/audio/connected.wav" preload="auto"></audio>
+ <audio id="audio-connection-lost" src="/audio/connection-lost.wav" preload="auto"></audio>
 </body>
 
 <template id="template-overview">
 <h2>Overview</h2>
+</template>
+
+<template id="template-settings">
+ <div>
+  <h2>Settings</h2>
+  <h3>Audio</h3>
+  <p><input id="settings-muted" type="checkbox" v-model="$audioController.muted" @change="muteToggle">
+  <label for="settings-muted">Mute</label></p>
+  <p><button class="button" @click="testAudio" :disabled="muted">&#9654; Test</button></p>
+ <div>
 </template>
 
 <template id="template-nodes">
@@ -526,6 +540,8 @@
 <script src="https://unpkg.com/vue-router@2.0.1"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.20.1/vis.min.js"></script>
 <script src="/g.js"></script>
+<script src="/g-storage.js"></script>
+<script src="/g-audio.js"></script>
 <script src="/g-collection.js"></script>
 <script src="/g-live.js"></script>
 <script src="/g-waitgroup.js"></script>

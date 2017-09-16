@@ -239,6 +239,29 @@ var listChecks = Vue.component('list-checks', {
     template: '#template-checks'
 });
 
+var settings = Vue.component('settings', {
+    data: function() {
+        return {
+            muted: this.$audioController.muted,
+        };
+    },
+
+    methods: {
+        testAudio: function() {
+            this.$audioController.play('attention');
+        },
+
+        muteToggle: function(event) {
+            this.muted = event.target.checked;
+
+            g.storage.set('muted', this.muted);
+            this.$audioController.mute(this.muted);
+        }
+    },
+
+    template: '#template-settings'
+});
+
 var listNodes = Vue.component('list-nodes', {
     data: function() {
         return {
@@ -841,7 +864,10 @@ Vue.component('g-modal', {
 });
 
 var init = g.waitGroup(function() {
-    var live = g.live();
+    var audioController = new g.audio();
+    var live = new g.live(audioController);
+
+    audioController.mute(g.storage.get('muted', false));
 
     live.subscribe('nodeinfo', nodes);
     live.subscribe('checkresult', checkresults);
@@ -851,6 +877,8 @@ var init = g.waitGroup(function() {
     live.subscribe('contact', contacts);
     live.subscribe('contactgroup', contactgroups);
     live.subscribe('host', hosts);
+
+    Vue.prototype.$audioController = audioController;
 
     const app = new Vue({
         data: {
@@ -906,6 +934,7 @@ const router = new VueRouter({
     routes: [
         { path: '/', component: { template: '<h1>Hello, world.</h1>' } },
         { path: '/overview', component: { template: '#template-overview' } },
+        { path: '/settings', component: settings },
         { path: '/gansoi', component: listNodes },
 
         { path: '/hosts', component: listHosts },
