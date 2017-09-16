@@ -42,7 +42,9 @@ body {
     pointer-events: none;
 }
 
-.button:active, select:active {
+.button:active, select:active, .router-link-active {
+    color: #dd0;
+    text-shadow: 0 0;
     background-color: hsla(210, 2%, 25%, 1);
     box-shadow: inset 0 1px hsla(0, 0%, 0%, .05);
 }
@@ -297,15 +299,6 @@ th {
     border-right: 1px solid #333434;
 }
 
-.buttonbar *:active {
-    background-color: hsla(210, 2%, 25%, 1);
-    box-shadow: inset 0 1px hsla(0, 0%, 0%, .05);
-}
-
-.router-link-active {
-    color: #ee0;
-}
-
 .state {
     background-color: #555646 !important;
 }
@@ -408,7 +401,7 @@ select:hover, .button:hover, .clickable:hover {
 }
 
 .vis-current-time {
-    color: #ee0;
-    background-color: #ee0;
+    color: #dd0;
+    background-color: #dd0;
     width: 1px;
 }
