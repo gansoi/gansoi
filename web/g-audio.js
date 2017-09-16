@@ -7,6 +7,8 @@ g.audio = function() {
 
     var player = null;
 
+    self.muted = false;
+
     /**
      * Play a specific audio snippet. If a snippet is already playing, it will
      * be stopped.
@@ -18,6 +20,10 @@ g.audio = function() {
         if (player == null) {
             console.error(id + ' not found');
             return;
+        }
+
+        if (self.muted) {
+            return
         }
 
         self.stop();
@@ -38,6 +44,18 @@ g.audio = function() {
     };
 
     self.preloadInflight = {};
+
+    /**
+     * Mute this audio controller.
+     * @param {!bool} muted Set to true to mute the audio.
+     */
+    self.mute = function(muted) {
+        if (muted) {
+            self.stop();
+        }
+
+        self.muted = muted;
+    }
 
     /**
      * Preload a specific audio snippet.

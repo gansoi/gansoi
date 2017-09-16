@@ -1,11 +1,12 @@
 /**
  * Keep live updates from service.
+ * @param {!g.audio} audio The audio controller to use for
+ *                                   announcements.
  * @constructor
  */
-g.live = function() {
+g.live = function(audio) {
     var socket;
     var reconnect = 0;
-    var audio = new g.audio();
 
     // We need to preload this. If we lose the connection to Gansoi we must
     // have this ready.
