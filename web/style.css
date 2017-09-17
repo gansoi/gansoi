@@ -12,6 +12,16 @@ body {
     d_isplay: flex;
 }
 
+a {
+    color: #f0f1f1;
+    text-decoration: underline;
+    text-shadow: 1px 1px rgba(0,0,0,0.2);
+}
+
+a:visited {
+    color: #f0f1f1;
+}
+
 #app {
     width: 100%;
 }

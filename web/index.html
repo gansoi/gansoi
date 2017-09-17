@@ -9,9 +9,9 @@
 
     <div id="app">
         <div class="buttonbar">
+         <router-link class="button" id="gansoi" to="/gansoi">Gansoi</router-link>
          <router-link class="button" id="overview" to="/overview">Overview</router-link>
          <router-link class="button" id="settings" to="/settings">Settings</router-link>
-         <router-link class="button" id="gansoi" to="/gansoi">Gansoi</router-link>
          <router-link class="button" id="hosts" to="/hosts">Hosts</router-link>
          <router-link class="button" id="checks" to="/checks">Checks</router-link>
          <router-link class="button" id="contacts" to="/contacts">Contacts</router-link>
@@ -26,23 +26,11 @@
  <audio id="audio-connection-lost" src="/audio/connection-lost.wav" preload="auto"></audio>
 </body>
 
-<template id="template-overview">
-<h2>Overview</h2>
-</template>
-
-<template id="template-settings">
- <div>
-  <h2>Settings</h2>
-  <h3>Audio</h3>
-  <p><input id="settings-muted" type="checkbox" v-model="$audioController.muted" @change="muteToggle">
-  <label for="settings-muted">Mute</label></p>
-  <p><button class="button" @click="testAudio" :disabled="muted">&#9654; Test</button></p>
- <div>
-</template>
-
-<template id="template-nodes">
+<template id="template-gansoi">
 <div>
 <h2>Gansoi</h2>
+<p>This is <a href="https://gansoi.com/">Gansoi</a>. It's network monitoring as we think it should be. Hassle-free, performant and beautiful.
+</p>
 <h3>Core Nodes</h3>
 <table class="table">
  <tr>
@@ -65,6 +53,20 @@
  </tr>
 </table>
 </div>
+</template>
+
+<template id="template-overview">
+<h2>Overview</h2>
+</template>
+
+<template id="template-settings">
+ <div>
+  <h2>Settings</h2>
+  <h3>Audio</h3>
+  <p><input id="settings-muted" type="checkbox" v-model="$audioController.muted" @change="muteToggle">
+  <label for="settings-muted">Mute</label></p>
+  <p><button class="button" @click="testAudio" :disabled="muted">&#9654; Test</button></p>
+ <div>
 </template>
 
 <template id="template-hosts">

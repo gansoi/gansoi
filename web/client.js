@@ -262,14 +262,14 @@ var settings = Vue.component('settings', {
     template: '#template-settings'
 });
 
-var listNodes = Vue.component('list-nodes', {
+var gansoi = Vue.component('gansoi', {
     data: function() {
         return {
             nodes: nodes
         };
     },
 
-    template: '#template-nodes'
+    template: '#template-gansoi'
 });
 
 var editCheck = Vue.component('edit-check', {
@@ -932,10 +932,9 @@ restFetch(init, '/api/hosts/', hosts);
 
 const router = new VueRouter({
     routes: [
-        { path: '/', component: { template: '<h1>Hello, world.</h1>' } },
+        { path: '/gansoi', component: gansoi },
         { path: '/overview', component: { template: '#template-overview' } },
         { path: '/settings', component: settings },
-        { path: '/gansoi', component: listNodes },
 
         { path: '/hosts', component: listHosts },
         { path: '/host/view/:id', component: viewHost },
@@ -952,5 +951,7 @@ const router = new VueRouter({
         { path: '/contactgroups', component: listContactgroups },
         { path: '/contactgroup/view/:id', component: viewContactgroup },
         { path: '/contactgroup/edit/:id', component: editContactgroup },
+
+        { path: '', redirect: '/gansoi' }
     ]
 });
