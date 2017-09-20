@@ -1,12 +1,13 @@
 package process
 
 import (
+	"bytes"
 	"io/ioutil"
-	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/gansoi/gansoi/plugins"
 	"github.com/gansoi/gansoi/transports"
-	"github.com/pkg/errors"
 )
 
 func init() {
@@ -20,7 +21,6 @@ type Process struct {
 
 // RemoteCheck implements plugins.RemoteAgent.
 func (m *Process) RemoteCheck(transport transports.Transport, result plugins.AgentResult) error {
-
 	out, _, err := transport.Exec("pidof", m.Name)
 	if err != nil {
 		return errors.Wrap(err, "pidof")
@@ -30,7 +30,7 @@ func (m *Process) RemoteCheck(transport transports.Transport, result plugins.Age
 	if err != nil {
 		return err
 	}
-	resultAsStr := string(resultAsBytes)
-	result.AddValue("Running", len(strings.Fields(resultAsStr)))
+
+	result.AddValue("Running", len(bytes.Fields(resultAsBytes)))
 	return nil
 }
