@@ -40,7 +40,7 @@ func TestCheck(t *testing.T) {
 	if err != nil {
 		t.Fatalf("RemoteCheck() failed")
 	}
-	if result["pid_1"].(string) != "1337" || result["pid_2"].(string) != "7331" {
+	if result["Running"].(int) != 2 {
 		t.Fatalf("Setting result variables failed")
 	}
 }

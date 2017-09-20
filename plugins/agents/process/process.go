@@ -1,7 +1,6 @@
 package process
 
 import (
-	"fmt"
 	"io/ioutil"
 	"strings"
 
@@ -32,10 +31,6 @@ func (m *Process) RemoteCheck(transport transports.Transport, result plugins.Age
 		return err
 	}
 	resultAsStr := string(resultAsBytes)
-	pids := strings.Fields(resultAsStr)
-
-	for i := 0; i < len(pids); i++ {
-		result.AddValue(fmt.Sprintf("pid_%d", i+1), pids[i])
-	}
+	result.AddValue("Running", len(strings.Fields(resultAsStr)))
 	return nil
 }
