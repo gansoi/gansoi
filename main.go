@@ -38,6 +38,7 @@ import (
 	_ "github.com/gansoi/gansoi/plugins/agents/linuxmemory"
 	_ "github.com/gansoi/gansoi/plugins/agents/mysql"
 	_ "github.com/gansoi/gansoi/plugins/agents/ping"
+	_ "github.com/gansoi/gansoi/plugins/agents/process"
 	_ "github.com/gansoi/gansoi/plugins/agents/ssh"
 	_ "github.com/gansoi/gansoi/plugins/agents/tcpport"
 	_ "github.com/gansoi/gansoi/plugins/agents/unixclock"
