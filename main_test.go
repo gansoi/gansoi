@@ -174,7 +174,7 @@ func TestNagiosPluginBangHashFailed(t *testing.T) {
 }
 
 func TestLoadConfig(t *testing.T) {
-	f, _ := ioutil.TempFile("/dev/shm", "TestLoadConfig")
+	f, _ := ioutil.TempFile(os.TempDir(), "TestLoadConfig")
 	f.WriteString("")
 	f.Close()
 	defer os.Remove(f.Name())
@@ -194,7 +194,7 @@ func TestLoadConfigFail(t *testing.T) {
 }
 
 func TestOpenDatabase(t *testing.T) {
-	dirname, _ := ioutil.TempDir("/dev/shm/", "TestOpenDatabase")
+	dirname, _ := ioutil.TempDir(os.TempDir(), "TestOpenDatabase")
 	defer os.RemoveAll(dirname)
 
 	conf := &config.Configuration{
@@ -229,13 +229,13 @@ func TestInitRunCoreFail(t *testing.T) {
 }
 
 func TestJoinCore(t *testing.T) {
-	p1 := "/dev/shm/node1"
+	p1 := path.Join(os.TempDir(), "node1")
 	// To test join, we must first start a working node (!)
 	os.Mkdir(p1, 0700)
 	defer os.RemoveAll(p1)
 
 	c1 := `bind = "127.0.0.1:5121"
-datadir = "/dev/shm/node1"
+datadir = "` + p1 + `"
 [http]
 bind = "127.0.0.1:7121"
 tls = false
@@ -277,12 +277,12 @@ func TestPrintCAFail(t *testing.T) {
 }
 
 func TestMainHTTP(t *testing.T) {
-	p1 := "/dev/shm/TestMainHTTP"
+	p1 := path.Join(os.TempDir(), "TestMainHTTP")
 	os.Mkdir(p1, 0700)
 	defer os.RemoveAll(p1)
 
 	c1 := `bind = "127.0.0.1:5184"
-datadir = "/dev/shm/TestMainHTTP"
+datadir = "` + p1 + `"
 [http]
 bind = "127.0.0.1:5185"
 tls = false
