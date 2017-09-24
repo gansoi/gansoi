@@ -46,17 +46,15 @@ func InitCA() (*CA, error) {
 		BasicConstraintsValid: true,
 	}
 
-	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
+	derBytes, err := x509.CreateCertificate(randSource, &template, &template, &priv.PublicKey, priv)
 	if err != nil {
 		return nil, fmt.Errorf("CreateCertificate: %s", err.Error())
 	}
 
 	ca.privateKey = priv
 
-	ca.Certificate, err = x509.ParseCertificate(derBytes)
-	if err != nil {
-		return nil, fmt.Errorf("ParseCertificate: %s", err.Error())
-	}
+	// We ignore errors here, we created the CSR, it's error-free (tm).
+	ca.Certificate, _ = x509.ParseCertificate(derBytes)
 
 	return ca, nil
 }
@@ -136,15 +134,13 @@ func (ca *CA) SignCSR(csr *x509.CertificateRequest) (*x509.Certificate, error) {
 		return nil, err
 	}
 
-	derBytes, err := x509.CreateCertificate(rand.Reader, template, ca.Certificate, csr.PublicKey, ca.privateKey)
+	derBytes, err := x509.CreateCertificate(randSource, template, ca.Certificate, csr.PublicKey, ca.privateKey)
 	if err != nil {
 		return nil, fmt.Errorf("CreateCertificate: %s", err.Error())
 	}
 
-	cert, err := x509.ParseCertificate(derBytes)
-	if err != nil {
-		return nil, fmt.Errorf("ParseCertificate: %s", err.Error())
-	}
+	// Ignore errors from parsing a valid cert created by us.
+	cert, _ := x509.ParseCertificate(derBytes)
 
 	return cert, nil
 }
