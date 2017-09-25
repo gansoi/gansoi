@@ -34,7 +34,7 @@ func (fs *Filesystem) RemoteCheck(transport transports.Transport, result plugins
 	if parseError != nil {
 		return parseError
 	}
-	return fs.setResult(result, filesystems)
+	return fs.setResults(result, filesystems)
 }
 
 func (fs *Filesystem) invokeRemoteCommand(transport transports.Transport) ([]byte, error) {
@@ -45,7 +45,7 @@ func (fs *Filesystem) invokeRemoteCommand(transport transports.Transport) ([]byt
 	return ioutil.ReadAll(out)
 }
 
-func (fs *Filesystem) setResult(result plugins.AgentResult, filesystems []filesystemInfo) error {
+func (fs *Filesystem) setResults(result plugins.AgentResult, filesystems []filesystemInfo) error {
 	var fsInWorstConditions, rootFs *filesystemInfo
 
 	for i, currentFs := range filesystems {
@@ -61,21 +61,11 @@ func (fs *Filesystem) setResult(result plugins.AgentResult, filesystems []filesy
 	}
 
 	if rootFs != nil {
-		result.AddValue("RootDevice", rootFs.Device)
-		result.AddValue("RootTotal", rootFs.Total)
-		result.AddValue("RootUsed", rootFs.Used)
-		result.AddValue("RootAvailable", rootFs.Availabe)
-		result.AddValue("RootUsedPercent", rootFs.UsedPercent)
-		result.AddValue("RootMountpoint", rootFs.Mountpoint)
+		fs.setSingleDevicesResults("Root", rootFs, result)
 	}
 
 	if fsInWorstConditions != nil {
-		result.AddValue("WorstDevice", fsInWorstConditions.Device)
-		result.AddValue("WorstTotal", fsInWorstConditions.Total)
-		result.AddValue("WorstUsed", fsInWorstConditions.Used)
-		result.AddValue("WorstAvailable", fsInWorstConditions.Availabe)
-		result.AddValue("WorstUsedPercent", fsInWorstConditions.UsedPercent)
-		result.AddValue("WorstMountpoint", fsInWorstConditions.Mountpoint)
+		fs.setSingleDevicesResults("Worst", fsInWorstConditions, result)
 	} else {
 		return errors.New("Could not find a mounted device")
 	}
@@ -85,13 +75,7 @@ func (fs *Filesystem) setResult(result plugins.AgentResult, filesystems []filesy
 
 func (fs *Filesystem) isDeviceExcludedFromCheck(deviceName string) bool {
 	if fs.excludedDevices == nil {
-		fs.excludedDevices = make([]string, 0)
-		for _, v := range strings.Split(fs.CommaSeparatedExcludedDevices, ",") {
-			device := strings.TrimSpace(v)
-			if device != "" {
-				fs.excludedDevices = append(fs.excludedDevices, device)
-			}
-		}
+		fs.populateExcludedDevices()
 	}
 	for _, excluded := range fs.excludedDevices {
 		if deviceName == excluded {
@@ -99,4 +83,23 @@ func (fs *Filesystem) isDeviceExcludedFromCheck(deviceName string) bool {
 		}
 	}
 	return false
+}
+
+func (fs *Filesystem) populateExcludedDevices() {
+	fs.excludedDevices = make([]string, 0)
+	for _, v := range strings.Split(fs.CommaSeparatedExcludedDevices, ",") {
+		device := strings.TrimSpace(v)
+		if device != "" {
+			fs.excludedDevices = append(fs.excludedDevices, device)
+		}
+	}
+
+}
+func (fs *Filesystem) setSingleDevicesResults(name string, fi *filesystemInfo, result plugins.AgentResult) {
+	result.AddValue(name+"Device", fi.Device)
+	result.AddValue(name+"Total", fi.Total)
+	result.AddValue(name+"Used", fi.Used)
+	result.AddValue(name+"Available", fi.Availabe)
+	result.AddValue(name+"UsedPercent", fi.UsedPercent)
+	result.AddValue(name+"Mountpoint", fi.Mountpoint)
 }

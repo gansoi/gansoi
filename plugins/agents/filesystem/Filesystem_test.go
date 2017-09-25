@@ -103,7 +103,7 @@ func TestSetResult(t *testing.T) {
 	}
 	fs := Filesystem{}
 	result := plugins.NewAgentResult()
-	fs.setResult(result, fsInfos)
+	fs.setResults(result, fsInfos)
 	if result["RootUsed"].(int64) != 5 {
 		t.Error("Root device's stats were not included")
 	}
@@ -118,7 +118,7 @@ func TestSetResultNoRoot(t *testing.T) {
 	}
 	fs := Filesystem{}
 	result := plugins.NewAgentResult()
-	fs.setResult(result, fsInfos)
+	fs.setResults(result, fsInfos)
 	_, ok := result["RootUsed"]
 	if ok {
 		t.Error("Root device's stats should not be included")
@@ -131,7 +131,7 @@ func TestSetResultEmpty(t *testing.T) {
 	fsInfos := []filesystemInfo{}
 	fs := Filesystem{}
 	result := plugins.NewAgentResult()
-	err := fs.setResult(result, fsInfos)
+	err := fs.setResults(result, fsInfos)
 	if err == nil {
 		t.Error("The check should fail if there are no filesystems")
 	}
@@ -140,7 +140,7 @@ func TestSetResultWithExcludes(t *testing.T) {
 	fsInfos := []filesystemInfo{filesystemInfo{Device: "/dev/sda1"}}
 	fs := Filesystem{CommaSeparatedExcludedDevices: "/dev/sda1,/dev/sda2"}
 	result := plugins.NewAgentResult()
-	err := fs.setResult(result, fsInfos)
+	err := fs.setResults(result, fsInfos)
 	if err == nil {
 		t.Error("The mock should be filtered out leaving empty result, that leads to error")
 	}

@@ -35,28 +35,33 @@ func (p *dfCommandParser) parseLine(singleLine []byte) (*filesystemInfo, error) 
 		return nil, nil
 	}
 	fields := strings.Fields(string(singleLine))
-	var used, available int64
-	total, parseErr := strconv.ParseInt(fields[1], 10, 64)
-	if parseErr != nil {
-		return nil, parseErr
-	}
-	used, parseErr = strconv.ParseInt(fields[2], 10, 64)
-	if parseErr != nil {
-		return nil, parseErr
-	}
-	available, parseErr = strconv.ParseInt(fields[3], 10, 64)
-	if parseErr != nil {
-		return nil, parseErr
-	}
 	newFsInfo := &filesystemInfo{
 		Device:     fields[0],
-		Total:      total,
-		Used:       used,
-		Availabe:   available,
 		Mountpoint: fields[5],
 	}
-	if total != 0 {
-		newFsInfo.UsedPercent = (float64(used) / float64(total)) * 100
+	parseErr := p.parseValues(fields, newFsInfo)
+	if parseErr != nil {
+		return nil, parseErr
+	}
+	if newFsInfo.Total != 0 {
+		newFsInfo.UsedPercent = (float64(newFsInfo.Used) / float64(newFsInfo.Total)) * 100
 	}
 	return newFsInfo, nil
+}
+
+func (p *dfCommandParser) parseValues(fields []string, fi *filesystemInfo) error {
+	var parseErr error
+	fi.Total, parseErr = strconv.ParseInt(fields[1], 10, 64)
+	if parseErr != nil {
+		return parseErr
+	}
+	fi.Used, parseErr = strconv.ParseInt(fields[2], 10, 64)
+	if parseErr != nil {
+		return parseErr
+	}
+	fi.Availabe, parseErr = strconv.ParseInt(fields[3], 10, 64)
+	if parseErr != nil {
+		return parseErr
+	}
+	return nil
 }
