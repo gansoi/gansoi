@@ -68,7 +68,7 @@ func TestRemoteCheckFailsOnInvokeRemoteCommandFailed(t *testing.T) {
 func TestInvokeRemoteCommand(t *testing.T) {
 	transport := &TransportMock{stdout: bytes.NewBufferString("test")}
 	fs := &Filesystem{}
-	response, invokeError := fs.invokeRemoteCommand(transport)
+	response, invokeError := fs.invokeRemoteDfCommand(transport)
 	if invokeError != nil {
 		t.Error("invokeError should be nil")
 	}
@@ -79,7 +79,7 @@ func TestInvokeRemoteCommand(t *testing.T) {
 func TestInvokeRemoteCommandTransportError(t *testing.T) {
 	transport := &TransportMock{stdout: nil, stderr: nil, transportError: errors.New("test")}
 	fs := &Filesystem{}
-	response, invokeError := fs.invokeRemoteCommand(transport)
+	response, invokeError := fs.invokeRemoteDfCommand(transport)
 	if response != nil {
 		t.Error("response should be nil")
 	}
@@ -90,7 +90,7 @@ func TestInvokeRemoteCommandTransportError(t *testing.T) {
 func TestInvokeRemoteCommandReadError(t *testing.T) {
 	transport := &TransportMock{stdout: &ReaderMock{}, stderr: nil, transportError: nil}
 	fs := &Filesystem{}
-	_, invokeError := fs.invokeRemoteCommand(transport)
+	_, invokeError := fs.invokeRemoteDfCommand(transport)
 	if invokeError == nil {
 		t.Error("There was a read error, therefore invokeError should also fail")
 	}

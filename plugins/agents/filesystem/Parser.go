@@ -31,6 +31,7 @@ func (p *dfCommandParser) parse(theOutput []byte) ([]filesystemInfo, error) {
 }
 
 func (p *dfCommandParser) parseLine(singleLine []byte) (*filesystemInfo, error) {
+	// Remove entries like tmpfs
 	if len(singleLine) == 0 || singleLine[0] != byte('/') {
 		return nil, nil
 	}

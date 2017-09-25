@@ -16,9 +16,10 @@ func init() {
 
 // Filesystem will check the condition of mounted storage devices.
 type Filesystem struct {
-	CommaSeparatedExcludedDevices string `json:"excludedDevices" description:"Comma-separated list of devices, that will we excluded from the check"`
+	CommaSeparatedExcludedDevices string `json:"excludedDevices" description:"Comma-separated list of devices, that will be excluded from the check"`
 	excludedDevices               []string
-	parser                        commandParser
+	// This is set to dfCommandParser, unless replaced in tests
+	parser commandParser
 }
 
 // RemoteCheck implements plugins.RemoteAgent.
@@ -26,7 +27,7 @@ func (fs *Filesystem) RemoteCheck(transport transports.Transport, result plugins
 	if fs.parser == nil {
 		fs.parser = &dfCommandParser{}
 	}
-	commandsOutput, invokeError := fs.invokeRemoteCommand(transport)
+	commandsOutput, invokeError := fs.invokeRemoteDfCommand(transport)
 	if invokeError != nil {
 		return invokeError
 	}
@@ -37,7 +38,7 @@ func (fs *Filesystem) RemoteCheck(transport transports.Transport, result plugins
 	return fs.setResults(result, filesystems)
 }
 
-func (fs *Filesystem) invokeRemoteCommand(transport transports.Transport) ([]byte, error) {
+func (fs *Filesystem) invokeRemoteDfCommand(transport transports.Transport) ([]byte, error) {
 	out, _, err := transport.Exec("df -k")
 	if err != nil {
 		return nil, errors.Wrap(err, "df -k")
@@ -61,13 +62,13 @@ func (fs *Filesystem) setResults(result plugins.AgentResult, filesystems []files
 	}
 
 	if rootFs != nil {
-		fs.setSingleDevicesResults("Root", rootFs, result)
+		setSingleDeviceResults("Root", rootFs, result)
 	}
 
 	if fsInWorstConditions != nil {
-		fs.setSingleDevicesResults("Worst", fsInWorstConditions, result)
+		setSingleDeviceResults("Worst", fsInWorstConditions, result)
 	} else {
-		return errors.New("Could not find a mounted device")
+		return errors.New("Could not find any mounted devices")
 	}
 
 	return nil
@@ -95,7 +96,7 @@ func (fs *Filesystem) populateExcludedDevices() {
 	}
 
 }
-func (fs *Filesystem) setSingleDevicesResults(name string, fi *filesystemInfo, result plugins.AgentResult) {
+func setSingleDeviceResults(name string, fi *filesystemInfo, result plugins.AgentResult) {
 	result.AddValue(name+"Device", fi.Device)
 	result.AddValue(name+"Total", fi.Total)
 	result.AddValue(name+"Used", fi.Used)
