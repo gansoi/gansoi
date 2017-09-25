@@ -13,6 +13,11 @@ import (
 	"net"
 )
 
+var (
+	// This can be changed for testing.
+	randSource = rand.Reader
+)
+
 // DecodeCert will decode a PEM encoded certificate.
 func DecodeCert(certPEM []byte) (*x509.Certificate, error) {
 	b, _ := pem.Decode(certPEM)
@@ -84,7 +89,7 @@ func RandomString(length int) string {
 	maxrb := byte(256 - (256 % len(vocabulary)))
 	i := 0
 	for {
-		if _, err := io.ReadFull(rand.Reader, r); err != nil {
+		if _, err := io.ReadFull(randSource, r); err != nil {
 			panic("error reading from random source: " + err.Error())
 		}
 		for _, c := range r {
@@ -103,7 +108,7 @@ func RandomString(length int) string {
 
 // GenerateKey will generate a new ECDSA private key.
 func GenerateKey() (*ecdsa.PrivateKey, error) {
-	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	priv, err := ecdsa.GenerateKey(elliptic.P256(), randSource)
 	if err != nil {
 		return nil, err
 	}
@@ -136,10 +141,7 @@ func GenerateCSR(key *ecdsa.PrivateKey, commonName string, ips []net.IP) (*x509.
 		return nil, err
 	}
 
-	csr, err := x509.ParseCertificateRequest(derBytes)
-	if err != nil {
-		return nil, err
-	}
+	csr, _ := x509.ParseCertificateRequest(derBytes)
 
 	return csr, nil
 }

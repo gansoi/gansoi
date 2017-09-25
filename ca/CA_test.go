@@ -2,6 +2,7 @@ package ca
 
 import (
 	"bytes"
+	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
 	"io/ioutil"
@@ -48,6 +49,25 @@ func TestInitCA(t *testing.T) {
 
 	b, _ := ca.CertificatePEM()
 	ioutil.WriteFile("/tmp/cert2.pem", []byte(b), 0600)
+}
+
+func TestInitCAFail(t *testing.T) {
+	r := randSource
+	randSource = &failReader{failAt: 1}
+
+	_, err := InitCA()
+	if err == nil {
+		t.Fatalf("InitCA() failed to return error")
+	}
+
+	randSource = &failReader{failAt: 2}
+
+	_, err = InitCA()
+	if err == nil {
+		t.Fatalf("InitCA() failed to return error")
+	}
+
+	randSource = r
 }
 
 func TestOpenCA(t *testing.T) {
@@ -266,6 +286,13 @@ func TestSignCSR(t *testing.T) {
 	}
 
 	ca, _ := openTestCA()
+	randSource = &failReader{failAt: 1}
+	_, err = ca.SignCSR(csr)
+	if err == nil {
+		t.Fatalf("SignCSR() did not fail")
+	}
+
+	randSource = rand.Reader
 	cert, err := ca.SignCSR(csr)
 	if err != nil {
 		t.Fatalf("SignCSR() failed: %s", err.Error())

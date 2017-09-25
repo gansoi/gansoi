@@ -1,10 +1,54 @@
 package ca
 
 import (
+	"bytes"
 	"crypto/ecdsa"
+	"crypto/rand"
 	"net"
 	"testing"
 )
+
+func TestDecodeKey(t *testing.T) {
+	_, err := DecodeKey(testKey)
+	if err != nil {
+		t.Errorf("DecodeKey() failed: %s", err.Error())
+	}
+}
+
+func TestDecodeKeyFail(t *testing.T) {
+	unparsable := []byte(`-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIMgdcx/E0yUexfJ7j5H1gikqMxU8LY9Nyz1NBtirp/5poaoGCCqGSM49
+AwEHoUQDQgAEV0Dah48tLY7YK7TysUBTS8VuJ1e7QEXXlRgSLhOFVpOcnUIQidOS
+mI9UKm05VL4kGD24SmoiL1hnwLoi0+1qsw==
+-----END EC PRIVATE KEY-----
+`)
+
+	_, err := DecodeKey(unparsable)
+	if err == nil {
+		t.Errorf("DecodeKey() failet to detect broken key")
+	}
+}
+
+func TestEncodeKey(t *testing.T) {
+	key, _ := DecodeKey(testKey)
+	encoded, err := EncodeKey(key)
+	if err != nil {
+		t.Fatalf("EncodeKey() failed: %s", err.Error())
+	}
+
+	if bytes.Compare(testKey, encoded) != 0 {
+		t.Errorf("Unexpected output from EncodeKey()")
+	}
+}
+
+func TestEncodeKeyFail(t *testing.T) {
+	key, _ := DecodeKey(testKey)
+	key.Curve = &unknownCurve{}
+	_, err := EncodeKey(key)
+	if err == nil {
+		t.Fatalf("EncodeKey() did not fail")
+	}
+}
 
 func TestRandomString(t *testing.T) {
 	for l := 0; l < 100; l++ {
@@ -16,7 +60,19 @@ func TestRandomString(t *testing.T) {
 	}
 }
 
+func TestRandomStringFail(t *testing.T) {
+	defer func() {
+		recover()
+	}()
+	randSource = &failReader{failAt: 1}
+
+	RandomString(20)
+
+}
+
 func TestGenerateKey(t *testing.T) {
+	randSource = rand.Reader
+
 	_, err := GenerateKey()
 	if err != nil {
 		t.Fatalf("GenerateKey() failed: %s", err.Error())
