@@ -28,7 +28,7 @@ func TestParseCommandsOnParseLineError(t *testing.T) {
 		t.Error("Despite failed line parsing, the method did not return error")
 	}
 	if filesystems != nil {
-		t.Error("filesystems should be nil")
+		t.Error("Filesystems should be nil")
 	}
 }
 
@@ -40,7 +40,7 @@ func TestParseCommandsOfLineThatShouldNotBeParsed(t *testing.T) {
 		t.Error("The line should not be parsed, but no error should be returned")
 	}
 	if len(filesystems) != 0 {
-		t.Error("filesystems should be empty")
+		t.Error("Filesystems should be empty")
 	}
 }
 func TestParseLineNotParsable(t *testing.T) {
@@ -106,7 +106,7 @@ func TestParseLine(t *testing.T) {
 		t.Error("Disk values incorrectly parsed")
 	}
 	if filesystemInfo.UsedPercent != 25.0 {
-		t.Error("If total is 0, percentage should not be calculated")
+		t.Error("Incorrect percentage")
 	}
 
 }
