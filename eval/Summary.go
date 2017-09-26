@@ -44,7 +44,11 @@ func (s *Summary) AddEvaluation(eval *Evaluation) error {
 }
 
 // PostApply implements database.Listener. We listen for added and deleted checks.
-func (s *Summary) PostApply(_ bool, command database.Command, data interface{}) {
+func (s *Summary) PostApply(leader bool, command database.Command, data interface{}) {
+	if !leader {
+		return
+	}
+
 	check, isCheck := data.(*checks.Check)
 	evaluation, isEvaluation := data.(*Evaluation)
 

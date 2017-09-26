@@ -369,7 +369,7 @@ func runCore(_ *cobra.Command, _ []string) {
 	}
 
 	// And listen for future changes.
-	db.RegisterListener(summary)
+	n.RegisterListener(summary)
 
 	scheduler := checks.NewScheduler(n, info.Self())
 
