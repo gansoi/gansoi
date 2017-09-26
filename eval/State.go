@@ -32,6 +32,19 @@ const (
 )
 
 var (
+	stateToText = map[State]string{
+		StateUnknown: "unknown",
+		StateUp:      "up",
+		StateDown:    "down",
+	}
+
+	textToState = map[string]State{
+		"":        StateUnknown,
+		"unknown": StateUnknown,
+		"up":      StateUp,
+		"down":    StateDown,
+	}
+
 	stateToJSON = map[State]string{
 		StateUnknown: `""`,
 		StateUp:      `"up"`,
@@ -39,9 +52,10 @@ var (
 	}
 
 	jsonToState = map[string]State{
-		`""`:     StateUnknown,
-		`"up"`:   StateUp,
-		`"down"`: StateDown,
+		`""`:        StateUnknown,
+		`"unknown"`: StateUnknown,
+		`"up"`:      StateUp,
+		`"down"`:    StateDown,
 	}
 
 	stateToHuman = map[State]string{
@@ -88,6 +102,28 @@ func (s *State) UnmarshalJSON(b []byte) error {
 	state, found := jsonToState[string(b)]
 	if !found {
 		return fmt.Errorf("%s is not a valid state", string(b))
+	}
+
+	*s = state
+
+	return nil
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s State) MarshalText() ([]byte, error) {
+	name, found := stateToText[s]
+	if !found {
+		name = stateToText[StateUnknown]
+	}
+
+	return []byte(name), nil
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *State) UnmarshalText(text []byte) error {
+	state, found := textToState[string(text)]
+	if !found {
+		return fmt.Errorf("Cannot unmarshal %s to state", string(text))
 	}
 
 	*s = state
