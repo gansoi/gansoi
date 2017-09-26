@@ -80,3 +80,9 @@ func LatestEvaluation(db database.Reader, result *checks.CheckResult) (*Evaluati
 
 	return &results[0], nil
 }
+
+// Final returns true if the evaluation is for a check and not for a host-part
+// of a check.
+func (e *Evaluation) Final() bool {
+	return e.CheckHostID == checks.CheckHostID(e.CheckID, "")
+}
