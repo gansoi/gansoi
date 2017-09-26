@@ -866,6 +866,7 @@ Vue.component('g-modal', {
 var init = g.waitGroup(function() {
     var audioController = new g.audio();
     var live = new g.live(audioController);
+    var summary = new g.Summary(audioController);
 
     audioController.mute(g.storage.get('muted', false));
 
@@ -877,11 +878,14 @@ var init = g.waitGroup(function() {
     live.subscribe('contact', contacts);
     live.subscribe('contactgroup', contactgroups);
     live.subscribe('host', hosts);
+    live.subscribe('summary', summary);
 
     Vue.prototype.$audioController = audioController;
 
     const app = new Vue({
         data: {
+                summary: summary,
+
                 // We add a "now" property to the root element to only have
                 // one global ever-updating clock.
                 now: new Date()

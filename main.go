@@ -360,6 +360,17 @@ func runCore(_ *cobra.Command, _ []string) {
 
 	e := eval.NewEvaluator(n)
 
+	summary := eval.NewSummary(n)
+	// Seed the summarizer with all known checks.
+	var all []*checks.Check
+	db.All(&all, -1, 0, false)
+	for _, c := range all {
+		summary.AddCheck(c.ID)
+	}
+
+	// And listen for future changes.
+	db.RegisterListener(summary)
+
 	scheduler := checks.NewScheduler(n, info.Self())
 
 	go func() {
