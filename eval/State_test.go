@@ -115,3 +115,50 @@ func TestUnmarshalJSONInvalid(t *testing.T) {
 
 	}
 }
+
+func TestMarshalText(t *testing.T) {
+	cases := []struct {
+		input  State
+		output string
+	}{
+		{StateUnknown, "unknown"},
+		{StateUp, "up"},
+		{StateDown, "down"},
+		{State(39), "unknown"},
+	}
+
+	for _, dat := range cases {
+		b, err := dat.input.MarshalText()
+		if err != nil {
+			t.Fatalf("Got error on %s: %s", dat.input, err.Error())
+		}
+
+		if string(b) != dat.output {
+			t.Fatalf("Got wrong output: %s, expected %s", string(b), dat.output)
+		}
+	}
+}
+
+func TestUnmarshalText(t *testing.T) {
+	cases := []struct {
+		in       []byte
+		expected State
+	}{
+		{[]byte("up"), StateUp},
+		{[]byte("unknown"), StateUnknown},
+		{[]byte("down"), StateDown},
+	}
+
+	var s State
+	for _, c := range cases {
+		err := s.UnmarshalText(c.in)
+		if err != nil {
+			t.Fatalf("UnmarshalText failed: %s", err.Error())
+		}
+	}
+
+	err := s.UnmarshalText([]byte(`"hello"`))
+	if err == nil {
+		t.Fatalf("Failed to catch invalid input")
+	}
+}

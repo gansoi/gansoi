@@ -2,6 +2,7 @@ package eval
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gansoi/gansoi/boltdb"
 	"github.com/gansoi/gansoi/checks"
@@ -36,5 +37,18 @@ func TestLatestEvaluation(t *testing.T) {
 	_, err = LatestEvaluation(db, &checks.CheckResult{})
 	if err == nil {
 		t.Fatalf("LatestEvaluation() did not fail when for empty query")
+	}
+}
+
+func TestFinal(t *testing.T) {
+	now := time.Now()
+	result := &checks.CheckResult{
+		CheckID:     "hello",
+		CheckHostID: "hello::",
+	}
+
+	eval := NewEvaluation(now, result)
+	if eval.Final() == false {
+		t.Errorf("Final() returned wrong result")
 	}
 }

@@ -24,6 +24,9 @@
  <audio id="audio-attention" src="/audio/attention.wav" preload="auto"></audio>
  <audio id="audio-connected" src="/audio/connected.wav" preload="auto"></audio>
  <audio id="audio-connection-lost" src="/audio/connection-lost.wav" preload="auto"></audio>
+ <audio id="audio-check-down" src="/audio/check-down.wav" preload="auto"></audio>
+ <audio id="audio-checks-down" src="/audio/checks-down.wav" preload="auto"></audio>
+ <audio id="audio-checks-up" src="/audio/checks-up.wav" preload="auto"></audio>
 </body>
 
 <template id="template-gansoi">
@@ -56,7 +59,15 @@
 </template>
 
 <template id="template-overview">
+<div>
 <h2>Overview</h2>
+<p>
+Checks: {{ $root.summary.checks }}<br />
+Up: {{ $root.summary.states.up }}<br />
+Unknown: {{ $root.summary.states.unknown }}<br />
+Down: {{ $root.summary.states.down }}<br />
+</p>
+</div>
 </template>
 
 <template id="template-settings">
@@ -545,6 +556,7 @@
 <script src="/g-storage.js"></script>
 <script src="/g-audio.js"></script>
 <script src="/g-collection.js"></script>
+<script src="/g-summary.js"></script>
 <script src="/g-live.js"></script>
 <script src="/g-waitgroup.js"></script>
 <script src="/client.js"></script>
