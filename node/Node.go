@@ -136,6 +136,11 @@ func NewNode(stream *HTTPStream, datadir string, db database.Reader, fsm raft.FS
 			case leader := <-lch:
 				n.leaderChange(leader)
 			case <-tickChannel:
+				// Only try to save if we have a leader
+				if n.raft.Leader() == "" {
+					break
+				}
+
 				var ni nodeInfo
 				ni.Started = started
 				ni.Updated = time.Now()
