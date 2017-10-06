@@ -9,6 +9,8 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+
+	"github.com/hashicorp/raft"
 )
 
 type (
@@ -36,6 +38,25 @@ func NewInfo(path string) *Info {
 	c.Load()
 
 	return c
+}
+
+// Configuration will return a cluster configuration for use in Raft.
+func (c *Info) Configuration() raft.Configuration {
+	configuration := raft.Configuration{
+		Servers: []raft.Server{},
+	}
+
+	for _, peer := range c.PeerList {
+		server := raft.Server{
+			ID:       raft.ServerID(peer),
+			Address:  raft.ServerAddress(peer),
+			Suffrage: raft.Voter,
+		}
+
+		configuration.Servers = append(configuration.Servers, server)
+	}
+
+	return configuration
 }
 
 // Save will trigger a save.

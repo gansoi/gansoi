@@ -3,6 +3,7 @@ package node
 import (
 	"bytes"
 	"crypto/tls"
+	"errors"
 	"expvar"
 	"io/ioutil"
 	"net/http"
@@ -51,6 +52,8 @@ var (
 	nodeAll       = expvar.NewInt("node_all")
 	nodeFind      = expvar.NewInt("node_find")
 	nodeDelete    = expvar.NewInt("node_delete")
+
+	ErrNoLeader = errors.New("no leader")
 )
 
 func init() {
@@ -84,14 +87,8 @@ func NewNode(stream *HTTPStream, datadir string, db database.Reader, fsm raft.FS
 	conf.Logger = logger.InfoLogger("raft")
 	conf.SnapshotInterval = time.Second * 60
 	conf.SnapshotThreshold = 100
-
-	// If we have exactly one peer - and its ourself, we are bootstrapping.
-	p, _ := peers.Peers()
-	if len(p) == 1 && p[0] == peers.Self() {
-		logger.Info("node", "Starting raft in bootstrap mode")
-		conf.EnableSingleNode = true
-		conf.DisableBootstrapAfterElect = false
-	}
+	conf.LocalID = raft.ServerID(peers.Self())
+	conf.ProtocolVersion = 3
 
 	transport := raft.NewNetworkTransportWithLogger(stream, 1, 0, logger.DebugLogger("raft-transport"))
 
@@ -105,13 +102,23 @@ func NewNode(stream *HTTPStream, datadir string, db database.Reader, fsm raft.FS
 		return nil, err
 	}
 
+	// If we have exactly one peer - and its ourself, we are bootstrapping.
+	p, _ := peers.Peers()
+	if len(p) == 1 && p[0] == peers.Self() {
+		logger.Info("node", "Starting raft in bootstrap mode")
+
+		err = raft.BootstrapCluster(conf, store, store, ss, transport, peers.Configuration())
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	n.raft, err = raft.NewRaft(
 		conf,      // raft.Config
 		fsm,       // raft.FSM
 		store,     // raft.LogStore
 		store,     // raft.StableStore
 		ss,        // raft.SnapshotStore
-		peers,     // raft.PeerStore
 		transport, // raft.Transport
 	)
 	if err != nil {
@@ -192,7 +199,7 @@ func (n *Node) apply(entry *database.LogEntry) error {
 	if n.raft.Leader() == "" {
 		applyNoleader.Add(1)
 
-		return raft.ErrLeader
+		return ErrNoLeader
 	}
 
 	if !n.leader {
@@ -200,7 +207,7 @@ func (n *Node) apply(entry *database.LogEntry) error {
 
 		r := bytes.NewReader(entry.Byte())
 		l := n.raft.Leader()
-		u := "https://" + l + n.basePath + "/apply"
+		u := "https://" + string(l) + n.basePath + "/apply"
 
 		_, err := n.client.Post(u, "gansoi/entry", r)
 
@@ -291,7 +298,7 @@ func (n *Node) Router(router *gin.RouterGroup) {
 
 // AddPeer adds a new cluster/raft peer.
 func (n *Node) AddPeer(name string) error {
-	return n.raft.AddPeer(name).Error()
+	return n.raft.AddVoter(raft.ServerID(name), raft.ServerAddress(name), 0, 0).Error()
 }
 
 // LeaderCh is used to get a channel which delivers signals on acquiring or
