@@ -59,12 +59,15 @@ export DEBUG=*
 # Start first server
 tmux new-session -d './gansoi core --config /tmp/gansoi-dev/node1.conf run; sleep 10'
 
-sleep 3
-./gansoi core --config /tmp/gansoi-dev/node2.conf join 127.0.0.1 $TOKEN
-tmux split-window -v './gansoi core --config /tmp/gansoi-dev/node2.conf run; sleep 10'
+# Wait for the first node to self-elect
+sleep 5
 
-sleep 3
+# Prepare the next two nodes.
+./gansoi core --config /tmp/gansoi-dev/node2.conf join 127.0.0.1 $TOKEN
 ./gansoi core --config /tmp/gansoi-dev/node3.conf join 127.0.0.1 $TOKEN
-tmux split-window -v './gansoi core --config /tmp/gansoi-dev/node3.conf run; sleep 10'
+
+# Start to nodes 3 seconds apart.
+tmux split-window -v 'sleep 3 ; ./gansoi core --config /tmp/gansoi-dev/node2.conf run; sleep 10'
+tmux split-window -v 'sleep 6 ; ./gansoi core --config /tmp/gansoi-dev/node3.conf run; sleep 10'
 
 tmux -2 attach-session -d
