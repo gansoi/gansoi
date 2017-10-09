@@ -302,3 +302,13 @@ tls = false
 	http.Get("http://127.0.0.1:5185/api/backup.gz")
 	http.Get("http://127.0.0.1:5185/ssh/pubkey")
 }
+
+func TestMainVersion(t *testing.T) {
+	defer expectExit(t, -1)
+
+	stdout = ioutil.Discard
+	stderr = ioutil.Discard
+
+	os.Args = []string{os.Args[0], "version"}
+	main()
+}
