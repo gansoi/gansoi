@@ -14,6 +14,7 @@ import (
 	"github.com/gansoi/gansoi/ca"
 	"github.com/gansoi/gansoi/cluster"
 	"github.com/gansoi/gansoi/logger"
+	"github.com/hashicorp/raft"
 )
 
 // HTTPStream implements a raft stream for use with Golang's net/http.
@@ -56,7 +57,7 @@ func NewHTTPStream(addr string, certificates []tls.Certificate, coreCA *ca.CA) (
 }
 
 // Dial will dial a remote http endpoint (and implement raft.StreamLayer).
-func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, error) {
+func (h *HTTPStream) Dial(address raft.ServerAddress, timeout time.Duration) (net.Conn, error) {
 	var conn net.Conn
 	var err error
 
@@ -64,7 +65,7 @@ func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, erro
 	dial := h.dial
 	dial.Timeout = timeout
 
-	if !strings.ContainsRune(address, ':') {
+	if !strings.ContainsRune(string(address), ':') {
 		address += ":4934"
 	}
 
@@ -75,10 +76,10 @@ func (h *HTTPStream) Dial(address string, timeout time.Duration) (net.Conn, erro
 	conf := &tls.Config{
 		RootCAs:            h.rootCAs,
 		Certificates:       h.certificates,
-		ServerName:         address,
+		ServerName:         string(address),
 		InsecureSkipVerify: true,
 	}
-	conn, err = tls.DialWithDialer(&dial, "tcp", address, conf)
+	conn, err = tls.DialWithDialer(&dial, "tcp", string(address), conf)
 
 	if err != nil {
 		failed.Add(1)

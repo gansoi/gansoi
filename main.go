@@ -253,6 +253,7 @@ func openDatabase(conf *config.Configuration) *boltdb.BoltStore {
 
 func initCore(_ *cobra.Command, _ []string) {
 	conf := loadConfig()
+	db := openDatabase(conf)
 	info := cluster.NewInfo(path.Join(conf.DataDir, "cluster.json"))
 	core := cluster.NewCore(info)
 
@@ -262,7 +263,18 @@ func initCore(_ *cobra.Command, _ []string) {
 	err := core.Bootstrap()
 	bailIfError(err)
 
-	info.SetPeers([]string{cluster.DefaultPort(conf.Bind)})
+	pair, err := core.Start()
+	bailIfError(err)
+
+	stream, _ := node.NewHTTPStream(conf.Bind, pair, core.CA())
+	n, err, close := node.NewNode(stream, conf.DataDir, db, db, info.Self(), pair, core.CA())
+	bailIfError(err)
+	err = n.Bootstrap()
+	bailIfError(err)
+	err = close()
+	bailIfError(err)
+	err = db.Close()
+	bailIfError(err)
 }
 
 func initRunCore(cmd *cobra.Command, arguments []string) {
@@ -347,11 +359,12 @@ func runCore(_ *cobra.Command, _ []string) {
 	go server.ListenAndServeTLS("", "")
 
 	stream, _ := node.NewHTTPStream(conf.Bind, pair, core.CA())
-	n, err := node.NewNode(stream, conf.DataDir, db, db, info, pair, core.CA())
+	n, err, _ := node.NewNode(stream, conf.DataDir, db, db, info.Self(), pair, core.CA())
 	if err != nil {
 		logger.Info("main", "%s", err.Error())
 		exit(1)
 	}
+	n.Run()
 	db.RegisterListener(n)
 
 	// Do not broadcast any applies while catching up. When first booting raft

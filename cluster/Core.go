@@ -240,11 +240,6 @@ func (c *Core) Join(address string, hash string, token string, bindPrivate strin
 		return errors.New(string(b))
 	}
 
-	c.info.SetPeers([]string{
-		DefaultPort(bindPrivate),
-		DefaultPort(address),
-	})
-
 	logger.Info("join", "Joined.")
 
 	return nil

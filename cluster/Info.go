@@ -16,13 +16,12 @@ type (
 	Info struct {
 		sync.RWMutex
 		path         string
-		SelfName     string   `json:"self"`
-		PeerList     []string `json:"peers"`
-		CACert       []byte   `json:"ca-cert"`
-		CAKey        []byte   `json:"ca-key"`
-		NodeCert     []byte   `json:"node-cert"`
-		NodeKey      []byte   `json:"node-key"`
-		ClusterToken string   `json:"cluster-token"`
+		SelfName     string `json:"self"`
+		CACert       []byte `json:"ca-cert"`
+		CAKey        []byte `json:"ca-key"`
+		NodeCert     []byte `json:"node-cert"`
+		NodeKey      []byte `json:"node-key"`
+		ClusterToken string `json:"cluster-token"`
 	}
 )
 
@@ -76,24 +75,6 @@ func (c *Info) Load() error {
 	c.Unlock()
 
 	return err
-}
-
-// Peers returns the list of known peers.
-func (c *Info) Peers() ([]string, error) {
-	c.RLock()
-	peers := c.PeerList
-	c.RUnlock()
-
-	return peers, nil
-}
-
-// SetPeers updates the list of peers.
-func (c *Info) SetPeers(peers []string) error {
-	c.Lock()
-	c.PeerList = peers
-	c.Unlock()
-
-	return c.Save()
 }
 
 // Self will return our own name as set by SetSelf().
