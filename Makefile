@@ -16,10 +16,7 @@ gansoi:
 		-installsuffix cgo \
 		-o $@
 
-dockerroot/etc/ssl/certs/ca-certificates.crt: /etc/ssl/certs/ca-certificates.crt
-	cp -a $< $@
-
-docker-image: clean gansoi dockerroot/etc/ssl/certs/ca-certificates.crt
+docker-image: clean
 	docker build -t abrander/gansoi .
 
 docker-push: docker-image
@@ -34,7 +31,7 @@ deb:
 	mv ../gansoi_$(DEB_VERSION)_amd64.deb ./
 
 clean:
-	rm -f gansoi dockerroot/etc/ssl/certs/ca-certificates.crt
+	rm -f gansoi
 
 test:
 	go test -cover ./...
