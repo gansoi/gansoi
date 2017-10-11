@@ -1,6 +1,5 @@
-# Ignore eberything and make this a positive-list instead of a negative-list.
-*
-!ca-certificates.crt
-!gansoi*
-!web
-!dockerroot
+gansoi
+.*
+!.git
+*.deb
+debian

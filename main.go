@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"runtime"
 	"strings"
 	"time"
 
@@ -23,6 +24,7 @@ import (
 	"rsc.io/letsencrypt"
 
 	"github.com/gansoi/gansoi/boltdb"
+	"github.com/gansoi/gansoi/build"
 	"github.com/gansoi/gansoi/checks"
 	"github.com/gansoi/gansoi/cluster"
 	"github.com/gansoi/gansoi/config"
@@ -152,6 +154,12 @@ func main() {
 		},
 	}
 
+	cmdVersion := &cobra.Command{
+		Use:   "version",
+		Short: "Show version and build information",
+		Run:   showVersion,
+	}
+
 	// This is added to be able to call this function without any output
 	// from tests.
 	hidden := &cobra.Command{
@@ -163,6 +171,7 @@ func main() {
 	rootCmd.AddCommand(cmdCore)
 	rootCmd.AddCommand(cmdCheck)
 	rootCmd.AddCommand(nagCheck)
+	rootCmd.AddCommand(cmdVersion)
 	rootCmd.AddCommand(hidden)
 	rootCmd.Execute()
 }
@@ -618,4 +627,11 @@ func runCore(_ *cobra.Command, _ []string) {
 		logger.Info("main", "Bind to %s failed: %s", conf.HTTP.Bind, err.Error())
 		exit(1)
 	}
+}
+
+func showVersion(_ *cobra.Command, _ []string) {
+	fmt.Printf("Version:    %s\n", build.Version)
+	fmt.Printf("Go version: %s\n", runtime.Version())
+	fmt.Printf("Git commit: %s\n", build.ShortSHA)
+	fmt.Printf("Built:      %s\n", build.Time)
 }

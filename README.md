@@ -32,6 +32,11 @@ and developers. It's a just-working proof-of-concept.
 - It's quite performant. The smallest cloud server we could rent can easily
   handle hundreds of checks per second. With no optimizations yet.
 
+### Mission Statement
+
+Gansoi's mission is to radically improve self-hosted health monitoring and
+alerting for ops and devops.
+
 ### Design goals
 
 - [x] Fault tolerant and distributed - should tolerate multiple node failures
