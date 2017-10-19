@@ -29,9 +29,9 @@ func (l *Load) RemoteCheck(transport transports.Transport, result plugins.AgentR
 		return err
 	}
 
-	var load1 float32
-	var load5 float32
-	var load15 float32
+	var load1 float64
+	var load5 float64
+	var load15 float64
 	var running int
 	var total int
 	var lastPid int
