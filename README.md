@@ -10,7 +10,7 @@ software (Nagios and friends) updated to modern and best practices.
 
 ### Disclaimer and Current State
 
-At the moment this software is unusable for anyone but early adopters
+At the moment this software is unusable for anyone but early adopters˛
 and developers. It's a just-working proof-of-concept.
 
 #### Current Limitations
@@ -85,3 +85,10 @@ You can run a small local Gansoi cluster for testing and development:
 
 A three-node local cluster will be started shortly. You can visit the web
 interface at https://gansoi-dev.com:9002/.
+
+#### Slack Channel
+
+If you would like you can join other developers in the
+[#gansoi](https://gophers.slack.com/messages/gansoi/) channel on the Gophers
+Slack (invites to Gophers Slack are available
+[here](https://invite.slack.golangbridge.org/)).
