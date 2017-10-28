@@ -124,51 +124,12 @@ func TestCheck(t *testing.T) {
 	}
 
 	config.NoClientAuth = true
-
 	acceptOneSSH(listener, config)
 
 	//	config.PasswordCallback = nil
 	err = a.Check(result)
 	if err != nil {
 		t.Fatalf("Check() failed: %s", err.Error())
-	}
-}
-
-func TestBanner(t *testing.T) {
-	config := &ssh.ServerConfig{
-		NoClientAuth: false,
-		BannerCallback: func(_ ssh.ConnMetadata) string {
-			return "this is a banner"
-		},
-	}
-	config.SetDefaults()
-	config.PasswordCallback = func(c ssh.ConnMetadata, pass []byte) (*ssh.Permissions, error) {
-		return nil, errors.New("Password rejected")
-	}
-
-	key, _ := ssh.ParsePrivateKey(hostKey)
-	config.AddHostKey(key)
-
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		t.Fatalf("Listen() failed: %s", err.Error())
-	}
-	defer listener.Close()
-
-	acceptOneSSH(listener, config)
-
-	a := SSH{
-		Address: listener.Addr().String(),
-	}
-
-	result := plugins.NewAgentResult()
-	err = a.Check(result)
-	if err != nil {
-		t.Fatalf("Check() failed: %s", err.Error())
-	}
-
-	if result["Banner"] != "this is a banner" {
-		t.Fatalf("Banner looks wrong, got %s", result["Banner"])
 	}
 }
 
