@@ -10,7 +10,7 @@ software (Nagios and friends) updated to modern and best practices.
 
 ### Disclaimer and Current State
 
-At the moment this software is unusable for anyone but early adopters˛
+At the moment this software is unusable for anyone but early adopters
 and developers. It's a just-working proof-of-concept.
 
 #### Current Limitations
