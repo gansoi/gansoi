@@ -6,7 +6,7 @@ TIMESTAMP = $(shell date +"%s")
 all: clean gansoi
 
 gansoi:
-	CGO_ENABLED=0 GOOS=linux \
+	CGO_ENABLED=0 \
 	go build \
 		-ldflags " \
 			-X github.com/gansoi/gansoi/build.Version=${GIT_TAG} \
