@@ -81,7 +81,7 @@ func TestNotifyFail(t *testing.T) {
 		t.Fatalf("Notify() did not catch broken EHLO")
 	}
 
-	listener, err := net.Listen("tcp", "0.0.0.0:0")
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatalf("Listen() failed: %s", err.Error())
 	}
