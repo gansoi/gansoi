@@ -1,6 +1,7 @@
 package email
 
 import (
+	"fmt"
 	"net"
 	"testing"
 
@@ -34,6 +35,8 @@ func TestNotifyAuth(t *testing.T) {
 
 	s.Username = "user1"
 	s.Password = "password1"
+
+	fmt.Printf("Address: %s\n", s.Address)
 
 	e := &Email{
 		SMTP:     s.Address,
