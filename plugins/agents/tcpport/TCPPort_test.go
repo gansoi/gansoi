@@ -42,6 +42,11 @@ func TestCheckV4(t *testing.T) {
 
 func TestCheckV6(t *testing.T) {
 	l, err := net.Listen("tcp6", "[::1]:0")
+	if err != nil {
+		// We allow this test to fail because it requires a working IPv6
+		// stack. Not all instances on Travis have IPv6 enabled.
+		t.Skipf(err.Error())
+	}
 
 	a := TCPPort{
 		Address: l.Addr().String(),
