@@ -40,6 +40,12 @@ func (s *SSH) Check(result plugins.AgentResult) error {
 		return nil
 	}
 
+	// We also save the banner if available.
+	conf.BannerCallback = func(message string) error {
+		result.AddValue("Banner", message)
+		return nil
+	}
+
 	start := time.Now()
 	conn, err := ssh.Dial("tcp", defaultPort(s.Address), &conf)
 
