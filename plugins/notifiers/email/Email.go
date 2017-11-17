@@ -65,12 +65,12 @@ func (e *Email) Notify(text string) error {
 	}
 
 	if e.Username != "" {
-		auth := smtp.PlainAuth(
+		auth := unencryptedAuth{smtp.PlainAuth(
 			"",
 			e.Username,
 			e.Password,
 			e.SMTP,
-		)
+		)}
 		err = c.Auth(auth)
 		if err != nil {
 			return err
