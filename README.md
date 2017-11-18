@@ -97,6 +97,26 @@ You can run a small local Gansoi cluster for testing and development:
 A three-node local cluster will be started shortly. You can visit the web
 interface at https://gansoi-dev.com:9002/.
 
+#### Docker
+
+We provide a Docker image for your convenience.
+
+##### Plain Docker
+
+You can start a Gansoi node using regular Docker with a simple command:
+`docker run --rm -p 80:80 -p 443:443 gansoi/gansoi`.
+
+##### Compose and Stack
+
+Included in this project is a `docker-compose.yml` for running Gansoi with
+Docker Compose or Docker Stack.
+
+If you're using Docker Compose you can try Gansoi using the command
+`docker-compose up` and visiting https://gansoi-dev.com/.
+
+The `docker-compose.yml` file can also be used for a Docker Stack deploy on
+a Swarm: `docker stack deploy -c docker-compose.yml gansoi`
+
 #### Slack Channel
 
 If you would like you can join other developers in the
