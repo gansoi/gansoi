@@ -1,12 +1,23 @@
-Gansoi
-======
+<!---
+Sorry. This file is optimized for display on Github, not for viewing in
+text-mode terminals.
+-->
+
+<h1 align="center">
+  <br>
+  <a href="http://gansoi.com/"><img src="https://gansoi.com/icon-transparent.svg" alt="Logo" width="250"></a>
+  <br>
+  Gansoi Infrastructure Monitoring
+</h1>
+
+<p align="center">
+ <a href="https://travis-ci.org/gansoi/gansoi"><img src="https://travis-ci.org/gansoi/gansoi.svg?branch=master"></a>
+ <a href="https://codebeat.co/projects/github-com-gansoi-gansoi"><img src="https://codebeat.co/badges/3f6e63cc-d32d-4962-a285-0f3a71d6cb80"></a>
+ <a href="https://goreportcard.com/report/github.com/gansoi/gansoi"><img src="https://goreportcard.com/badge/github.com/gansoi/gansoi"></a>
+</p>
 
 Gansoi is a modern monitoring solution inspired by classical network monitoring
 software (Nagios and friends) updated to modern and best practices.
-
-[![Build Status](https://travis-ci.org/gansoi/gansoi.svg?branch=master)](https://travis-ci.org/gansoi/gansoi)
-[![codebeat badge](https://codebeat.co/badges/3f6e63cc-d32d-4962-a285-0f3a71d6cb80)](https://codebeat.co/projects/github-com-gansoi-gansoi)
-[![Go Report Card](https://goreportcard.com/badge/github.com/gansoi/gansoi)](https://goreportcard.com/report/github.com/gansoi/gansoi)
 
 ### Disclaimer and Current State
 
