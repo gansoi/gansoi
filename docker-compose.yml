@@ -1,9 +1,10 @@
-version: "2"
+version: "3"
 
 services:
     gansoi:
         build: .
         image: gansoi/gansoi
         ports:
-            - "443/tcp:443/tcp" # https
-            - "443/udp:443/udp" # http2 encrypted
+            - "80:80/tcp" # http
+            - "443:443/tcp" # https
+            - "443:443/udp" # http2 encrypted
