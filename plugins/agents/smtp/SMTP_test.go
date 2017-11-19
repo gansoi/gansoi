@@ -18,7 +18,7 @@ const (
 )
 
 func newBannerServer() net.Listener {
-	listener, _ := net.Listen("tcp", "0.0.0.0:0")
+	listener, _ := net.Listen("tcp", "127.0.0.1:0")
 
 	go func() {
 		for {
