@@ -17,13 +17,13 @@ gansoi:
 		-o $@
 
 docker-image: clean
-	docker build -t abrander/gansoi .
+	docker build -t gansoi/gansoi .
 
 docker-push: docker-image
-	docker push abrander/gansoi
+	docker push gansoi/gansoi
 
 docker-run:
-	docker run --rm -p 80:80 -p 443:443 -e DEBUG=* abrander/gansoi
+	docker run --rm -p 80:80 -p 443:443 -e DEBUG=* gansoi/gansoi
 
 deb:
 	dpkg-buildpackage -uc -B
