@@ -272,6 +272,28 @@ var gansoi = Vue.component('gansoi', {
     template: '#template-gansoi'
 });
 
+/**
+ * This is mostly a workaround for https://github.com/vuejs/vue/issues/4742.
+ * If the supplied object have any properties with an empty string as value
+ * they will simply be removed. This is useful when using vue.js with a Go
+ * serverside. If Go expects a string from an "input text" field it's okay
+ * to remove an empty string, since that's Go's "zero value". If it's a
+ * string from an empty "input number" field it's better bacause Go doesn't
+ * expect a string in a number field - and will complain. Loudly. If the
+ * field is not included in the object, Go will simply use the "zero value",
+ * which is perfect for our purpose.
+ * @param {!Object} obj The object to filter.
+ */
+var removeEmptyStrings = function(obj) {
+    var keys = Object.keys(obj);
+
+    keys.forEach(function(key) {
+        if (obj[key] === '') {
+            delete obj[key];
+        }
+    });
+};
+
 var editCheck = Vue.component('edit-check', {
     data: function() {
         return {
@@ -335,12 +357,16 @@ var editCheck = Vue.component('edit-check', {
         },
 
         testCheck: function() {
+            removeEmptyStrings(this.check.arguments);
+
             this.$http.post('/api/test', this.check).then(function(response) {
                 this.results = response.body;
             });
         },
 
         addCheck: function() {
+            removeEmptyStrings(this.check.arguments);
+
             this.check.interval *= 1000000000;
             this.$http.post('/api/checks', this.check).then(function(response) {
                 router.push('/checks');
