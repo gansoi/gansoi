@@ -67,6 +67,25 @@ func ListAgents() []AgentDescription {
 	return list
 }
 
+// setString will try to set a reflect.Value based on a string representation
+// of the value.
+func setString(v reflect.Value, str string) {
+	switch v.Type().Kind() {
+	case reflect.String:
+		v.SetString(str)
+
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		value, _ := strconv.ParseInt(str, 10, 64)
+		v.SetInt(value)
+
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		value, _ := strconv.ParseUint(str, 10, 64)
+		v.SetUint(value)
+	}
+}
+
+// setDefault will set default values for a reflect value based on the struct
+// tag "default".
 func setDefault(t reflect.Type, v reflect.Value) {
 	l := t.NumField()
 	v = v.Elem()
@@ -79,17 +98,6 @@ func setDefault(t reflect.Type, v reflect.Value) {
 			continue
 		}
 
-		switch f.Type.Kind() {
-		case reflect.String:
-			v.Field(i).SetString(def)
-
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			value, _ := strconv.ParseInt(def, 10, 64)
-			v.Field(i).SetInt(value)
-
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			value, _ := strconv.ParseUint(def, 10, 64)
-			v.Field(i).SetUint(value)
-		}
+		setString(v.Field(i), def)
 	}
 }
