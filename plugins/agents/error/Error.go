@@ -10,7 +10,7 @@ import (
 type (
 	// Error is only useful for testing Gansoi.
 	Error struct {
-		Chance int `json:"chance" description:"Whats the chance of failure (0-100)"`
+		Chance int `json:"chance" description:"What's the chance of failure (0-100)" default:"50"`
 	}
 )
 

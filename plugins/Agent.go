@@ -1,6 +1,9 @@
 package plugins
 
-import "reflect"
+import (
+	"reflect"
+	"strconv"
+)
 
 type (
 	// Agent should be implemented by all agents. An agent is the entity
@@ -40,7 +43,11 @@ func GetAgent(name string) interface{} {
 		return nil
 	}
 
-	return reflect.New(agent).Interface()
+	a := reflect.New(agent)
+
+	setDefault(agent, a)
+
+	return a.Interface()
 }
 
 // ListAgents will return a list of all agents.
@@ -58,4 +65,43 @@ func ListAgents() []AgentDescription {
 	}
 
 	return list
+}
+
+// setString will try to set a reflect.Value based on a string representation
+// of the value.
+func setString(v reflect.Value, str string) {
+	switch v.Type().Kind() {
+	case reflect.String:
+		v.SetString(str)
+
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		value, _ := strconv.ParseInt(str, 10, 64)
+		v.SetInt(value)
+
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		value, _ := strconv.ParseUint(str, 10, 64)
+		v.SetUint(value)
+
+	case reflect.Bool:
+		value, _ := strconv.ParseBool(str)
+		v.SetBool(value)
+	}
+}
+
+// setDefault will set default values for a reflect value based on the struct
+// tag "default".
+func setDefault(t reflect.Type, v reflect.Value) {
+	l := t.NumField()
+	v = v.Elem()
+
+	for i := 0; i < l; i++ {
+		f := t.Field(i)
+
+		def := f.Tag.Get("default")
+		if def == "" {
+			continue
+		}
+
+		setString(v.Field(i), def)
+	}
 }

@@ -18,7 +18,7 @@ type (
 	// Ping will try to "ping" the host using ICMP echo.
 	Ping struct {
 		Target string `json:"target" description:"Target to ping"`
-		Count  int    `json:"count" description:"Number of ICMP echo packets to send"`
+		Count  int    `json:"count" description:"Number of ICMP echo packets to send" default:"3"`
 	}
 )
 

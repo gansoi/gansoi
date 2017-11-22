@@ -4,7 +4,12 @@ import "testing"
 
 type (
 	mockAgent struct {
-		Err error `json:"err" description:"The error to return from Check()"`
+		Err               error  `json:"err" description:"The error to return from Check()"`
+		Something         string `default:"testing"`
+		SomethingInt      int    `default:"-23"`
+		SomethingUint     uint   `default:"48"`
+		SomethingBooleanA bool   `default:"true"`
+		SomethingBooleanB bool   `default:"false"`
 	}
 )
 
@@ -31,6 +36,27 @@ func TestAgentGet(t *testing.T) {
 	agent := GetAgent(id).(Agent)
 	if agent == nil {
 		t.Fatalf("GetAgent() returned nil")
+	}
+
+	m := agent.(*mockAgent)
+	if m.Something != "testing" {
+		t.Errorf("GetAgent() failed to set default Something, got '%s'", m.Something)
+	}
+
+	if m.SomethingInt != -23 {
+		t.Errorf("GetAgent() failed to set default for SomethingInt, got %d", m.SomethingInt)
+	}
+
+	if m.SomethingUint != 48 {
+		t.Errorf("GetAgent() failed to set default for SomethingUint, got %d", m.SomethingUint)
+	}
+
+	if m.SomethingBooleanA != true {
+		t.Errorf("GetAgent() failed to set default for SomethingBooleanA, got %v", m.SomethingBooleanA)
+	}
+
+	if m.SomethingBooleanB != false {
+		t.Errorf("GetAgent() failed to set default for SomethingBooleanB, got %v", m.SomethingBooleanB)
 	}
 }
 
