@@ -27,7 +27,7 @@ const (
 // HTTP will request a ressource from a HTTP server.
 type HTTP struct {
 	URL            string `json:"url" description:"The URL to request"`
-	FollowRedirect bool   `json:"followRedirect" description:"Follow 30x redirects"`
+	FollowRedirect bool   `json:"followRedirect" description:"Follow 30x redirects" default:"true"`
 	Insecure       bool   `json:"insecure" description:"Ignore SSL errors"`
 	IncludeBody    bool   `json:"includeBody" description:"Include body in results"`
 	Host           string `json:"host" description:"Host to contact (leave empty to use host derived from URL)"`
