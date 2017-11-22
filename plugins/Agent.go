@@ -81,6 +81,10 @@ func setString(v reflect.Value, str string) {
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		value, _ := strconv.ParseUint(str, 10, 64)
 		v.SetUint(value)
+
+	case reflect.Bool:
+		value, _ := strconv.ParseBool(str)
+		v.SetBool(value)
 	}
 }
 

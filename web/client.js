@@ -294,6 +294,18 @@ var removeEmptyStrings = function(obj) {
     });
 };
 
+var objectFromArguments = function(arguments) {
+    var obj = {};
+
+    arguments.forEach(function(arg) {
+        if (arg.type === 'bool') {
+            obj[arg.name] = (arg.default === 'true');
+        }
+    });
+
+    return obj;
+};
+
 var editCheck = Vue.component('edit-check', {
     data: function() {
         return {
@@ -383,6 +395,8 @@ var editCheck = Vue.component('edit-check', {
             if (!agent) {
                 return [];
             }
+
+            this.check.arguments = objectFromArguments(agent.arguments);
 
             return agent.arguments;
         },
