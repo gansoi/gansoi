@@ -12,6 +12,7 @@ type (
 		Name        string   `json:"name"`
 		Type        string   `json:"type"`
 		Description string   `json:"description"`
+		Default     string   `json:"default"`
 		EnumValues  []string `json:"enum"`
 	}
 )
@@ -34,6 +35,7 @@ func getArguments(elem reflect.Type) []ArgumentDescription {
 			p.Name = jsonName
 			p.Type = f.Type.String()
 			p.Description = f.Tag.Get("description")
+			p.Default = f.Tag.Get("default")
 			enum := f.Tag.Get("enum")
 			if enum != "" {
 				p.EnumValues = strings.Split(enum, ",")
