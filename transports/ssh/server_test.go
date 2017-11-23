@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"sync/atomic"
 	"time"
 
 	"golang.org/x/crypto/ssh"
@@ -16,7 +17,7 @@ type (
 		acceptPublicKey bool
 		execReply       []byte
 		execStatus      int
-		connects        int
+		connects        int64
 		sessions        int
 		failServer      bool
 		failChannel     bool
@@ -87,7 +88,7 @@ func (s *server) loop() {
 			conn.Close()
 			continue
 		}
-		s.connects++
+		atomic.AddInt64(&s.connects, 1)
 
 		sshConn, channels, _, err := ssh.NewServerConn(conn, config)
 		if err != nil {

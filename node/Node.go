@@ -24,15 +24,16 @@ import (
 type (
 	// Node represents a single gansoi node.
 	Node struct {
-		db            database.Reader
-		raft          *raft.Raft
-		leader        bool
-		leadersChans  []chan bool
-		basePath      string
-		listenersLock sync.RWMutex
-		listeners     []database.Listener
-		client        *http.Client
-		self          string
+		db               database.Reader
+		raft             *raft.Raft
+		leader           bool
+		leadersChansLock sync.RWMutex
+		leadersChans     []chan bool
+		basePath         string
+		listenersLock    sync.RWMutex
+		listeners        []database.Listener
+		client           *http.Client
+		self             string
 	}
 
 	nodeInfo struct {
@@ -182,9 +183,11 @@ func (n *Node) Bootstrap() error {
 func (n *Node) leaderChange(leader bool) {
 	n.leader = leader
 
+	n.leadersChansLock.RLock()
 	for _, ch := range n.leadersChans {
 		ch <- leader
 	}
+	n.leadersChansLock.RUnlock()
 }
 
 // applyHandler can be used by other nodes to apply a log entry to the leader.
@@ -333,7 +336,9 @@ func (n *Node) AddPeer(name string) error {
 func (n *Node) LeaderCh() <-chan bool {
 	ch := make(chan bool)
 
+	n.leadersChansLock.Lock()
 	n.leadersChans = append(n.leadersChans, ch)
+	n.leadersChansLock.Unlock()
 
 	return ch
 }
