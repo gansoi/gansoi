@@ -1,6 +1,7 @@
 package ssh
 
 import (
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -91,7 +92,7 @@ func TestAutoClose(t *testing.T) {
 	client.Close()
 	done(s)
 
-	if serv.connects != 1 {
+	if atomic.LoadInt64(&serv.connects) != 1 {
 		t.Errorf("server measured %d connects, expected 1", serv.connects)
 	}
 

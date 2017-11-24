@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/gansoi/gansoi/ca"
@@ -19,7 +20,7 @@ import (
 
 // HTTPStream implements a raft stream for use with Golang's net/http.
 type HTTPStream struct {
-	closed       bool
+	closed       int32
 	addr         string
 	accepted     chan net.Conn
 	dial         net.Dialer
@@ -103,7 +104,7 @@ func (h *HTTPStream) Dial(address raft.ServerAddress, timeout time.Duration) (ne
 
 // Accept waits for and returns the next connection to the listener.
 func (h *HTTPStream) Accept() (net.Conn, error) {
-	if h.closed {
+	if atomic.LoadInt32(&h.closed) == 1 {
 		return nil, errors.New("Server is shutting down")
 	}
 
@@ -115,7 +116,7 @@ func (h *HTTPStream) Accept() (net.Conn, error) {
 // Close closes the listener.
 // Any blocked Accept operations will be unblocked and return errors.
 func (h *HTTPStream) Close() error {
-	h.closed = true
+	atomic.StoreInt32(&h.closed, 1)
 
 	return nil
 }
@@ -139,7 +140,7 @@ func (h *HTTPStream) Network() string {
 func (h *HTTPStream) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	served.Add(1)
 
-	if h.closed {
+	if h.closed == 1 {
 		http.Error(w, "Server is shutting down", http.StatusServiceUnavailable)
 		return
 	}
