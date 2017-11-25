@@ -2,14 +2,13 @@ package ping
 
 import (
 	"errors"
+	"io"
 	"net"
 	"os"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"
@@ -49,14 +48,10 @@ type (
 		WriteTo(b []byte, dst net.Addr) (int, error)
 	}
 
-	closer interface {
-		Close() error
-	}
-
 	readwritecloser interface {
 		reader
 		writer
-		closer
+		io.Closer
 	}
 )
 
@@ -71,15 +66,21 @@ var (
 
 	// This will be set as true in init() if ICMP is allowed.
 	available bool
+
+	listenPacket = listen
 )
 
 func init() {
 	available = Available()
 }
 
+func listen(network, address string) (readwritecloser, error) {
+	return icmp.ListenPacket(network, address)
+}
+
 // Available returns true if the ICMP service is available.
 func Available() bool {
-	conn, err := icmp.ListenPacket("ip4:icmp", "0.0.0.0")
+	conn, err := listenPacket("ip4:icmp", "0.0.0.0")
 	if err == nil && conn != nil {
 		conn.Close()
 
@@ -126,25 +127,33 @@ func NewICMPService() *ICMPService {
 }
 
 // Start starts the ICMPService.
-func (i *ICMPService) Start() {
+func (i *ICMPService) Start() error {
+	if !available {
+		return nil
+	}
+
 	var err error
-	i.conn4, err = icmp.ListenPacket("ip4:icmp", "0.0.0.0")
+	i.conn4, err = listenPacket("ip4:icmp", "0.0.0.0")
 	if err != nil {
 		if err.Error() == "listen ip4:icmp 0.0.0.0: socket: operation not permitted" {
 			logger.Info("icmpping", "Please run:\nsudo setcap cap_net_raw=ep %s\n", os.Args[0])
 		} else {
 			logger.Info("icmpping", err.Error())
 		}
+		return err
 	}
 
 	go listenLoop(i.conn4, i.processPacket4)
 
-	i.conn6, err = icmp.ListenPacket("ip6:ipv6-icmp", "")
+	i.conn6, err = listenPacket("ip6:ipv6-icmp", "")
 	if err != nil {
 		logger.Info("ping", "IPv6 ICMP seem unavailable: %s", err.Error())
+		return err
 	}
 
 	go listenLoop(i.conn6, i.processPacket6)
+
+	return nil
 }
 
 func (i *ICMPService) gotReply(id uint16, payload []byte) {
@@ -166,17 +175,11 @@ func (i *ICMPService) gotReply(id uint16, payload []byte) {
 }
 
 func (i *ICMPService) processPacket4(bytes []byte) {
-	packet := gopacket.NewPacket(bytes, layers.LayerTypeICMPv4, gopacket.NoCopy)
+	m, _ := icmp.ParseMessage(1, bytes)
 
-	ll := packet.Layers()
-
-	if len(ll) > 0 && ll[0].LayerType() == layers.LayerTypeICMPv4 {
-		icmp := ll[0].(*layers.ICMPv4)
-		typ := uint8(icmp.TypeCode >> 8)
-
-		if typ == layers.ICMPv4TypeEchoReply {
-			i.gotReply(icmp.Id, icmp.Payload)
-		}
+	switch packet := m.Body.(type) {
+	case *icmp.Echo:
+		i.gotReply(uint16(packet.ID), packet.Data)
 	}
 }
 
@@ -184,17 +187,9 @@ func (i *ICMPService) processPacket6(bytes []byte) {
 	// Protocol 58 is IPv6-ICMP as described in rfc 2460.
 	m, _ := icmp.ParseMessage(58, bytes)
 
-	if m.Type != ipv6.ICMPTypeEchoReply {
-		return
-	}
-
 	switch packet := m.Body.(type) {
 	case *icmp.Echo:
 		i.gotReply(uint16(packet.ID), packet.Data)
-
-	default:
-		logger.Info("ping", "Got %T, doing nothing", packet)
-		return
 	}
 }
 
@@ -226,13 +221,9 @@ func listenLoop(conn reader, processPacket func([]byte)) {
 }
 
 // Stop stops the listening loop.
-func (i *ICMPService) Stop() error {
-	err := i.conn4.Close()
-	if err != nil {
-		return err
-	}
-
-	return i.conn6.Close()
+func (i *ICMPService) Stop() {
+	i.conn4.Close()
+	i.conn6.Close()
 }
 
 func newICMPPacket4(id uint16, seq int) []byte {
