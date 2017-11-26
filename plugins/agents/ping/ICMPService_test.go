@@ -3,6 +3,7 @@ package ping
 import (
 	"errors"
 	"net"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -147,19 +148,26 @@ func TestICMPServiceNextID(t *testing.T) {
 }
 
 func TestICMPServiceStartStop(t *testing.T) {
-	if !Available() {
-		t.SkipNow()
-	}
+	a := available
+	available = true
+	defer func() { available = a }()
+
+	listenPacket = newListener(nil, nil)
+	defer func() { listenPacket = listen }()
 
 	i := NewICMPService()
-	i.Start()
+	err := i.Start()
+	if err != nil {
+		t.Fatalf("Start() failed: %s", err.Error())
+	}
 
 	time.Sleep(time.Millisecond * 100)
 
-	err := i.Stop()
-	if err != nil {
-		t.Fatalf("Stop() failed: %s", err.Error())
-	}
+	i.Stop()
+
+	i.Start()
+	i.conn4.(*faker).network = "buh"
+	i.Stop()
 }
 
 func TestNewICMPPacket4(t *testing.T) {
@@ -267,15 +275,74 @@ func TestSendEchoRequest6(t *testing.T) {
 }
 
 func TestAvailable(t *testing.T) {
-	var a bool
-
-	conn, err := icmp.ListenPacket("ip4:icmp", "0.0.0.0")
-	if err == nil && conn != nil {
-		a = true
-		conn.Close()
+	listenPacket = newListener(nil, nil)
+	defer func() { listenPacket = listen }()
+	if !Available() {
+		t.Fatalf("Available() returned false, expected true")
 	}
 
-	if a != Available() {
-		t.Fatalf("Available() seems to return %t, expected %t", Available(), a)
+	listenPacket = newListener(ErrICMPServiceUnavailable, nil)
+	if Available() {
+		t.Fatalf("Available() returned true, expected false")
 	}
+}
+
+func TestStartFail(t *testing.T) {
+	a := available
+	available = true
+	defer func() { available = a }()
+
+	err := errors.New("listen ip4:icmp 0.0.0.0: socket: operation not permitted")
+	listenPacket = newListener(err, nil)
+	defer func() { listenPacket = listen }()
+
+	i := NewICMPService()
+	i.Start()
+
+	err = errors.New("error")
+	listenPacket = newListener(err, nil)
+	i.Start()
+
+	err = errors.New("error")
+	listenPacket = newListener(nil, err)
+	i.Start()
+}
+
+func TestPingAvailability(t *testing.T) {
+	a := available
+	i := NewICMPService()
+	available = false
+
+	_, err := i.Ping("127.0.0.1", 1, 0)
+	if err != ErrICMPServiceUnavailable {
+		t.Errorf("Ping() failed to return correct error when ICMP unavailable")
+	}
+
+	available = a
+}
+
+func TestGotReply(t *testing.T) {
+	p := NewICMPPayload()
+	i := NewICMPService()
+	i.active[123] = make(chan *icmpReply, 2)
+	i.gotReply(123, []byte{})
+	i.gotReply(123, p.Bytes())
+}
+
+func TestPingOverflow(t *testing.T) {
+	a := available
+	available = true
+	defer func() { available = a }()
+
+	prev := atomic.LoadInt32(&previousID)
+
+	i := NewICMPService()
+	i.Start()
+
+	i.active[uint16(prev+1)] = nil
+	_, err := i.Ping("127.0.0.1", 1, time.Millisecond)
+	if err == nil {
+		t.Errorf("Failed to detect ICMP ID overflow")
+	}
+	delete(i.active, uint16(prev+1))
 }

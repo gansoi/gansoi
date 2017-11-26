@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -71,6 +72,81 @@ func TestCheckFail(t *testing.T) {
 		if err == nil {
 			t.Fatalf("Failed to detect error for '%s'", u)
 		}
+	}
+}
+
+func TestCheckNewRequestFail(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(okHandler))
+
+	h := &HTTP{
+		URL:    ts.URL + "/",
+		method: ",ILLEGAL-METHOD",
+	}
+
+	result := plugins.NewAgentResult()
+	err := h.Check(result)
+
+	if err == nil {
+		t.Fatalf("Check did not fail on illegal method")
+	}
+
+	ts.Close()
+}
+
+func TestCheckWriteFailed(t *testing.T) {
+	dial = dialWriteFailer
+	defer func() {
+		dial = net.Dial
+	}()
+
+	l, _ := net.Listen("tcp", "127.0.0.1:0")
+	defer l.Close()
+
+	h := &HTTP{
+		URL: "http://" + l.Addr().String() + "/",
+	}
+
+	go func() {
+		conn, err := l.Accept()
+		if err != nil {
+			return
+		}
+
+		conn.Close()
+	}()
+
+	result := plugins.NewAgentResult()
+	err := h.Check(result)
+	if err == nil {
+		t.Fatalf("Check did not fail on closed socket")
+	}
+}
+
+func TestCheckReadFailed(t *testing.T) {
+	l, _ := net.Listen("tcp", "127.0.0.1:0")
+	defer l.Close()
+
+	h := &HTTP{
+		URL: "http://" + l.Addr().String() + "/",
+	}
+
+	go func() {
+		buf := make([]byte, 1000)
+		conn, err := l.Accept()
+		if err != nil {
+			return
+		}
+		n, _ := conn.Read(buf)
+		str := string(buf[:n])
+		fmt.Printf("%s\n", str)
+
+		conn.Close()
+	}()
+
+	result := plugins.NewAgentResult()
+	err := h.Check(result)
+	if err == nil {
+		t.Fatalf("Check did not fail on closed socket")
 	}
 }
 

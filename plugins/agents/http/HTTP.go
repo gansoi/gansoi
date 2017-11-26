@@ -24,6 +24,10 @@ const (
 	httpScheme  = "http"
 )
 
+var (
+	dial = net.Dial
+)
+
 // HTTP will request a ressource from a HTTP server.
 type HTTP struct {
 	URL            string `json:"url" description:"The URL to request"`
@@ -31,6 +35,7 @@ type HTTP struct {
 	Insecure       bool   `json:"insecure" description:"Ignore SSL errors"`
 	IncludeBody    bool   `json:"includeBody" description:"Include body in results"`
 	Host           string `json:"host" description:"Host to contact (leave empty to use host derived from URL)"`
+	method         string // This is only used for testing (for now), NewRequest will default to "GET".
 }
 
 func getHostPort(URL *url.URL) (string, string) {
@@ -88,7 +93,7 @@ func (h *HTTP) Check(result plugins.AgentResult) error {
 
 		t1 := time.Now()
 		var conn net.Conn
-		conn, err = net.DialTCP("tcp", nil, raddr)
+		conn, err = dial("tcp", raddr.String())
 		if err != nil {
 			return err
 		}
@@ -118,7 +123,7 @@ func (h *HTTP) Check(result plugins.AgentResult) error {
 			conn = c
 		}
 
-		req, err := http.NewRequest("GET", URL.String(), nil)
+		req, err := http.NewRequest(h.method, URL.String(), nil)
 		if err != nil {
 			return err
 		}

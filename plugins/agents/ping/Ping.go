@@ -7,9 +7,7 @@ import (
 )
 
 func init() {
-	if available {
-		i.Start()
-	}
+	i.Start()
 
 	plugins.RegisterAgent("ping", Ping{})
 }
@@ -24,6 +22,8 @@ type (
 
 var (
 	i = NewICMPService()
+
+	waitForReply = time.Second * 5
 )
 
 // Check implements plugins.Agent.
@@ -32,7 +32,7 @@ func (p *Ping) Check(result plugins.AgentResult) error {
 		return ErrICMPServiceUnavailable
 	}
 
-	status, err := i.Ping(p.Target, p.Count, time.Second*5)
+	status, err := i.Ping(p.Target, p.Count, waitForReply)
 	if err != nil {
 		return err
 	}
