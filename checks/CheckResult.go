@@ -10,7 +10,7 @@ type (
 	// CheckResult describes the result of one or more checks after a single
 	// node has executed the check.
 	CheckResult struct {
-		ID          int64               `json:"id,omitempty"`
+		ID          int64               `json:"id,omitempty" storm:"id,increment"`
 		CheckHostID string              `json:"check_host_id,omitempty" storm:"index"`
 		CheckID     string              `json:"check_id" storm:"index"`
 		HostID      string              `json:"host_id"`

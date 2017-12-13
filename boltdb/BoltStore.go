@@ -13,7 +13,7 @@ import (
 
 	"github.com/asdine/storm"
 	"github.com/asdine/storm/index"
-	"github.com/boltdb/bolt"
+	"github.com/coreos/bbolt"
 	"github.com/hashicorp/raft"
 
 	"github.com/gansoi/gansoi/database"
@@ -65,7 +65,6 @@ func (d *BoltStore) open(filepath string) error {
 	db, err := storm.Open(
 		filepath,
 		storm.BoltOptions(0600, &bolt.Options{Timeout: 1 * time.Second}),
-		storm.AutoIncrement(),
 	)
 	if err != nil {
 		return err
