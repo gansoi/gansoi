@@ -221,7 +221,7 @@ func TestRestAPIList0(t *testing.T) {
 func TestRestAPIDeleteFail(t *testing.T) {
 	db := boltdb.NewTestStore()
 
-	resp := request(db, "DELETE", "/id-that-doesnt-exist", nil)
+	resp := request(db, "DELETE", "/id-that-doesn't-exist", nil)
 
 	if resp.Code != 404 {
 		t.Fatalf("GET / returned unexpected status code: %d (Body: %s)", resp.Code, resp.Body.String())

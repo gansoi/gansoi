@@ -60,7 +60,7 @@ func (p *dfCommandParser) parseValues(fields []string, fi *filesystemInfo) error
 	if parseErr != nil {
 		return parseErr
 	}
-	fi.Availabe, parseErr = strconv.ParseInt(fields[3], 10, 64)
+	fi.Available, parseErr = strconv.ParseInt(fields[3], 10, 64)
 	if parseErr != nil {
 		return parseErr
 	}
