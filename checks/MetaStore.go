@@ -124,9 +124,9 @@ func (s *MetaStore) addCheck(clock time.Time, check *Check) {
 	}
 }
 
-// Next returns the next check to execute. Done() must be called when the check
+// next returns the next check to execute. Done() must be called when the check
 // is done executing.
-func (s *MetaStore) Next(clock time.Time) *checkMeta {
+func (s *MetaStore) next(clock time.Time) *checkMeta {
 	var winner *checkMeta
 
 	s.RLock()

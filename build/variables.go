@@ -15,13 +15,13 @@ var (
 	SHA = "unknown"
 
 	// ShortSHA is a 7 character Git commit SHA. Please note that this is not
-	// guarenteed to be unique like git rev-parse guarentees.
+	// guaranteed to be unique like git rev-parse guarantees.
 	ShortSHA = "unknown"
 
 	// Time is the local build time.
 	Time = "unknown"
 
-	// timestamp is used as intermidiate from the build step.
+	// timestamp is used as intermediate from the build step.
 	timestamp string
 )
 

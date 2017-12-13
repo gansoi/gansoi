@@ -98,8 +98,8 @@ func TestInvokeRemoteCommandReadError(t *testing.T) {
 
 func TestSetResult(t *testing.T) {
 	fsInfos := []filesystemInfo{
-		filesystemInfo{Device: "/dev/sda1", Mountpoint: "/", Total: 10, Availabe: 5, Used: 5, UsedPercent: 50},
-		filesystemInfo{Device: "/dev/sda2", Mountpoint: "/tmp", Total: 10, Availabe: 1, Used: 9, UsedPercent: 90},
+		filesystemInfo{Device: "/dev/sda1", Mountpoint: "/", Total: 10, Available: 5, Used: 5, UsedPercent: 50},
+		filesystemInfo{Device: "/dev/sda2", Mountpoint: "/tmp", Total: 10, Available: 1, Used: 9, UsedPercent: 90},
 	}
 	fs := Filesystem{}
 	result := plugins.NewAgentResult()
@@ -114,7 +114,7 @@ func TestSetResult(t *testing.T) {
 
 func TestSetResultNoRoot(t *testing.T) {
 	fsInfos := []filesystemInfo{
-		filesystemInfo{Device: "/dev/sda1", Mountpoint: "/foo", Total: 10, Availabe: 5, Used: 5, UsedPercent: 50},
+		filesystemInfo{Device: "/dev/sda1", Mountpoint: "/foo", Total: 10, Available: 5, Used: 5, UsedPercent: 50},
 	}
 	fs := Filesystem{}
 	result := plugins.NewAgentResult()

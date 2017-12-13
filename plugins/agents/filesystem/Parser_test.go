@@ -85,7 +85,7 @@ func TestParseLineWithZeros(t *testing.T) {
 		t.Error("filesystemInfo should not be nil")
 	}
 
-	if filesystemInfo.Availabe != 0 || filesystemInfo.Used != 0 || filesystemInfo.Total != 0 {
+	if filesystemInfo.Available != 0 || filesystemInfo.Used != 0 || filesystemInfo.Total != 0 {
 		t.Error("Disk values incorrectly parsed")
 	}
 	if filesystemInfo.UsedPercent > 0 {
@@ -102,7 +102,7 @@ func TestParseLine(t *testing.T) {
 	parser := dfCommandParser{}
 	filesystemInfo, _ := parser.parseLine(commandsOutput)
 
-	if filesystemInfo.Availabe != 75 || filesystemInfo.Used != 25 || filesystemInfo.Total != 100 {
+	if filesystemInfo.Available != 75 || filesystemInfo.Used != 25 || filesystemInfo.Total != 100 {
 		t.Error("Disk values incorrectly parsed")
 	}
 	if filesystemInfo.UsedPercent != 25.0 {

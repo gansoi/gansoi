@@ -100,7 +100,7 @@ func setSingleDeviceResults(name string, fi *filesystemInfo, result plugins.Agen
 	result.AddValue(name+"Device", fi.Device)
 	result.AddValue(name+"Total", fi.Total)
 	result.AddValue(name+"Used", fi.Used)
-	result.AddValue(name+"Available", fi.Availabe)
+	result.AddValue(name+"Available", fi.Available)
 	result.AddValue(name+"UsedPercent", fi.UsedPercent)
 	result.AddValue(name+"Mountpoint", fi.Mountpoint)
 }

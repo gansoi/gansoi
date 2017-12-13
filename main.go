@@ -277,7 +277,7 @@ func initCore(_ *cobra.Command, _ []string) {
 	bailIfError(err)
 
 	stream, _ := node.NewHTTPStream(conf.Bind, pair, core.CA())
-	n, err, close := node.NewNode(stream, conf.DataDir, db, db, info.Self(), pair, core.CA())
+	n, close, err := node.NewNode(stream, conf.DataDir, db, db, info.Self(), pair, core.CA())
 	bailIfError(err)
 	err = n.Bootstrap()
 	bailIfError(err)
@@ -369,7 +369,7 @@ func runCore(_ *cobra.Command, _ []string) {
 	go server.ListenAndServeTLS("", "")
 
 	stream, _ := node.NewHTTPStream(conf.Bind, pair, core.CA())
-	n, err, _ := node.NewNode(stream, conf.DataDir, db, db, info.Self(), pair, core.CA())
+	n, _, err := node.NewNode(stream, conf.DataDir, db, db, info.Self(), pair, core.CA())
 	if err != nil {
 		logger.Info("main", "%s", err.Error())
 		exit(1)

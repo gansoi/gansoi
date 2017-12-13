@@ -69,7 +69,8 @@ func (s *Scheduler) loop() {
 }
 
 func (s *Scheduler) spin(clock time.Time) {
-	for meta := s.store.Next(clock); meta != nil; meta = s.store.Next(clock) {
+	for meta := s.store.next(clock); meta != nil; meta = s.store.next(clock) {
+
 		inflight.Add(1)
 		go s.runCheck(clock, meta)
 	}

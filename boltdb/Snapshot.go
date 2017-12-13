@@ -1,7 +1,7 @@
 package boltdb
 
 import (
-	"github.com/boltdb/bolt"
+	"github.com/coreos/bbolt"
 	"github.com/hashicorp/raft"
 )
 
