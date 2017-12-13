@@ -64,7 +64,7 @@ func init() {
 }
 
 // NewNode will initialize a new node.
-func NewNode(stream *HTTPStream, datadir string, db database.Reader, fsm raft.FSM, self string, pair []tls.Certificate, coreCA *ca.CA) (*Node, error, func() error) {
+func NewNode(stream *HTTPStream, datadir string, db database.Reader, fsm raft.FSM, self string, pair []tls.Certificate, coreCA *ca.CA) (*Node, func() error, error) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			Certificates:       pair,
@@ -96,12 +96,12 @@ func NewNode(stream *HTTPStream, datadir string, db database.Reader, fsm raft.FS
 
 	ss, err := raft.NewFileSnapshotStoreWithLogger(datadir, 2, logger.DebugLogger("raft-store"))
 	if err != nil {
-		return nil, err, nil
+		return nil, nil, err
 	}
 
 	store, err := raftboltdb.NewBoltStore(path.Join(datadir, "/raft.db"))
 	if err != nil {
-		return nil, err, nil
+		return nil, nil, err
 	}
 
 	n.raft, err = raft.NewRaft(
@@ -113,10 +113,10 @@ func NewNode(stream *HTTPStream, datadir string, db database.Reader, fsm raft.FS
 		transport, // raft.Transport
 	)
 	if err != nil {
-		return nil, err, nil
+		return nil, nil, err
 	}
 
-	return n, nil, func() error {
+	return n, func() error {
 		err := n.raft.Shutdown().Error()
 		if err != nil {
 			return err
@@ -128,7 +128,7 @@ func NewNode(stream *HTTPStream, datadir string, db database.Reader, fsm raft.FS
 		}
 
 		return transport.Close()
-	}
+	}, nil
 }
 
 // Run will start a few background tasks needed for the node.

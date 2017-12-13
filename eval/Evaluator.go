@@ -42,7 +42,8 @@ func statesFromHistory(history []checks.CheckResult) States {
 	return states
 }
 
-// evaluate will FIXME
+// Evaluate will evaluate a CheckResult and return an Evaluation including
+// current state.
 func (e *Evaluator) Evaluate(checkResult *checks.CheckResult) (*Evaluation, error) {
 	clock := time.Now()
 

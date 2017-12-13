@@ -46,6 +46,7 @@ func NewEvaluation(clock time.Time, result *checks.CheckResult) *Evaluation {
 	}
 }
 
+// Save will save e to the supplied db and cache.
 func (e *Evaluation) Save(db database.Writer) error {
 	err := db.Save(e)
 
