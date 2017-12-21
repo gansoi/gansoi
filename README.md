@@ -13,6 +13,7 @@ text-mode terminals.
 <p align="center">
  <a href="https://travis-ci.org/gansoi/gansoi"><img src="https://travis-ci.org/gansoi/gansoi.svg?branch=master"></a>
  <a href="https://codebeat.co/projects/github-com-gansoi-gansoi"><img src="https://codebeat.co/badges/3f6e63cc-d32d-4962-a285-0f3a71d6cb80"></a>
+<a href="https://app.fossa.io/projects/git%2Bgithub.com%2Fgansoi%2Fgansoi?ref=badge_shield" alt="FOSSA Status"><img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgansoi%2Fgansoi.svg?type=shield"/></a>
  <a href="https://goreportcard.com/report/github.com/gansoi/gansoi"><img src="https://goreportcard.com/badge/github.com/gansoi/gansoi"></a>
 </p>
 
@@ -123,3 +124,7 @@ If you would like you can join other developers in the
 [#gansoi](https://gophers.slack.com/messages/gansoi/) channel on the Gophers
 Slack (invites to Gophers Slack are available
 [here](https://invite.slack.golangbridge.org/)).
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgansoi%2Fgansoi.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgansoi%2Fgansoi?ref=badge_large)
