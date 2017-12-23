@@ -72,13 +72,13 @@ func (e *LogEntry) Byte() []byte {
 
 // Payload will return the payload of a logentry - if any. This could be
 // replaced by proper JSON marshal/unmarshal functions.
-func (e *LogEntry) Payload() (interface{}, error) {
+func (e *LogEntry) Payload() interface{} {
 	v := getType(e.Type)
 	err := json.Unmarshal(e.Value, v)
 
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
-	return v, nil
+	return v
 }

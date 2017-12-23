@@ -87,16 +87,14 @@ func (d *BoltStore) Storm() *storm.DB {
 func (d *BoltStore) ProcessLogEntry(entry *database.LogEntry) error {
 	var err error
 
-	var v interface{}
-
 	switch entry.Command {
 	case database.CommandSave:
-		v, _ = entry.Payload()
+		v := entry.Payload()
 		saves.Add(1)
 		err = d.save(v)
 	case database.CommandDelete:
 		deletes.Add(1)
-		v, _ = entry.Payload()
+		v := entry.Payload()
 		err = d.delete(v)
 	default:
 		err = fmt.Errorf("not implemented")
@@ -121,7 +119,7 @@ func (d *BoltStore) Apply(l *raft.Log) interface{} {
 	if l.Index >= atomic.LoadUint64(&d.broadcastFrom) {
 		d.listenersLock.RLock()
 		for _, listener := range d.listeners {
-			payload, _ := entry.Payload()
+			payload := entry.Payload()
 			go listener.PostApply(false, entry.Command, payload)
 		}
 		d.listenersLock.RUnlock()
