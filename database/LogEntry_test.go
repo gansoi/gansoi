@@ -41,7 +41,7 @@ func TestLogEntryGetType(t *testing.T) {
 	resetTypes()
 
 	RegisterType(mockType{})
-	GetType("database.mockType")
+	getType("database.mockType")
 }
 
 func TestLogEntryGetTypeFail(t *testing.T) {
@@ -49,7 +49,7 @@ func TestLogEntryGetTypeFail(t *testing.T) {
 
 	resetTypes()
 
-	GetType("nonexisting")
+	getType("nonexisting")
 }
 
 func TestLogEntryNew(t *testing.T) {

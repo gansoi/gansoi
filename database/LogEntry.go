@@ -39,8 +39,8 @@ func RegisterType(v interface{}) {
 	types[name] = typ
 }
 
-// GetType will return a type previously registered with RegisterType.
-func GetType(name string) interface{} {
+// getType will return a type previously registered with RegisterType.
+func getType(name string) interface{} {
 	name = strings.TrimPrefix(name, "*")
 
 	typ, found := types[name]
@@ -73,7 +73,7 @@ func (e *LogEntry) Byte() []byte {
 // Payload will return the payload of a logentry - if any. This could be
 // replaced by proper JSON marshal/unmarshal functions.
 func (e *LogEntry) Payload() (interface{}, error) {
-	v := GetType(e.Type)
+	v := getType(e.Type)
 	err := json.Unmarshal(e.Value, v)
 
 	if err != nil {
