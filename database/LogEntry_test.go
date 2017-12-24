@@ -79,10 +79,7 @@ func TestLogEntryPayload(t *testing.T) {
 
 	m := mockType{A: 12}
 	e := NewLogEntry(CommandSave, m)
-	i, err := e.Payload()
-	if err != nil {
-		t.Fatalf("e.Payload() error: %s", err.Error())
-	}
+	i := e.Payload()
 
 	if *(i.(*mockType)) != m {
 		t.Fatalf("LogEntry roundtrip failed")
@@ -98,8 +95,8 @@ func TestLogEntryPayloadFail(t *testing.T) {
 
 	e.Value = nil
 
-	_, err := e.Payload()
-	if err == nil {
+	p := e.Payload()
+	if p != nil {
 		t.Fatalf("e.Payload() did not catch JSON error")
 	}
 }
