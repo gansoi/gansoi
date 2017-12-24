@@ -73,10 +73,14 @@ func exchange(conn net.Conn, payload []byte) []byte {
 		panic("fail")
 	}
 
-	time.Sleep(time.Millisecond * 20)
-
 	b := make([]byte, 1024)
-	n, _ = conn.Read(b)
+	for {
+		// Busy waiting.
+		n, _ = conn.Read(b)
+		if n > 0 {
+			break
+		}
+	}
 
 	return b[:n]
 }
