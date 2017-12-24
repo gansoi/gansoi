@@ -96,6 +96,8 @@ func TestStreamEcho(t *testing.T) {
 	}
 	defer conn.Close()
 
+	time.Sleep(time.Millisecond * 20) // Give echoServer some time to accept.
+
 	payload := []byte("Hello 123")
 	result := exchange(conn, payload)
 
