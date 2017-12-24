@@ -14,6 +14,7 @@ text-mode terminals.
  <a href="https://travis-ci.org/gansoi/gansoi"><img src="https://travis-ci.org/gansoi/gansoi.svg?branch=master"></a>
  <a href="https://codebeat.co/projects/github-com-gansoi-gansoi"><img src="https://codebeat.co/badges/3f6e63cc-d32d-4962-a285-0f3a71d6cb80"></a>
  <a href="https://goreportcard.com/report/github.com/gansoi/gansoi"><img src="https://goreportcard.com/badge/github.com/gansoi/gansoi"></a>
+ <a href="https://coveralls.io/github/gansoi/gansoi?branch=master"><img src="https://coveralls.io/repos/github/gansoi/gansoi/badge.svg?branch=master"></a>
 </p>
 
 Gansoi is a modern monitoring solution inspired by classical network monitoring
