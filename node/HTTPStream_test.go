@@ -73,7 +73,7 @@ func exchange(conn net.Conn, payload []byte) []byte {
 		panic("fail")
 	}
 
-	time.Sleep(time.Millisecond * 10)
+	time.Sleep(time.Millisecond * 20)
 
 	b := make([]byte, 1024)
 	n, _ = conn.Read(b)
