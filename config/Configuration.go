@@ -1,14 +1,18 @@
 package config
 
-import "github.com/BurntSushi/toml"
+import (
+	"io/ioutil"
+
+	"github.com/ghodss/yaml"
+)
 
 type (
 	// Configuration keeps configuration for a core node.
 	Configuration struct {
-		Bind         string       `toml:"bind"`
-		DataDir      string       `toml:"datadir"`
-		HTTP         HTTP         `toml:"http"`
-		HTTPRedirect HTTPRedirect `toml:"redirect"`
+		Bind         string       `json:"bind"`
+		DataDir      string       `json:"datadir"`
+		HTTP         HTTP         `json:"http"`
+		HTTPRedirect HTTPRedirect `json:"redirect"`
 	}
 )
 
@@ -52,7 +56,12 @@ func (c *Configuration) SetDefaults() {
 
 // LoadFromFile loads a configuration from path.
 func (c *Configuration) LoadFromFile(path string) error {
-	_, err := toml.DecodeFile(path, c)
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
+	}
+
+	err = yaml.Unmarshal(b, c)
 	if err != nil {
 		return err
 	}

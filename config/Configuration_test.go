@@ -6,17 +6,17 @@ import (
 
 func TestLoadFromFile(t *testing.T) {
 	var conf Configuration
-	err := conf.LoadFromFile("testdata/config.conf")
+	err := conf.LoadFromFile("testdata/config.yml")
 	if err != nil {
 		t.Fatalf("LoadFromFile() failed: %s", err.Error())
 	}
 
-	err = conf.LoadFromFile("testdata/config.conf-NONEXISTING")
+	err = conf.LoadFromFile("testdata/config.yml-NONEXISTING")
 	if err == nil {
 		t.Fatalf("LoadFromFile() did not fail for nonexisting file")
 	}
 
-	err = conf.LoadFromFile("testdata/malformed-config.conf")
+	err = conf.LoadFromFile("testdata/malformed-config.yml")
 	if err == nil {
 		t.Fatalf("LoadFromFile() did not fail for malformed input")
 	}

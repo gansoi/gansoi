@@ -234,11 +234,11 @@ func TestJoinCore(t *testing.T) {
 	os.Mkdir(p1, 0700)
 	defer os.RemoveAll(p1)
 
-	c1 := `bind = "127.0.0.1:5121"
-datadir = "` + p1 + `"
-[http]
-bind = "127.0.0.1:7121"
-tls = false
+	c1 := `bind: "127.0.0.1:5121"
+datadir: "` + p1 + `"
+http:
+  bind: "127.0.0.1:7121"
+  tls: false
 `
 	// set node 1 config.
 	configFile = path.Join(p1, "gansoi.conf")
@@ -281,11 +281,11 @@ func TestMainHTTP(t *testing.T) {
 	os.Mkdir(p1, 0700)
 	defer os.RemoveAll(p1)
 
-	c1 := `bind = "127.0.0.1:5184"
-datadir = "` + p1 + `"
-[http]
-bind = "127.0.0.1:5185"
-tls = false
+	c1 := `bind: "127.0.0.1:5184"
+datadir: "` + p1 + `"
+http:
+  bind: "127.0.0.1:5185"
+  tls: false
 `
 	// set node 1 config.
 	configFile = path.Join(p1, "gansoi.conf")
