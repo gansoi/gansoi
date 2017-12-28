@@ -91,7 +91,7 @@ Down: {{ $root.summary.states.down }}<br />
   </tr>
   <tr is="host-line" v-for="host in sorted" :host="host"></tr>
  </table>
- <router-link class="button" to="/host/edit/new">Add Host</router-link>
+ <router-link class="button" to="/host/edit/new">+ Add Host</router-link>
  <h2>Public key</h2>
  <p>
   This is the public SSH key used by this Gansoi cluster. It must be added to
@@ -113,8 +113,10 @@ Down: {{ $root.summary.states.down }}<br />
 <div>
  <h2>
   {{ title }}
-  <button v-if="host.id != ''" class="right button red" @click="showDeleteConfirm = true">Delete</button>
-  <button v-if="host.id == ''" class="right button" onclick="history.go(-1);">Cancel</button>
+  <span class="buttonbar right">
+   <button class="button" onclick="history.go(-1);">← Back</button>
+   <button v-if="host.id != ''" class="right button red" @click="showDeleteConfirm = true">✘ Delete</button>
+  </span>
  </h2>
  <form>
   <fieldset>
@@ -150,7 +152,10 @@ Down: {{ $root.summary.states.down }}<br />
 <div>
  <h2>
   {{ id }} Details
-  <button class="right button" v-on:click="edit(this)">Edit</button>
+  <span class="buttonbar right">
+   <button class="button" onclick="history.go(-1);">← Back</button>
+   <button class="right button" v-on:click="edit(this)">✎ Edit</button>
+  </span>
  </h2>
  <table>
   <tbody v-if="host">
@@ -173,7 +178,7 @@ Down: {{ $root.summary.states.down }}<br />
 <div>
  <h2>Checks</h2>
  <p ref="timeline"></p>
- <router-link class="button" to="/check/edit/new">Add Check</router-link>
+ <router-link class="button" to="/check/edit/new">+ Add Check</router-link>
 </div>
 </template>
 
@@ -181,8 +186,11 @@ Down: {{ $root.summary.states.down }}<br />
 <div>
  <h2>
   {{ id }} Details
-  <button class="right button" v-on:click="editCheck(this)">Edit</button>
-  <button class="right button blue" v-on:click="cloneCheck(this)">Clone</button>
+  <span class="buttonbar right">
+   <button class="button" onclick="history.go(-1);">← Back</button>
+   <button class="button" v-on:click="editCheck(this)">✎ Edit</button>
+   <button class="button blue" v-on:click="cloneCheck(this)">⨦ Clone</button>
+  </span>
  </h2>
  <div ref="timeline"></div>
  <table>
@@ -242,8 +250,10 @@ Down: {{ $root.summary.states.down }}<br />
 <div>
  <h2>
   {{ title }}
-  <button v-if="check.id != ''" class="right button red" @click="showDeleteConfirm = true">Delete</button>
-  <button v-if="check.id == ''" class="right button" onclick="history.go(-1);">Cancel</button>
+  <span class="buttonbar right">
+   <button class="button" onclick="history.go(-1);">← Back</button>
+   <button v-if="check.id != ''" class="button red" @click="showDeleteConfirm = true">✘ Delete</button>
+  </span>
  </h2>
  <form>
   <fieldset>
@@ -340,7 +350,7 @@ Down: {{ $root.summary.states.down }}<br />
   </tr>
   <tr is="contact-line" v-for="contact in contacts.data" :contact="contact"></tr>
  </table>
- <router-link class="button" to="/contact/edit/new">Add Contact</router-link>
+ <router-link class="button" to="/contact/edit/new">+ Add Contact</router-link>
 </div>
 </template>
 
@@ -356,7 +366,10 @@ Down: {{ $root.summary.states.down }}<br />
 <div>
  <h2>
   {{ id }} Details
-  <button class="right button" v-on:click="editContact(this)">Edit</button>
+  <span class="buttonbar right">
+   <button class="button" onclick="history.go(-1);">← Back</button>
+   <button class="button" v-on:click="editContact(this)">✎ Edit</button>
+  </span>
  </h2>
  <table>
   <tbody v-if="contact">
@@ -389,8 +402,10 @@ Down: {{ $root.summary.states.down }}<br />
 <div>
  <h2>
   {{ title }}
-  <button v-if="contact.id != ''" class="right button red" @click="showDeleteConfirm = true">Delete</button>
-  <button v-if="contact.id == ''" class="right button" onclick="history.go(-1);">Cancel</button>
+  <span class="buttonbar right">
+   <button class="button" onclick="history.go(-1);">← Back</button>
+   <button v-if="contact.id != ''" class="right button red" @click="showDeleteConfirm = true">✘ Delete</button>
+  </span>
  </h2>
  <form>
   <fieldset>
@@ -445,7 +460,7 @@ Down: {{ $root.summary.states.down }}<br />
   </tr>
   <tr is="contactgroup-line" v-for="contactgroup in contactgroups.data" :contactgroup="contactgroup"></tr>
  </table>
- <router-link class="button" to="/contactgroup/edit/new">Add Contact Group</router-link>
+ <router-link class="button" to="/contactgroup/edit/new">+ Add Contact Group</router-link>
 </div>
 </template>
 
@@ -460,8 +475,10 @@ Down: {{ $root.summary.states.down }}<br />
 <div>
  <h2>
   {{ title }}
-  <button v-if="contactgroup.id != ''" class="right button red" @click="showDeleteConfirm = true">Delete</button>
-  <button v-if="contactgroup.id == ''" class="right button" onclick="history.go(-1);">Cancel</button>
+  <span class="buttonbar right">
+   <button class="button" onclick="history.go(-1);">← Back</button>
+   <button v-if="contactgroup.id != ''" class="button red" @click="showDeleteConfirm = true">✘ Delete</button>
+  </span>
  </h2>
  <form>
   <fieldset>
@@ -502,7 +519,10 @@ Down: {{ $root.summary.states.down }}<br />
 <div>
  <h2>
   {{ id }} Details
-  <button class="right button" v-on:click="editContactgroup(this)">Edit</button>
+  <span class="buttonbar right">
+   <button class="button" onclick="history.go(-1);">← Back</button>
+   <button class="button" v-on:click="editContactgroup(this)">✎ Edit</button>
+  </span>
  </h2>
  <h3>Name: {{ contactgroup.name }}</h3>
  <h3>Members:</h3>
