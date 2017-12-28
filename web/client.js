@@ -396,7 +396,11 @@ var editCheck = Vue.component('edit-check', {
                 return [];
             }
 
-            this.check.arguments = objectFromArguments(agent.arguments);
+            // If id is empty it must be a new check, we preload arguments from
+            // defaults.
+            if (this.check.id === '') {
+                this.check.arguments = objectFromArguments(agent.arguments);
+            }
 
             return agent.arguments;
         },
