@@ -99,7 +99,7 @@ func (h *HTTPStream) Dial(address raft.ServerAddress, timeout time.Duration) (ne
 		return nil, err
 	}
 
-	// This is so amazingly stupid. For some reason modern Go (v1.7+) eats
+	// This is so amazingly stupid. For some reason modern Go often eats
 	// exactly one byte of a hijacked HTTP connection. This is our stupid
 	// workaround caused by our inability to diagnose the problem properly.
 	// We send one null-byte that will be discarded somewhere. We have no idea

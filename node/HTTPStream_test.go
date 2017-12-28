@@ -1,7 +1,7 @@
 package node
 
 import (
-	"bytes"
+	"bufio"
 	"crypto/tls"
 	"net"
 	"net/http/httptest"
@@ -34,14 +34,9 @@ func echoServer(stream *HTTPStream) {
 		return
 	}
 
-	for {
-		b := make([]byte, 1024)
-		n, err := conn.Read(b)
-		if err != nil {
-			return
-		}
-
-		_, err = conn.Write(b[:n])
+	s := bufio.NewScanner(conn)
+	for s.Scan() {
+		_, err = conn.Write(s.Bytes())
 		if err != nil {
 			return
 		}
@@ -64,12 +59,12 @@ func TestStreamListen(t *testing.T) {
 	defer conn.Close()
 }
 
-func exchange(conn net.Conn, payload []byte) []byte {
-	n, err := conn.Write(payload)
+func exchange(conn net.Conn, payload string) string {
+	n, err := conn.Write([]byte(payload + "\n"))
 	if err != nil {
 		panic(err.Error())
 	}
-	if n != len(payload) {
+	if n != len(payload)+1 {
 		panic("fail")
 	}
 
@@ -82,7 +77,7 @@ func exchange(conn net.Conn, payload []byte) []byte {
 		}
 	}
 
-	return b[:n]
+	return string(b[:n])
 }
 
 func TestStreamEcho(t *testing.T) {
@@ -104,17 +99,22 @@ func TestStreamEcho(t *testing.T) {
 
 	time.Sleep(time.Millisecond * 20) // Give echoServer some time to accept.
 
-	payload := []byte("Hello 123")
+	payload := "Hello 123"
 	result := exchange(conn, payload)
 
-	if bytes.Compare(payload, result) != 0 {
+	// This is because the stupid workaround in HTTPStream.Dial(). Sigh.
+	if result[0] == 0 {
+		result = result[1:]
+	}
+
+	if payload != result {
 		t.Errorf("Got wrong reply, got '%s', expected '%s'", result, payload)
 	}
 
-	payload = []byte("Hello hello")
+	payload = "Hello hello"
 	result = exchange(conn, payload)
 
-	if bytes.Compare(payload, result) != 0 {
+	if payload != result {
 		t.Errorf("Got wrong reply, got '%s', expected '%s'", result, payload)
 	}
 }
