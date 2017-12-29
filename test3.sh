@@ -6,45 +6,51 @@
 mkdir /tmp/gansoi-dev
 
 cat >/tmp/gansoi-dev/node1.conf <<EOF
-bind = "127.0.0.1:4934"
-datadir = "/tmp/gansoi-dev/node1-data"
+bind: "127.0.0.1:4934"
+datadir: "/tmp/gansoi-dev/node1-data"
 
-[http]
-bind = "node1.gansoi-dev.com:9002"
-hostnames = [ "gansoi-dev.com", "node1.gansoi-dev.com" ]
-cert = "dockerroot/gansoi-dev.com-cert.pem"
-key = "dockerroot/gansoi-dev.com-key.pem"
+http:
+  bind: "node1.gansoi-dev.com:9002"
+  hostnames:
+    - "gansoi-dev.com"
+    - "node1.gansoi-dev.com"
+  cert: "dockerroot/gansoi-dev.com-cert.pem"
+  key: "dockerroot/gansoi-dev.com-key.pem"
 
-[redirect]
-bind = ""
+redirect:
+  bind: ""
 EOF
 
 cat >/tmp/gansoi-dev/node2.conf <<EOF
-bind = "127.0.0.2:4934"
-datadir = "/tmp/gansoi-dev/node2-data"
+bind: "127.0.0.2:4934"
+datadir: "/tmp/gansoi-dev/node2-data"
 
-[http]
-bind = "node2.gansoi-dev.com:9002"
-hostnames = [ "gansoi-dev.com", "node2.gansoi-dev.com" ]
-cert = "dockerroot/gansoi-dev.com-cert.pem"
-key = "dockerroot/gansoi-dev.com-key.pem"
+http:
+  bind: "node2.gansoi-dev.com:9002"
+  hostnames:
+    - "gansoi-dev.com"
+    - "node2.gansoi-dev.com"
+  cert: "dockerroot/gansoi-dev.com-cert.pem"
+  key: "dockerroot/gansoi-dev.com-key.pem"
 
-[redirect]
-bind = ""
+redirect:
+  bind: ""
 EOF
 
 cat >/tmp/gansoi-dev/node3.conf <<EOF
-bind = "127.0.0.3:4934"
-datadir = "/tmp/gansoi-dev/node3-data"
+bind: "127.0.0.3:4934"
+datadir: "/tmp/gansoi-dev/node3-data"
 
-[http]
-bind = "node3.gansoi-dev.com:9002"
-hostnames = [ "gansoi-dev.com", "node3.gansoi-dev.com" ]
-cert = "dockerroot/gansoi-dev.com-cert.pem"
-key = "dockerroot/gansoi-dev.com-key.pem"
+http:
+  bind: "node3.gansoi-dev.com:9002"
+  hostnames:
+    - "gansoi-dev.com"
+    - "node3.gansoi-dev.com"
+  cert: "dockerroot/gansoi-dev.com-cert.pem"
+  key: "dockerroot/gansoi-dev.com-key.pem"
 
-[redirect]
-bind = ""
+redirect:
+  bind: ""
 EOF
 
 mkdir /tmp/gansoi-dev/node1-data

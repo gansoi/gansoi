@@ -3,13 +3,13 @@ package config
 type (
 	// HTTP configures the HTTP server.
 	HTTP struct {
-		TLS       bool     `toml:"tls"`
-		Bind      string   `toml:"bind"`
-		Hostnames []string `toml:"hostnames"`
-		CertPath  string   `toml:"cert"`
-		KeyPath   string   `toml:"key"`
-		Login     string   `toml:"login"`
-		Password  string   `toml:"password"`
+		TLS       bool     `json:"tls"`
+		Bind      string   `json:"bind"`
+		Hostnames []string `json:"hostnames"`
+		CertPath  string   `json:"cert"`
+		KeyPath   string   `json:"key"`
+		Login     string   `json:"login"`
+		Password  string   `json:"password"`
 	}
 )
 
