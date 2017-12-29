@@ -4,7 +4,7 @@ TARGET="${TMPDIR:-/tmp/}/gansoi-dev"
 
 mkdir -p "${TARGET}"
 
-cat >"${TARGET}/gansoi.conf" <<EOF
+cat >"${TARGET}/gansoi.yml" <<EOF
 bind: "127.0.0.1:4934"
 datadir: "${TARGET}"
 
@@ -19,5 +19,5 @@ EOF
 
 export DEBUG=*
 
-./gansoi core --config "${TARGET}/gansoi.conf" init
-./gansoi core --config "${TARGET}/gansoi.conf" run
+./gansoi core --config "${TARGET}/gansoi.yml" init
+./gansoi core --config "${TARGET}/gansoi.yml" run

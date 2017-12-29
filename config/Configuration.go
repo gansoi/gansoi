@@ -18,24 +18,25 @@ type (
 
 const (
 	// DefaultPath is the default location for the config file.
-	DefaultPath = "/etc/gansoi.conf"
+	DefaultPath = "/etc/gansoi.yml"
 )
 
 var (
 	exampleConfig = `# Example configuration for gansoi.
-bind = ":4934"
-datadir = "/var/lib/gansoi"
+bind: ":4934"
+datadir: "/var/lib/gansoi"
 
-[http]
-bind = ":443"
-tls = true
-hostnames = [ "gansoi.example.com" ]
-cert = "/etc/gansoi/me-cert.pem"
-key = "/etc/gansoi/me-key.pem"
+http:
+  bind: ":443"
+  tls: true
+  hostnames:
+    - "gansoi.example.com"
+  cert: "/etc/gansoi/me-cert.pem"
+  key: "/etc/gansoi/me-key.pem"
 
-[redirect]
-bind = ":80"
-target = "https://gansoi.example.com/"
+redirect:
+  bind: ":80"
+  target: "https://gansoi.example.com/"
 `
 )
 

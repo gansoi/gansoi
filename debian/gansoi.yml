@@ -1,0 +1,8 @@
+bind: "0.0.0.0:4934"
+datadir: "/var/lib/gansoi/"
+
+http:
+  tls: false
+  bind: "127.0.0.1:80"
+  hostnames:
+    - "gansoi-dev.com"
