@@ -5,7 +5,7 @@
 
 mkdir /tmp/gansoi-dev
 
-cat >/tmp/gansoi-dev/node1.conf <<EOF
+cat >/tmp/gansoi-dev/node1.yml <<EOF
 bind: "127.0.0.1:4934"
 datadir: "/tmp/gansoi-dev/node1-data"
 
@@ -21,7 +21,7 @@ redirect:
   bind: ""
 EOF
 
-cat >/tmp/gansoi-dev/node2.conf <<EOF
+cat >/tmp/gansoi-dev/node2.yml <<EOF
 bind: "127.0.0.2:4934"
 datadir: "/tmp/gansoi-dev/node2-data"
 
@@ -37,7 +37,7 @@ redirect:
   bind: ""
 EOF
 
-cat >/tmp/gansoi-dev/node3.conf <<EOF
+cat >/tmp/gansoi-dev/node3.yml <<EOF
 bind: "127.0.0.3:4934"
 datadir: "/tmp/gansoi-dev/node3-data"
 
@@ -57,23 +57,23 @@ mkdir /tmp/gansoi-dev/node1-data
 mkdir /tmp/gansoi-dev/node2-data
 mkdir /tmp/gansoi-dev/node3-data
 
-./gansoi core --config /tmp/gansoi-dev/node1.conf init
-TOKEN=$(./gansoi core --config /tmp/gansoi-dev/node1.conf print-token 2>/dev/null)
+./gansoi core --config /tmp/gansoi-dev/node1.yml init
+TOKEN=$(./gansoi core --config /tmp/gansoi-dev/node1.yml print-token 2>/dev/null)
 
 export DEBUG=*
 
 # Start first server
-tmux new-session -d './gansoi core --config /tmp/gansoi-dev/node1.conf run; sleep 10'
+tmux new-session -d './gansoi core --config /tmp/gansoi-dev/node1.yml run; sleep 10'
 
 # Wait for the first node to self-elect
 sleep 5
 
 # Prepare the next two nodes.
-./gansoi core --config /tmp/gansoi-dev/node2.conf join 127.0.0.1 $TOKEN
-./gansoi core --config /tmp/gansoi-dev/node3.conf join 127.0.0.1 $TOKEN
+./gansoi core --config /tmp/gansoi-dev/node2.yml join 127.0.0.1 $TOKEN
+./gansoi core --config /tmp/gansoi-dev/node3.yml join 127.0.0.1 $TOKEN
 
 # Start to nodes 3 seconds apart.
-tmux split-window -v 'sleep 3 ; ./gansoi core --config /tmp/gansoi-dev/node2.conf run; sleep 10'
-tmux split-window -v 'sleep 6 ; ./gansoi core --config /tmp/gansoi-dev/node3.conf run; sleep 10'
+tmux split-window -v 'sleep 3 ; ./gansoi core --config /tmp/gansoi-dev/node2.yml run; sleep 10'
+tmux split-window -v 'sleep 6 ; ./gansoi core --config /tmp/gansoi-dev/node3.yml run; sleep 10'
 
 tmux -2 attach-session -d
