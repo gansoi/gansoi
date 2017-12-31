@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"testing"
 )
 
@@ -35,5 +36,64 @@ func TestSetDefaults(t *testing.T) {
 
 	if conf.DataDir == "" {
 		t.Fatalf("No default datadir")
+	}
+}
+
+type writer struct {
+	saves int
+	err   error
+}
+
+func (w *writer) Save(data interface{}) error {
+	w.saves++
+
+	return w.err
+}
+
+func (w *writer) Delete(data interface{}) error {
+	return w.err
+}
+
+func TestSaveChecks(t *testing.T) {
+	w := &writer{}
+
+	var conf Configuration
+	conf.LoadFromFile("testdata/checks.yml")
+
+	err := conf.SaveChecks(w)
+	if err != nil {
+		t.Errorf("SaveChecks() returned an error: %s", err.Error())
+	}
+
+	if w.saves != 1 {
+		t.Errorf("Something went wrong, %d checks saved", w.saves)
+	}
+
+	w.err = errors.New("error")
+	err = conf.SaveChecks(w)
+	if err == nil {
+		t.Errorf("SaveChecks() did not return an error")
+	}
+}
+
+func TestSaveHosts(t *testing.T) {
+	w := &writer{}
+
+	var conf Configuration
+	conf.LoadFromFile("testdata/hosts.yml")
+
+	err := conf.SaveHosts(w)
+	if err != nil {
+		t.Errorf("SaveChecks() returned an error: %s", err.Error())
+	}
+
+	if w.saves != 1 {
+		t.Errorf("Something went wrong, %d hosts saved", w.saves)
+	}
+
+	w.err = errors.New("error")
+	err = conf.SaveHosts(w)
+	if err == nil {
+		t.Errorf("SaveHosts() did not return an error")
 	}
 }

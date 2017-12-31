@@ -413,6 +413,9 @@ func runCore(_ *cobra.Command, _ []string) {
 					exit(1)
 				}
 
+				conf.SaveChecks(n)
+				conf.SaveHosts(n)
+
 				scheduler.Run()
 			} else {
 				scheduler.Stop()

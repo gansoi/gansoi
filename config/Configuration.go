@@ -1,18 +1,25 @@
 package config
 
 import (
+	"encoding/json"
 	"io/ioutil"
+	"time"
 
+	"github.com/gansoi/gansoi/checks"
+	"github.com/gansoi/gansoi/database"
+	"github.com/gansoi/gansoi/transports/ssh"
 	"github.com/ghodss/yaml"
 )
 
 type (
 	// Configuration keeps configuration for a core node.
 	Configuration struct {
-		Bind         string       `json:"bind"`
-		DataDir      string       `json:"datadir"`
-		HTTP         HTTP         `json:"http"`
-		HTTPRedirect HTTPRedirect `json:"redirect"`
+		Bind         string                   `json:"bind"`
+		DataDir      string                   `json:"datadir"`
+		HTTP         HTTP                     `json:"http"`
+		HTTPRedirect HTTPRedirect             `json:"redirect"`
+		Hosts        map[string]ssh.SSH       `json:"hosts"`
+		Checks       map[string]*checks.Check `json:"checks"`
 	}
 )
 
@@ -62,7 +69,11 @@ func (c *Configuration) LoadFromFile(path string) error {
 		return err
 	}
 
-	err = yaml.Unmarshal(b, c)
+	return c.loadFromBytes(b)
+}
+
+func (c *Configuration) loadFromBytes(b []byte) error {
+	err := yaml.Unmarshal(b, c)
 	if err != nil {
 		return err
 	}
@@ -73,6 +84,62 @@ func (c *Configuration) LoadFromFile(path string) error {
 			"://" +
 			c.HTTP.Hostnames[0] +
 			"/"
+	}
+
+	return nil
+}
+
+// SaveChecks will save all checks from the configuration to the supplied
+// database.Writer.
+func (c *Configuration) SaveChecks(w database.Writer) error {
+	for id, check := range c.Checks {
+		if check.ID == "" {
+			check.ID = id
+		}
+
+		if check.Name == "" {
+			check.Name = id
+		}
+
+		if check.Arguments == nil {
+			check.Arguments = json.RawMessage("{}")
+		}
+
+		check.ContactGroups = []string{}
+
+		if check.Interval == 0 {
+			check.Interval = time.Second * 30
+		}
+
+		err := w.Save(check)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// SaveHosts will save all hosts from the configuration to the supplied
+// database.Writer.
+func (c *Configuration) SaveHosts(w database.Writer) error {
+	for id, h := range c.Hosts {
+		if h.ID == "" {
+			h.ID = id
+		}
+
+		if h.Address == "" {
+			h.Address = id
+		}
+
+		if h.Username == "" {
+			h.Username = "root"
+		}
+
+		err := w.Save(&h)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
