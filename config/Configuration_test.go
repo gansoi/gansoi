@@ -58,6 +58,7 @@ func TestSaveChecks(t *testing.T) {
 	w := &writer{}
 
 	var conf Configuration
+	conf.SetDefaults()
 	conf.LoadFromFile("testdata/checks.yml")
 
 	err := conf.SaveChecks(w)
@@ -80,11 +81,12 @@ func TestSaveHosts(t *testing.T) {
 	w := &writer{}
 
 	var conf Configuration
+	conf.SetDefaults()
 	conf.LoadFromFile("testdata/hosts.yml")
 
 	err := conf.SaveHosts(w)
 	if err != nil {
-		t.Errorf("SaveChecks() returned an error: %s", err.Error())
+		t.Errorf("SaveHosts() returned an error: %s", err.Error())
 	}
 
 	if w.saves != 1 {
@@ -95,5 +97,51 @@ func TestSaveHosts(t *testing.T) {
 	err = conf.SaveHosts(w)
 	if err == nil {
 		t.Errorf("SaveHosts() did not return an error")
+	}
+}
+
+func TestSaveContactGroups(t *testing.T) {
+	w := &writer{}
+
+	var conf Configuration
+	conf.SetDefaults()
+	conf.LoadFromFile("testdata/contactgroups.yml")
+
+	err := conf.SaveContactGroups(w)
+	if err != nil {
+		t.Errorf("SaveContactGroups() returned an error: %s", err.Error())
+	}
+
+	if w.saves != 1 {
+		t.Errorf("Something went wrong, %d contactgroups saved", w.saves)
+	}
+
+	w.err = errors.New("error")
+	err = conf.SaveContactGroups(w)
+	if err == nil {
+		t.Errorf("SaveContactGroups() did not return an error")
+	}
+}
+
+func TestSaveContacts(t *testing.T) {
+	w := &writer{}
+
+	var conf Configuration
+	conf.SetDefaults()
+	conf.LoadFromFile("testdata/contacts.yml")
+
+	err := conf.SaveContacts(w)
+	if err != nil {
+		t.Errorf("SaveContacts() returned an error: %s", err.Error())
+	}
+
+	if w.saves != 1 {
+		t.Errorf("Something went wrong, %d contacts saved", w.saves)
+	}
+
+	w.err = errors.New("error")
+	err = conf.SaveContacts(w)
+	if err == nil {
+		t.Errorf("SaveContacts() did not return an error")
 	}
 }
