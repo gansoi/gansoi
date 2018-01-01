@@ -240,15 +240,14 @@ func runCheck(printSummary bool, arguments []string) {
 }
 
 func loadConfig() *config.Configuration {
-	var conf config.Configuration
-	conf.SetDefaults()
+	conf := config.NewConfiguration()
 	err := conf.LoadFromFile(configFile)
 	if err != nil {
 		logger.Info("main", "Failed to read configuration file at %s: %s", configFile, err.Error())
 		exit(1)
 	}
 
-	return &conf
+	return conf
 }
 
 func openDatabase(conf *config.Configuration) *boltdb.BoltStore {
@@ -411,6 +410,15 @@ func runCore(_ *cobra.Command, _ []string) {
 				if sshErr != nil {
 					logger.Info("main", "ssh.Init() error: %s", sshErr.Error())
 					exit(1)
+				}
+
+				conf.SaveChecks(n)
+				conf.SaveHosts(n)
+				conf.SaveContactGroups(n)
+				conf.SaveContacts(n)
+
+				if conf.ExclusiveSeeding {
+					conf.DeleteUnknownSeeds(n)
 				}
 
 				scheduler.Run()

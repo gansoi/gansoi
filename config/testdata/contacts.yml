@@ -1,0 +1,3 @@
+contacts:
+  test1:
+    notifier: "console"
