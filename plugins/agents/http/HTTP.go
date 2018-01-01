@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gansoi/gansoi/build"
 	"github.com/gansoi/gansoi/plugins"
 )
 
@@ -26,6 +27,8 @@ const (
 
 var (
 	dial = net.Dial
+
+	userAgent = fmt.Sprintf("Gansoi_http_check/%s (%s)", build.Version, build.ShortSHA)
 )
 
 // HTTP will request a ressource from a HTTP server.
@@ -127,6 +130,8 @@ func (h *HTTP) Check(result plugins.AgentResult) error {
 		if err != nil {
 			return err
 		}
+
+		req.Header.Add("User-Agent", userAgent)
 
 		t3 := time.Now()
 		err = req.Write(conn)
