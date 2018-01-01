@@ -1,0 +1,5 @@
+contactgroups:
+  test:
+    members:
+      - "c1"
+      - "c2"
