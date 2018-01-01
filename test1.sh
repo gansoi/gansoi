@@ -16,12 +16,6 @@ http:
   cert: "dockerroot/gansoi-dev.com-cert.pem"
   key: "dockerroot/gansoi-dev.com-key.pem"
 
-hosts:
-
-  frankfurt.gansoi.com:
-  london.gansoi.com:
-  toronto.gansoi.com:
-
 checks:
 
   gansoi http:
@@ -31,15 +25,6 @@ checks:
     expressions:
       - "StatusCode == 200"
       - "SSLValidDays > 7"
-
-  cluster node:
-    agent: "process"
-    arguments:
-      name: "gansoi"
-    hosts:
-      - "frankfurt.gansoi.com"
-      - "london.gansoi.com"
-      - "toronto.gansoi.com"
 
 EOF
 
