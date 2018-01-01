@@ -3,6 +3,11 @@ package config
 import (
 	"errors"
 	"testing"
+
+	"github.com/gansoi/gansoi/boltdb"
+	"github.com/gansoi/gansoi/checks"
+	"github.com/gansoi/gansoi/notify"
+	"github.com/gansoi/gansoi/transports/ssh"
 )
 
 func TestLoadFromFile(t *testing.T) {
@@ -143,5 +148,62 @@ func TestSaveContacts(t *testing.T) {
 	err = conf.SaveContacts(w)
 	if err == nil {
 		t.Errorf("SaveContacts() did not return an error")
+	}
+}
+
+func TestDeleteUnknownSeeds(t *testing.T) {
+	db := boltdb.NewTestStore()
+	defer db.Close()
+
+	check := &checks.Check{}
+	err := db.Save(check)
+	if err != nil {
+		t.Fatalf("Failed to save check: %s", err.Error())
+	}
+
+	host := &ssh.SSH{}
+	err = db.Save(host)
+	if err != nil {
+		t.Fatalf("Failed to save host: %s", err.Error())
+	}
+
+	contactgroup := &notify.ContactGroup{}
+	err = db.Save(contactgroup)
+	if err != nil {
+		t.Fatalf("Failed to save contactgroup: %s", err.Error())
+	}
+
+	contact := &notify.Contact{}
+	err = db.Save(contact)
+	if err != nil {
+		t.Fatalf("Failed to save contact: %s", err.Error())
+	}
+
+	var conf Configuration
+	conf.SetDefaults()
+	conf.DeleteUnknownSeeds(db)
+
+	var checks []*checks.Check
+	db.All(&checks, -1, 0, false)
+	if len(checks) != 0 {
+		t.Errorf("Wrong number of checks left in database, got %d, expected 0", len(checks))
+	}
+
+	var hosts []*ssh.SSH
+	db.All(&hosts, -1, 0, false)
+	if len(hosts) != 0 {
+		t.Errorf("Wrong number of hosts left in database, got %d, expected 0", len(hosts))
+	}
+
+	var contacts []*notify.Contact
+	db.All(&contacts, -1, 0, false)
+	if len(contacts) != 0 {
+		t.Errorf("Wrong number of contacts left in database, got %d, expected 0", len(contacts))
+	}
+
+	var contactgroups []*notify.ContactGroup
+	db.All(&contactgroups, -1, 0, false)
+	if len(contactgroups) != 0 {
+		t.Errorf("Wrong number of contactgroups left in database, got %d, expected 0", len(contactgroups))
 	}
 }

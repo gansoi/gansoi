@@ -418,6 +418,10 @@ func runCore(_ *cobra.Command, _ []string) {
 				conf.SaveContactGroups(n)
 				conf.SaveContacts(n)
 
+				if conf.ExclusiveSeeding {
+					conf.DeleteUnknownSeeds(n)
+				}
+
 				scheduler.Run()
 			} else {
 				scheduler.Stop()

@@ -7,6 +7,7 @@ import (
 
 	"github.com/gansoi/gansoi/checks"
 	"github.com/gansoi/gansoi/database"
+	"github.com/gansoi/gansoi/logger"
 	"github.com/gansoi/gansoi/notify"
 	"github.com/gansoi/gansoi/transports/ssh"
 	"github.com/ghodss/yaml"
@@ -15,14 +16,20 @@ import (
 type (
 	// Configuration keeps configuration for a core node.
 	Configuration struct {
-		Bind          string                          `json:"bind"`
-		DataDir       string                          `json:"datadir"`
-		HTTP          HTTP                            `json:"http"`
-		HTTPRedirect  HTTPRedirect                    `json:"redirect"`
-		Hosts         map[string]ssh.SSH              `json:"hosts"`
-		Checks        map[string]*checks.Check        `json:"checks"`
-		ContactGroups map[string]*notify.ContactGroup `json:"contactgroups"`
-		Contacts      map[string]*notify.Contact      `json:"contacts"`
+		Bind             string                          `json:"bind"`
+		DataDir          string                          `json:"datadir"`
+		HTTP             HTTP                            `json:"http"`
+		HTTPRedirect     HTTPRedirect                    `json:"redirect"`
+		ExclusiveSeeding bool                            `json:"exclusive-seeding"`
+		Hosts            map[string]ssh.SSH              `json:"hosts"`
+		Checks           map[string]*checks.Check        `json:"checks"`
+		ContactGroups    map[string]*notify.ContactGroup `json:"contactgroups"`
+		Contacts         map[string]*notify.Contact      `json:"contacts"`
+
+		knownChecks        map[string]bool
+		knownHosts         map[string]bool
+		knownContactGroups map[string]bool
+		knownContacts      map[string]bool
 	}
 )
 
@@ -63,6 +70,11 @@ func (c *Configuration) SetDefaults() {
 
 	// This makes sense on a unix system.
 	c.DataDir = "/var/lib/gansoi"
+
+	c.knownChecks = make(map[string]bool)
+	c.knownHosts = make(map[string]bool)
+	c.knownContactGroups = make(map[string]bool)
+	c.knownContacts = make(map[string]bool)
 }
 
 // LoadFromFile loads a configuration from path.
@@ -118,6 +130,8 @@ func (c *Configuration) SaveChecks(w database.Writer) error {
 		if err != nil {
 			return err
 		}
+
+		c.knownChecks[check.ID] = true
 	}
 
 	return nil
@@ -184,4 +198,44 @@ func (c *Configuration) SaveContacts(w database.Writer) error {
 	}
 
 	return nil
+}
+
+// DeleteUnknownSeeds deletes all checks, hosts, contacts and contactgroups not
+// seeded from the configuration.
+func (c *Configuration) DeleteUnknownSeeds(db database.ReadWriter) {
+	var checks []*checks.Check
+	db.All(&checks, -1, 0, false)
+	for _, check := range checks {
+		if !c.knownChecks[check.ID] {
+			logger.Debug("configuration", "Deleting unknown check '%s'", check.ID)
+			db.Delete(check)
+		}
+	}
+
+	var hosts []*ssh.SSH
+	db.All(&hosts, -1, 0, false)
+	for _, host := range hosts {
+		if !c.knownHosts[host.ID] {
+			logger.Debug("configuration", "Deleting unknown host '%s'", host.ID)
+			db.Delete(host)
+		}
+	}
+
+	var contactgroups []*notify.ContactGroup
+	db.All(&contactgroups, -1, 0, false)
+	for _, group := range contactgroups {
+		if !c.knownContactGroups[group.ID] {
+			logger.Debug("configuration", "Deleting unknown contactgroup '%s'", group.ID)
+			db.Delete(group)
+		}
+	}
+
+	var contacts []*notify.Contact
+	db.All(&contacts, -1, 0, false)
+	for _, contact := range contacts {
+		if !c.knownContacts[contact.ID] {
+			logger.Debug("configuration", "Deleting unknown contact '%s'", contact.ID)
+			db.Delete(contact)
+		}
+	}
 }
