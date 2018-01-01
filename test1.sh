@@ -22,10 +22,22 @@ checks:
     agent: "http"
     arguments:
       url: "https://gansoi.com/"
+    contactgroups:
+      - "all"
     expressions:
       - "StatusCode == 200"
       - "SSLValidDays > 7"
 
+contacts:
+
+  konsole:
+    notifier: "console"
+
+contactgroups:
+
+  all:
+    members:
+      - "konsole"
 EOF
 
 export DEBUG=*

@@ -415,6 +415,8 @@ func runCore(_ *cobra.Command, _ []string) {
 
 				conf.SaveChecks(n)
 				conf.SaveHosts(n)
+				conf.SaveContactGroups(n)
+				conf.SaveContacts(n)
 
 				scheduler.Run()
 			} else {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/gansoi/gansoi/checks"
 	"github.com/gansoi/gansoi/database"
+	"github.com/gansoi/gansoi/notify"
 	"github.com/gansoi/gansoi/transports/ssh"
 	"github.com/ghodss/yaml"
 )
@@ -14,12 +15,14 @@ import (
 type (
 	// Configuration keeps configuration for a core node.
 	Configuration struct {
-		Bind         string                   `json:"bind"`
-		DataDir      string                   `json:"datadir"`
-		HTTP         HTTP                     `json:"http"`
-		HTTPRedirect HTTPRedirect             `json:"redirect"`
-		Hosts        map[string]ssh.SSH       `json:"hosts"`
-		Checks       map[string]*checks.Check `json:"checks"`
+		Bind          string                          `json:"bind"`
+		DataDir       string                          `json:"datadir"`
+		HTTP          HTTP                            `json:"http"`
+		HTTPRedirect  HTTPRedirect                    `json:"redirect"`
+		Hosts         map[string]ssh.SSH              `json:"hosts"`
+		Checks        map[string]*checks.Check        `json:"checks"`
+		ContactGroups map[string]*notify.ContactGroup `json:"contactgroups"`
+		Contacts      map[string]*notify.Contact      `json:"contacts"`
 	}
 )
 
@@ -137,6 +140,44 @@ func (c *Configuration) SaveHosts(w database.Writer) error {
 		}
 
 		err := w.Save(&h)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (c *Configuration) SaveContactGroups(w database.Writer) error {
+	for id, g := range c.ContactGroups {
+		if g.ID == "" {
+			g.ID = id
+		}
+
+		if g.Name == "" {
+			g.Name = id
+		}
+
+		err := w.Save(g)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (c *Configuration) SaveContacts(w database.Writer) error {
+	for id, contact := range c.Contacts {
+		if contact.ID == "" {
+			contact.ID = id
+		}
+
+		if contact.Name == "" {
+			contact.Name = id
+		}
+
+		err := w.Save(contact)
 		if err != nil {
 			return err
 		}
