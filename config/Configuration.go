@@ -57,8 +57,15 @@ redirect:
 `
 )
 
-// SetDefaults sets some sane configuration defaults.
-func (c *Configuration) SetDefaults() {
+// NewConfiguration returns a new configuration with sane defaults.
+func NewConfiguration() *Configuration {
+	c := &Configuration{
+		knownChecks:        make(map[string]bool),
+		knownHosts:         make(map[string]bool),
+		knownContactGroups: make(map[string]bool),
+		knownContacts:      make(map[string]bool),
+	}
+
 	// By default we bind to port 443 (HTTPS) on all interfaces on both IPv4
 	// and IPv6.
 	c.HTTP.Bind = ":443"
@@ -71,10 +78,7 @@ func (c *Configuration) SetDefaults() {
 	// This makes sense on a unix system.
 	c.DataDir = "/var/lib/gansoi"
 
-	c.knownChecks = make(map[string]bool)
-	c.knownHosts = make(map[string]bool)
-	c.knownContactGroups = make(map[string]bool)
-	c.knownContacts = make(map[string]bool)
+	return c
 }
 
 // LoadFromFile loads a configuration from path.

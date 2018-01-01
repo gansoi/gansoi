@@ -28,9 +28,8 @@ func TestLoadFromFile(t *testing.T) {
 	}
 }
 
-func TestSetDefaults(t *testing.T) {
-	var conf Configuration
-	conf.SetDefaults()
+func TestDefaults(t *testing.T) {
+	conf := NewConfiguration()
 	if conf.Bind != ":4934" {
 		t.Fatalf("Wrong default")
 	}
@@ -62,8 +61,7 @@ func (w *writer) Delete(data interface{}) error {
 func TestSaveChecks(t *testing.T) {
 	w := &writer{}
 
-	var conf Configuration
-	conf.SetDefaults()
+	conf := NewConfiguration()
 	conf.LoadFromFile("testdata/checks.yml")
 
 	err := conf.SaveChecks(w)
@@ -85,8 +83,7 @@ func TestSaveChecks(t *testing.T) {
 func TestSaveHosts(t *testing.T) {
 	w := &writer{}
 
-	var conf Configuration
-	conf.SetDefaults()
+	conf := NewConfiguration()
 	conf.LoadFromFile("testdata/hosts.yml")
 
 	err := conf.SaveHosts(w)
@@ -108,8 +105,7 @@ func TestSaveHosts(t *testing.T) {
 func TestSaveContactGroups(t *testing.T) {
 	w := &writer{}
 
-	var conf Configuration
-	conf.SetDefaults()
+	conf := NewConfiguration()
 	conf.LoadFromFile("testdata/contactgroups.yml")
 
 	err := conf.SaveContactGroups(w)
@@ -131,8 +127,7 @@ func TestSaveContactGroups(t *testing.T) {
 func TestSaveContacts(t *testing.T) {
 	w := &writer{}
 
-	var conf Configuration
-	conf.SetDefaults()
+	conf := NewConfiguration()
 	conf.LoadFromFile("testdata/contacts.yml")
 
 	err := conf.SaveContacts(w)
@@ -179,8 +174,7 @@ func TestDeleteUnknownSeeds(t *testing.T) {
 		t.Fatalf("Failed to save contact: %s", err.Error())
 	}
 
-	var conf Configuration
-	conf.SetDefaults()
+	conf := NewConfiguration()
 	conf.DeleteUnknownSeeds(db)
 
 	var checks []*checks.Check

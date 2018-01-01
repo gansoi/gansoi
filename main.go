@@ -240,15 +240,14 @@ func runCheck(printSummary bool, arguments []string) {
 }
 
 func loadConfig() *config.Configuration {
-	var conf config.Configuration
-	conf.SetDefaults()
+	conf := config.NewConfiguration()
 	err := conf.LoadFromFile(configFile)
 	if err != nil {
 		logger.Info("main", "Failed to read configuration file at %s: %s", configFile, err.Error())
 		exit(1)
 	}
 
-	return &conf
+	return conf
 }
 
 func openDatabase(conf *config.Configuration) *boltdb.BoltStore {
