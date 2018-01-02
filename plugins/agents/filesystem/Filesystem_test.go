@@ -33,7 +33,7 @@ func (m *ReaderMock) Read(p []byte) (int, error) {
 }
 
 func (m *ParserMock) parse(p []byte) ([]filesystemInfo, error) {
-	return []filesystemInfo{filesystemInfo{Device: "/dev/sda1"}}, m.parseError
+	return []filesystemInfo{{Device: "/dev/sda1"}}, m.parseError
 }
 
 func TestRemoteCheck(t *testing.T) {
@@ -98,8 +98,8 @@ func TestInvokeRemoteCommandReadError(t *testing.T) {
 
 func TestSetResult(t *testing.T) {
 	fsInfos := []filesystemInfo{
-		filesystemInfo{Device: "/dev/sda1", Mountpoint: "/", Total: 10, Available: 5, Used: 5, UsedPercent: 50},
-		filesystemInfo{Device: "/dev/sda2", Mountpoint: "/tmp", Total: 10, Available: 1, Used: 9, UsedPercent: 90},
+		{Device: "/dev/sda1", Mountpoint: "/", Total: 10, Available: 5, Used: 5, UsedPercent: 50},
+		{Device: "/dev/sda2", Mountpoint: "/tmp", Total: 10, Available: 1, Used: 9, UsedPercent: 90},
 	}
 	fs := Filesystem{}
 	result := plugins.NewAgentResult()
@@ -114,7 +114,7 @@ func TestSetResult(t *testing.T) {
 
 func TestSetResultNoRoot(t *testing.T) {
 	fsInfos := []filesystemInfo{
-		filesystemInfo{Device: "/dev/sda1", Mountpoint: "/foo", Total: 10, Available: 5, Used: 5, UsedPercent: 50},
+		{Device: "/dev/sda1", Mountpoint: "/foo", Total: 10, Available: 5, Used: 5, UsedPercent: 50},
 	}
 	fs := Filesystem{}
 	result := plugins.NewAgentResult()
@@ -137,7 +137,7 @@ func TestSetResultEmpty(t *testing.T) {
 	}
 }
 func TestSetResultWithExcludes(t *testing.T) {
-	fsInfos := []filesystemInfo{filesystemInfo{Device: "/dev/sda1"}}
+	fsInfos := []filesystemInfo{{Device: "/dev/sda1"}}
 	fs := Filesystem{CommaSeparatedExcludedDevices: "/dev/sda1,/dev/sda2"}
 	result := plugins.NewAgentResult()
 	err := fs.setResults(result, fsInfos)
