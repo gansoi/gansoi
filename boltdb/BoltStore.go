@@ -23,10 +23,10 @@ type (
 	// BoltStore is the lowest level of the gansoi database, it represent the
 	// on-disk database. BoltStore implements raft.FSM and database.Reader.
 	BoltStore struct {
-		dbMutex       sync.RWMutex
+		dbMutex       *sync.RWMutex
 		db            *storm.DB
 		broadcastFrom uint64
-		listenersLock sync.RWMutex
+		listenersLock *sync.RWMutex
 		listeners     []database.Listener
 	}
 )
@@ -42,7 +42,9 @@ var (
 // doesn't exist.
 func NewBoltStore(path string) (*BoltStore, error) {
 	d := &BoltStore{
+		dbMutex:       new(sync.RWMutex),
 		broadcastFrom: math.MaxUint64,
+		listenersLock: new(sync.RWMutex),
 	}
 
 	err := d.open(path)
