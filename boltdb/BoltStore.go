@@ -109,9 +109,7 @@ func (d *BoltStore) Apply(l *raft.Log) interface{} {
 	entry := &database.LogEntry{}
 	err := json.Unmarshal(l.Data, entry)
 	if err != nil {
-		// This should not happen..?
-		fmt.Printf("%s: '%s'\n", err.Error(), string(l.Data))
-		return nil
+		return err
 	}
 
 	result := d.ProcessLogEntry(entry)

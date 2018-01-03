@@ -195,9 +195,8 @@ func TestBoltStoreApply(t *testing.T) {
 	entry := database.NewLogEntry(database.CommandSave, &d)
 	l := &raft.Log{}
 	l.Type = raft.LogCommand
-
 	ret := db.Apply(l)
-	if ret != nil {
+	if ret == nil {
 		t.Fatalf("Apply() failed to recognize broken log entry")
 	}
 
