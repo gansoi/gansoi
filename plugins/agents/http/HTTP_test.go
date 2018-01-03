@@ -136,9 +136,7 @@ func TestCheckReadFailed(t *testing.T) {
 		if err != nil {
 			return
 		}
-		n, _ := conn.Read(buf)
-		str := string(buf[:n])
-		fmt.Printf("%s\n", str)
+		conn.Read(buf)
 
 		conn.Close()
 	}()
