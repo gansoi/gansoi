@@ -3,9 +3,11 @@ package boltdb
 import (
 	"errors"
 	"fmt"
+	"math"
 	"math/rand"
 	"os"
 	"path"
+	"sync"
 
 	"github.com/gansoi/gansoi/database"
 )
@@ -21,7 +23,11 @@ type (
 // NewTestStore returns a store suited for testing.
 func NewTestStore() *TestStore {
 	p := path.Join(os.TempDir(), fmt.Sprintf(".gansoi-test-%d.db", rand.Int63()))
-	d := BoltStore{}
+	d := BoltStore{
+		dbMutex:       new(sync.RWMutex),
+		broadcastFrom: math.MaxUint64,
+		listenersLock: new(sync.RWMutex),
+	}
 
 	d.open(p)
 	os.Remove(p)

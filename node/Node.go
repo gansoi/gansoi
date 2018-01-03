@@ -170,7 +170,7 @@ func (n *Node) Run() {
 // new clusters. Not new nodes in a existing cluster.
 func (n *Node) Bootstrap() error {
 	configuration := raft.Configuration{
-		Servers: []raft.Server{raft.Server{
+		Servers: []raft.Server{{
 			ID:       raft.ServerID(n.self),
 			Address:  raft.ServerAddress(n.self),
 			Suffrage: raft.Voter,
