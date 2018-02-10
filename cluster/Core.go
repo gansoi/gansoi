@@ -221,6 +221,7 @@ func (c *Core) Join(address string, hash string, token string, bindPrivate strin
 	logger.Info("join", "Local core initialized")
 
 	c.info.ClusterToken = token
+	c.info.Save()
 
 	// Request to join cluster.
 	logger.Info("join", "Requesting raft join")
