@@ -7,8 +7,10 @@ import (
 	"io"
 	"math"
 	"os"
+	"path"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"github.com/asdine/storm"
@@ -70,6 +72,13 @@ func (d *BoltStore) open(filepath string) error {
 	)
 	if err != nil {
 		return err
+	}
+
+	var st syscall.Stat_t
+
+	// If possible, set owner to the same as parent directory. Fail silently.
+	if syscall.Stat(path.Dir(filepath), &st) == nil {
+		os.Chown(filepath, int(st.Uid), int(st.Gid))
 	}
 
 	d.db = db

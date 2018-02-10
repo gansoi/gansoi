@@ -7,8 +7,10 @@ import (
 	"expvar"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path"
 	"sync"
+	"syscall"
 	"time"
 
 	ginexpvar "github.com/gin-contrib/expvar"
@@ -99,9 +101,20 @@ func NewNode(stream *HTTPStream, datadir string, db database.Reader, fsm raft.FS
 		return nil, nil, err
 	}
 
-	store, err := raftboltdb.NewBoltStore(path.Join(datadir, "/raft.db"))
+	raftDBPath := path.Join(datadir, "/raft.db")
+	store, err := raftboltdb.NewBoltStore(raftDBPath)
 	if err != nil {
 		return nil, nil, err
+	}
+
+	var st syscall.Stat_t
+
+	if syscall.Stat(path.Dir(raftDBPath), &st) == nil {
+		// Try to fix ownership, fail silently.
+		os.Chown(raftDBPath, int(st.Uid), int(st.Gid))
+
+		// "snapshots" is raft.snapPath.
+		os.Chown(path.Join(datadir, "snapshots"), int(st.Uid), int(st.Gid))
 	}
 
 	n.raft, err = raft.NewRaft(
