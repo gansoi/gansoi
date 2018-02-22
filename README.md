@@ -96,7 +96,13 @@ You can run a small local Gansoi cluster for testing and development:
     $ ./test3.sh
 
 A three-node local cluster will be started shortly. You can visit the web
-interface at https://gansoi-dev.com:9002/.
+interface at https://cluster.gansoi-dev.com:9002/.
+
+Alternatively, you can launch a single node:
+
+    $ ./test1.sh
+
+The node will be available at https://gansoi-dev.com:9002/.
 
 #### Docker
 
