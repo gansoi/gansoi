@@ -155,6 +155,13 @@ func main() {
 		},
 	}
 
+	cmdDemo := &cobra.Command{
+		Use:   "demo",
+		Short: "Run a local Gansoi demo",
+		Long:  "Run a local demo accesable at https://gansoi-dev.com:9091/",
+		Run:   runDemo,
+	}
+
 	cmdVersion := &cobra.Command{
 		Use:   "version",
 		Short: "Show version and build information",
@@ -172,6 +179,7 @@ func main() {
 	rootCmd.AddCommand(cmdCore)
 	rootCmd.AddCommand(cmdCheck)
 	rootCmd.AddCommand(nagCheck)
+	rootCmd.AddCommand(cmdDemo)
 	rootCmd.AddCommand(cmdVersion)
 	rootCmd.AddCommand(hidden)
 	rootCmd.Execute()
