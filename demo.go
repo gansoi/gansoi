@@ -103,36 +103,36 @@ bind: "127.0.0.1:0"
 datadir: "{{ .Datadir }}"
 
 http:
-bind: "gansoi-dev.com:9002"
-hostnames:
-- "gansoi-dev.com"
-cert: "{{ .Datadir }}/cert.pem"
-key: "{{ .Datadir }}/key.pem"
+  bind: "gansoi-dev.com:9002"
+  hostnames:
+    - "gansoi-dev.com"
+  cert: "{{ .Datadir }}/cert.pem"
+  key: "{{ .Datadir }}/key.pem"
 
 checks:
-gansoi.com-https:
-agent: "http"
-arguments:
-  url: "https://gansoi.com/"
-expressions:
-  - "StatusCode == 200"
-  - "TimeAccumulated < 1500"
+  gansoi.com-https:
+    agent: "http"
+    arguments:
+      url: "https://gansoi.com/"
+    expressions:
+      - "StatusCode == 200"
+      - "TimeAccumulated < 1500"
 
-gansoi-com-http:
-agent: "http"
-arguments:
-  url: "http://gansoi.com/"
-  followRedirect: false
-expressions:
-  - "StatusCode == 302"
-  - "TimeAccumulated < 1500"
+  gansoi-com-http:
+    agent: "http"
+    arguments:
+      url: "http://gansoi.com/"
+      followRedirect: false
+    expressions:
+      - "StatusCode == 302"
+      - "TimeAccumulated < 1500"
 
-gansoi-com-ssh:
-agent: "ssh"
-arguments:
-  address: "gansoi.com"
-expressions:
-  - "HandshakeTime < 1000"
+  gansoi-com-ssh:
+    agent: "ssh"
+    arguments:
+      address: "gansoi.com"
+    expressions:
+      - "HandshakeTime < 1000"
 `
 )
 
