@@ -100,7 +100,7 @@ interface at https://cluster.gansoi-dev.com:9002/.
 
 Alternatively, you can launch a single node:
 
-    $ ./test1.sh
+    $ ./gansoi demo
 
 The node will be available at https://gansoi-dev.com:9002/.
 
