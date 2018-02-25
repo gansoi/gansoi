@@ -28,7 +28,7 @@ const (
 var (
 	dial = net.Dial
 
-	userAgent = fmt.Sprintf("Gansoi_http_check/%s (%s)", build.Version, build.ShortSHA)
+	userAgent = build.UserAgent + " http-agent"
 )
 
 // HTTP will request a ressource from a HTTP server.
