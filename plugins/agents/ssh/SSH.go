@@ -7,7 +7,12 @@ import (
 
 	"golang.org/x/crypto/ssh"
 
+	"github.com/gansoi/gansoi/build"
 	"github.com/gansoi/gansoi/plugins"
+)
+
+var (
+	clientVersion = "SSH-2.0-" + build.UserAgent + " ssh-agent"
 )
 
 func init() {
@@ -30,7 +35,10 @@ func defaultPort(address string) string {
 
 // Check implements plugins.Agent.
 func (s *SSH) Check(result plugins.AgentResult) error {
-	var conf ssh.ClientConfig
+	conf := ssh.ClientConfig{
+		User:          "gansoi-ssh-agent",
+		ClientVersion: clientVersion,
+	}
 
 	// Save host host/key info.
 	conf.HostKeyCallback = func(_ string, _ net.Addr, key ssh.PublicKey) error {
