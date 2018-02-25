@@ -9,6 +9,8 @@ import (
 	"encoding/json"
 	"errors"
 	"time"
+
+	"github.com/gansoi/gansoi/build"
 )
 
 type (
@@ -21,10 +23,8 @@ type (
 
 var (
 	secret = make([]byte, 16)
-)
 
-const (
-	helo = "Gansoi ping agent"
+	helo = build.UserAgent + " ping-agent"
 )
 
 // NewICMPPayload returns a new ICMPPayload set to current time.
