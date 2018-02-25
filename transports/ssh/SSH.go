@@ -13,6 +13,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/gansoi/gansoi/build"
 	"github.com/gansoi/gansoi/database"
 	"github.com/gansoi/gansoi/logger"
 
@@ -39,6 +40,8 @@ type (
 var (
 	signerLock sync.Mutex
 	signer     ssh.Signer
+
+	clientVersion = "SSH-2.0-" + build.UserAgent + " ssh-transport"
 
 	// ErrNotReady will be returned if the SSH transport is not ready when
 	// calling Connect.
@@ -131,6 +134,7 @@ func (s *SSH) connect() (*ssh.Client, error) {
 		User:            s.Username,
 		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // FIXME
+		ClientVersion:   clientVersion,
 	}
 	signerLock.Unlock()
 

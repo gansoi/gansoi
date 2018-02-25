@@ -2,6 +2,7 @@
 package build
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -23,6 +24,8 @@ var (
 
 	// timestamp is used as intermediate from the build step.
 	timestamp string
+
+	UserAgent string
 )
 
 func init() {
@@ -35,4 +38,6 @@ func init() {
 	if len(SHA) > 7 {
 		ShortSHA = SHA[0:7]
 	}
+
+	UserAgent = fmt.Sprintf("Gansoi/%s (%s)", Version, ShortSHA)
 }
