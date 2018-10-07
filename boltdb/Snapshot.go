@@ -1,8 +1,8 @@
 package boltdb
 
 import (
-	"github.com/coreos/bbolt"
 	"github.com/hashicorp/raft"
+	"go.etcd.io/bbolt"
 )
 
 type (
@@ -15,7 +15,7 @@ type (
 // Persist implements raft.FSMSnapshot.
 func (s *Snapshot) Persist(sink raft.SnapshotSink) error {
 
-	err := s.db.Storm().Bolt.View(func(tx *bolt.Tx) error {
+	err := s.db.Storm().Bolt.View(func(tx *bbolt.Tx) error {
 		_, err := tx.WriteTo(sink)
 
 		return err
