@@ -15,8 +15,8 @@ import (
 
 	"github.com/asdine/storm"
 	"github.com/asdine/storm/index"
-	"github.com/coreos/bbolt"
 	"github.com/hashicorp/raft"
+	"go.etcd.io/bbolt"
 
 	"github.com/gansoi/gansoi/database"
 )
@@ -68,7 +68,7 @@ func (d *BoltStore) Close() error {
 func (d *BoltStore) open(filepath string) error {
 	db, err := storm.Open(
 		filepath,
-		storm.BoltOptions(0600, &bolt.Options{Timeout: 1 * time.Second}),
+		storm.BoltOptions(0600, &bbolt.Options{Timeout: 1 * time.Second}),
 	)
 	if err != nil {
 		return err
@@ -268,7 +268,7 @@ func (d *BoltStore) RegisterListener(listener database.Listener) {
 // the database to w.
 func (d *BoltStore) WriteTo(w io.Writer) (int64, error) {
 	var len int64
-	err := d.Storm().Bolt.View(func(tx *bolt.Tx) error {
+	err := d.Storm().Bolt.View(func(tx *bbolt.Tx) error {
 		var err error
 
 		len, err = tx.WriteTo(w)
