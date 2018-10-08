@@ -15,7 +15,7 @@ type (
 func (r *failReader) Read(p []byte) (n int, err error) {
 	r.called++
 
-	if r.called == r.failAt {
+	if r.called >= r.failAt {
 		return 0, errors.New("failReader fails")
 	}
 
