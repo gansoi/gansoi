@@ -16,6 +16,7 @@ type (
 	// TestStore can be used when testing database functions.
 	TestStore struct {
 		BoltStore
+		path     string
 		FailSave bool
 	}
 )
@@ -30,10 +31,10 @@ func NewTestStore() *TestStore {
 	}
 
 	d.open(p)
-	os.Remove(p)
 
 	return &TestStore{
 		BoltStore: d,
+		path:      p,
 	}
 }
 
@@ -53,4 +54,11 @@ func (t *TestStore) Delete(data interface{}) error {
 
 // RegisterListener implements database.Broadcaster - but does nothing.
 func (t *TestStore) RegisterListener(listener database.Listener) {
+}
+
+// Close will delete the underlying file and close the database.
+func (t *TestStore) Close() error {
+	os.Remove(t.path)
+
+	return t.BoltStore.Close()
 }
