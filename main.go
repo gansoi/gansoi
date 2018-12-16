@@ -3,9 +3,11 @@ package main
 import (
 	"bytes"
 	"compress/gzip"
+	"context"
 	"crypto/sha256"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -21,7 +23,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 
-	"rsc.io/letsencrypt"
+	"golang.org/x/crypto/acme/autocert"
 
 	"github.com/gansoi/gansoi/boltdb"
 	"github.com/gansoi/gansoi/build"
@@ -614,25 +616,28 @@ func runCore(_ *cobra.Command, _ []string) {
 	}
 
 	if conf.HTTP.TLS {
-		var tlsConfig tls.Config
-
+		// If no key and cert is defined, we try letsencrypt.
 		if conf.HTTP.CertPath == "" || conf.HTTP.KeyPath == "" {
-			var lManager letsencrypt.Manager
+			hostPolicy := func(ctx context.Context, host string) error {
+				for _, h := range conf.HTTP.Hostnames {
+					if host == h {
+						return nil
+					}
+				}
 
-			cacheFile := path.Join(conf.DataDir, "letsencrypt.cache")
-
-			if err = lManager.CacheFile(cacheFile); err != nil {
-				logger.Info("main", "Failed to open Letsencrypt cachefile at %s: %s", cacheFile, err.Error())
-				exit(1)
+				return errors.New("Unknown TLS host")
 			}
 
-			// ensure we dont ask for random certificates
-			lManager.SetHosts(conf.HTTP.Hostnames)
+			cacheDir := path.Join(conf.DataDir, "autocert.cache")
 
-			tlsConfig.GetCertificate = lManager.GetCertificate
+			lManager := autocert.Manager{
+				Prompt:     autocert.AcceptTOS,
+				Cache:      autocert.DirCache(cacheDir),
+				HostPolicy: hostPolicy,
+			}
+
+			s.TLSConfig = lManager.TLSConfig()
 		}
-
-		s.TLSConfig = &tlsConfig
 
 		// if GetCertificate was set earlier - ListenAndServeTLS silently ignores cert and key
 		err = s.ListenAndServeTLS(conf.HTTP.CertPath, conf.HTTP.KeyPath)
