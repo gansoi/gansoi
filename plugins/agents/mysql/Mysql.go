@@ -21,9 +21,10 @@ func init() {
 
 // Check implements plugins.Agent.
 func (m *MySQL) Check(result plugins.AgentResult) error {
-	// The only thing that will make this fail is if the mysql driver is not
-	// loaded. We ignore that.
-	db, _ := sql.Open("mysql", m.DSN)
+	db, err := sql.Open("mysql", m.DSN)
+	if err != nil {
+		return err
+	}
 	defer db.Close()
 
 	rows, err := db.Query("SHOW GLOBAL STATUS")
