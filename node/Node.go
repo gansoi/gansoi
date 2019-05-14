@@ -15,6 +15,7 @@ import (
 
 	ginexpvar "github.com/gin-contrib/expvar"
 	"github.com/gin-gonic/gin"
+	hclog "github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/raft"
 	"github.com/hashicorp/raft-boltdb"
 
@@ -88,7 +89,7 @@ func NewNode(stream *HTTPStream, datadir string, db database.Reader, fsm raft.FS
 	conf.ElectionTimeout = 1000 * time.Millisecond
 	conf.LeaderLeaseTimeout = 500 * time.Millisecond
 	conf.CommitTimeout = 200 * time.Millisecond
-	conf.Logger = logger.InfoLogger("raft")
+	conf.Logger = hclog.New(nil)
 	conf.SnapshotInterval = time.Second * 60
 	conf.SnapshotThreshold = 100
 	conf.LocalID = raft.ServerID(n.self)
