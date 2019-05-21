@@ -7,7 +7,7 @@
 g.Collection = function(identifier) {
     var self = this;
 
-    self.dataset = new vis.DataSet([], {
+    self.dataset = new timeline.DataSet([], {
         fieldId: identifier
     });
 

@@ -2,7 +2,7 @@
 <head>
     <title>Gansoi monitoring</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/timeline-plus/dist/timeline.css">
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -177,7 +177,7 @@ Down: {{ $root.summary.states.down }}<br />
 <template id="template-checks">
 <div>
  <h2>Checks</h2>
- <p ref="timeline"></p>
+ <p ref="timeline_"></p>
  <router-link class="button" to="/check/edit/new">+ Add Check</router-link>
 </div>
 </template>
@@ -192,7 +192,7 @@ Down: {{ $root.summary.states.down }}<br />
    <button class="button blue" v-on:click="cloneCheck(this)">⨦ Clone</button>
   </span>
  </h2>
- <div ref="timeline"></div>
+ <div ref="timeline_"></div>
  <table>
   <tbody v-if="check">
    <tr>
@@ -571,7 +571,7 @@ Down: {{ $root.summary.states.down }}<br />
 <script src="https://unpkg.com/vue@2.1.8/dist/vue.js"></script>
 <script src="https://unpkg.com/vue-resource@1.0.3/dist/vue-resource.min.js"></script>
 <script src="https://unpkg.com/vue-router@2.0.1"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.20.1/vis.min.js"></script>
+<script src="https://unpkg.com/timeline-plus/dist/timeline.js"></script>
 <script src="/g.js"></script>
 <script src="/g-storage.js"></script>
 <script src="/g-audio.js"></script>
