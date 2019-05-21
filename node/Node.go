@@ -17,7 +17,7 @@ import (
 	"github.com/gin-gonic/gin"
 	hclog "github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/raft"
-	"github.com/hashicorp/raft-boltdb"
+	raftboltdb "github.com/hashicorp/raft-boltdb"
 
 	"github.com/gansoi/gansoi/ca"
 	"github.com/gansoi/gansoi/database"
@@ -67,7 +67,7 @@ func init() {
 }
 
 // NewNode will initialize a new node.
-func NewNode(stream *HTTPStream, datadir string, db database.Reader, fsm raft.FSM, self string, pair []tls.Certificate, coreCA *ca.CA) (*Node, func() error, error) {
+func NewNode(stream raft.StreamLayer, datadir string, db database.Reader, fsm raft.FSM, self string, pair []tls.Certificate, coreCA *ca.CA) (*Node, func() error, error) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			Certificates:       pair,

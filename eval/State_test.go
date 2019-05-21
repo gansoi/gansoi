@@ -86,7 +86,7 @@ func TestUnmarshalJSON(t *testing.T) {
 		t.Fatalf("Failed to decode JSON properly")
 	}
 
-	err = json.Unmarshal([]byte(`"hello"`), nil)
+	err = json.Unmarshal([]byte(`"hello"`), &out)
 	if err == nil {
 		t.Fatalf("Failed to catch invalid input")
 	}

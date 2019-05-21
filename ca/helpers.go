@@ -22,13 +22,13 @@ var (
 func DecodeCert(certPEM []byte) (*x509.Certificate, error) {
 	b, _ := pem.Decode(certPEM)
 	if b == nil {
-		return nil, errors.New("Certificate PEM decode failed")
+		return nil, errors.New("certificate PEM decode failed")
 	}
 
 	// Read certificate.
 	cert, err := x509.ParseCertificate(b.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("ParseCertificate: %s", err.Error())
+		return nil, fmt.Errorf("error parsing certificate: %s", err.Error())
 	}
 
 	return cert, nil
@@ -39,17 +39,17 @@ func DecodeKey(keyPEM []byte) (*ecdsa.PrivateKey, error) {
 	// Decode key.
 	b, _ := pem.Decode(keyPEM)
 	if b == nil || len(b.Bytes) < 1 {
-		return nil, errors.New("Key PEM decode failed")
+		return nil, errors.New("key PEM decode failed")
 	}
 
 	if b.Type != "EC PRIVATE KEY" {
-		return nil, errors.New("Wrong key type")
+		return nil, errors.New("key is not elliptic curve")
 	}
 
 	// Read key.
 	key, err := x509.ParseECPrivateKey(b.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("Key parse failed: %s", err.Error())
+		return nil, fmt.Errorf("key parse failed: %s", err.Error())
 	}
 
 	return key, nil
@@ -123,7 +123,7 @@ func GenerateCSR(key *ecdsa.PrivateKey, commonName string, ips []net.IP) (*x509.
 	}
 
 	if commonName == "" {
-		return nil, errors.New("Empty commonName")
+		return nil, errors.New("empty commonName")
 	}
 
 	template := x509.CertificateRequest{

@@ -115,7 +115,7 @@ func (e *Evaluator) evaluteHost(hostEval *Evaluation) (*Evaluation, error) {
 		states[eval.Hosts[key]]++
 	}
 
-	switch true {
+	switch {
 	case states[StateUnknown] > 0:
 		state = StateUnknown
 	case states[StateDown] > 0:

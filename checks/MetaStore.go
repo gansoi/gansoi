@@ -69,6 +69,7 @@ func (s *MetaStore) populate(db database.Reader) error {
 	}
 
 	for _, c := range allChecks {
+		c := c // pin
 		s.addCheck(clock, &c)
 	}
 

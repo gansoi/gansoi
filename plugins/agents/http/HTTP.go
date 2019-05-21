@@ -119,7 +119,7 @@ func (h *HTTP) Check(result plugins.AgentResult) error {
 			if len(state.PeerCertificates) > 0 {
 				cert := state.PeerCertificates[0]
 				notAfter := cert.NotAfter
-				result.AddValue("SSLValidDays", notAfter.Sub(time.Now()).Hours()/24.0)
+				result.AddValue("SSLValidDays", time.Until(notAfter).Hours()/24.0)
 				result.AddValue("SSLCommonName", cert.Subject.CommonName)
 			}
 

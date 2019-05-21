@@ -43,23 +43,23 @@ func (p *ICMPPayload) Bytes() []byte {
 	h := md5.New()
 	h.Write(secret)
 	h.Write(msg)
-	digest := h.Sum(nil)[:]
+	digest := h.Sum(nil)
 
 	return append(digest, msg...)
 }
 
 func (p *ICMPPayload) Read(payload []byte) error {
 	if len(payload) < 16 {
-		return errors.New("Payload too short")
+		return errors.New("payload too short")
 	}
 
 	h := md5.New()
 	h.Write(secret)
 	h.Write(payload[16:])
-	digest := h.Sum(nil)[:]
+	digest := h.Sum(nil)
 
 	if !bytes.Equal(digest, payload[:16]) {
-		return errors.New("Checksum error")
+		return errors.New("checksum error")
 	}
 
 	return json.Unmarshal(payload[16:], p)

@@ -611,7 +611,7 @@ func runCore(_ *cobra.Command, _ []string) {
 	logger.Info("main", "Binding public interface to %s", conf.HTTP.Bind)
 
 	if conf.HTTPRedirect.Bind != "" && conf.HTTPRedirect.Target != "" {
-		handler := http.RedirectHandler(conf.HTTPRedirect.Target, 307)
+		handler := http.RedirectHandler(conf.HTTPRedirect.Target, http.StatusTemporaryRedirect)
 		go http.ListenAndServe(conf.HTTPRedirect.Bind, handler)
 	}
 
@@ -625,7 +625,7 @@ func runCore(_ *cobra.Command, _ []string) {
 					}
 				}
 
-				return errors.New("Unknown TLS host")
+				return errors.New("unknown TLS host")
 			}
 
 			cacheDir := path.Join(conf.DataDir, "autocert.cache")

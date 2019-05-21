@@ -113,7 +113,7 @@ func (h *HTTPStream) Dial(address raft.ServerAddress, timeout time.Duration) (ne
 // Accept waits for and returns the next connection to the listener.
 func (h *HTTPStream) Accept() (net.Conn, error) {
 	if atomic.LoadInt32(&h.closed) == 1 {
-		return nil, errors.New("Server is shutting down")
+		return nil, errors.New("server is shutting down")
 	}
 
 	accepted.Add(1)

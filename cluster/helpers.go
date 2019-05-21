@@ -9,8 +9,7 @@ func localIps() []net.IP {
 	addrs, _ := net.InterfaceAddrs()
 
 	for _, addr := range addrs {
-		switch v := addr.(type) {
-		case *net.IPNet:
+		if v, ok := addr.(*net.IPNet); ok {
 			ips = append(ips, v.IP)
 		}
 	}

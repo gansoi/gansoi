@@ -51,16 +51,16 @@ func RunCheck(transport transports.Transport, check *Check) (checkResult *CheckR
 		return checkResult
 	}
 
-	switch agent.(type) {
+	switch a := agent.(type) {
 	case plugins.RemoteAgent:
 		if transport == nil {
 			checkResult.Error = "no host"
 			return checkResult
 		}
 
-		err = agent.(plugins.RemoteAgent).RemoteCheck(transport, agentResult)
+		err = a.RemoteCheck(transport, agentResult)
 	case plugins.Agent:
-		err = agent.(plugins.Agent).Check(agentResult)
+		err = a.Check(agentResult)
 	}
 
 	if err != nil {
@@ -69,7 +69,7 @@ func RunCheck(transport transports.Transport, check *Check) (checkResult *CheckR
 	}
 
 	// If any expressions is defined, we try to evaluate them until one fails.
-	if len(check.Expressions) > 0 && err == nil {
+	if len(check.Expressions) > 0 {
 		err = check.Evaluate(agentResult)
 	}
 

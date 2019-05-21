@@ -123,7 +123,7 @@ func (s State) MarshalText() ([]byte, error) {
 func (s *State) UnmarshalText(text []byte) error {
 	state, found := textToState[string(text)]
 	if !found {
-		return fmt.Errorf("Cannot unmarshal %s to state", string(text))
+		return fmt.Errorf("cannot unmarshal %s to state", string(text))
 	}
 
 	*s = state

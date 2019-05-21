@@ -18,7 +18,7 @@ type (
 
 var (
 	// ErrSyntax will be returned, if we don't understand the format of /proc/meminfo.
-	ErrSyntax = errors.New("Unknown format of /proc/meminfo")
+	ErrSyntax = errors.New("unknown format of /proc/meminfo")
 )
 
 func init() {

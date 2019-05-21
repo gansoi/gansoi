@@ -66,23 +66,23 @@ func OpenCA(keyPEM []byte, certPEM []byte) (*CA, error) {
 
 	ca.privateKey, err = DecodeKey(keyPEM)
 	if err != nil {
-		return nil, fmt.Errorf("Key parse failed: %s", err.Error())
+		return nil, fmt.Errorf("key parse failed: %s", err.Error())
 	}
 
 	ca.Certificate, err = DecodeCert(certPEM)
 	if err != nil {
-		return nil, fmt.Errorf("ParseCertificate: %s", err.Error())
+		return nil, fmt.Errorf("parse cert: %s", err.Error())
 	}
 
 	// Check that we're self-signed.
 	err = ca.Certificate.CheckSignatureFrom(ca.Certificate)
 	if err != nil {
-		return nil, errors.New("The certificate is not self-signed")
+		return nil, errors.New("the certificate is not self-signed")
 	}
 
 	pub, ok := ca.Certificate.PublicKey.(*ecdsa.PublicKey)
 	if !ok {
-		return nil, errors.New("Public key is not a ECDSA key")
+		return nil, errors.New("public key is not a ECDSA key")
 	}
 
 	if pub.X.Cmp(ca.privateKey.X) != 0 || pub.Y.Cmp(ca.privateKey.Y) != 0 {
@@ -102,7 +102,7 @@ func (ca *CA) Fingerprint256() string {
 // CertificatePEM will return the root certificate in PEM format.
 func (ca *CA) CertificatePEM() ([]byte, error) {
 	if ca.Certificate == nil {
-		return nil, fmt.Errorf("No certificate set")
+		return nil, fmt.Errorf("no certificate set")
 	}
 
 	return EncodeCert(ca.Certificate)
@@ -111,7 +111,7 @@ func (ca *CA) CertificatePEM() ([]byte, error) {
 // KeyPEM will return the private CA key PEM encoded.
 func (ca *CA) KeyPEM() ([]byte, error) {
 	if ca.privateKey == nil {
-		return nil, fmt.Errorf("No private key set")
+		return nil, fmt.Errorf("no private key set")
 	}
 
 	return EncodeKey(ca.privateKey)
@@ -136,7 +136,7 @@ func (ca *CA) SignCSR(csr *x509.CertificateRequest) (*x509.Certificate, error) {
 
 	derBytes, err := x509.CreateCertificate(randSource, template, ca.Certificate, csr.PublicKey, ca.privateKey)
 	if err != nil {
-		return nil, fmt.Errorf("CreateCertificate: %s", err.Error())
+		return nil, fmt.Errorf("failed to create certificate: %s", err.Error())
 	}
 
 	// Ignore errors from parsing a valid cert created by us.
@@ -148,7 +148,7 @@ func (ca *CA) SignCSR(csr *x509.CertificateRequest) (*x509.Certificate, error) {
 // Verify that cert is signed by our root.
 func (ca *CA) Verify(cert *x509.Certificate) (bool, error) {
 	if cert == nil {
-		return false, errors.New("No certificate")
+		return false, errors.New("no certificate")
 	}
 
 	opts := x509.VerifyOptions{}
@@ -187,11 +187,11 @@ func (ca *CA) CertPool() *x509.CertPool {
 // signed by this CA.
 func (ca *CA) VerifyHTTPRequest(req *http.Request) (string, error) {
 	if ca.Certificate == nil {
-		return "", errors.New("CA not ready")
+		return "", errors.New("certificate authority not ready")
 	}
 
 	if len(req.TLS.PeerCertificates) < 1 {
-		return "", errors.New("No certificate provided")
+		return "", errors.New("no certificate provided")
 	}
 
 	clientCert := req.TLS.PeerCertificates[0]
