@@ -375,42 +375,42 @@ select:hover, .button:hover, .clickable:hover {
     transform: scale(1.1);
 }
 
-.vis-time-axis .vis-text {
+.timeline-time-axis .timeline-text {
     color: #f0f1f1;
 }
 
-.vis-item.vis-background.down {
+.timeline-item.timeline-background.down {
     background-color: rgba(170, 0, 0, 0.4);
 }
 
-.vis-item.vis-background.up {
+.timeline-item.timeline-background.up {
     background-color: rgba(0, 150, 0, 0.4);
 }
 
-.vis-timeline {
+.timeline-timeline {
     border: 0px;
 }
 
-.vis-labelset .vis-label {
+.timeline-labelset .timeline-label {
     color: #f0f1f1;
 }
 
-.vis-foreground > .vis-group, .vis-label, .vis-labelset .vis-label, .vis-panel.vis-center, .vis-panel.vis-left, .vis-panel.vis-right {
+.timeline-foreground > .timeline-group, .timeline-label, .timeline-labelset .timeline-label, .timeline-panel.timeline-center, .timeline-panel.timeline-left, .timeline-panel.timeline-right {
     background-color: #454646;
     border-top: 1px solid #616363;
     border-bottom: 1px solid rgba(0,0,0, 0.25);
     border-left: 1px solid #616363;
 }
 
-.vis-foreground > .vis-group, .vis-label {
+.timeline-foreground > .timeline-group, .timeline-label {
     border-right: 1px solid #333434;
 }
 
-.vis-panel.vis-bottom {
+.timeline-panel.timeline-bottom {
     border-left-style: none;
 }
 
-.vis-current-time {
+.timeline-current-time {
     color: #dd0;
     background-color: #dd0;
     width: 1px;

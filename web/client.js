@@ -185,7 +185,7 @@ var listChecks = Vue.component('list-checks', {
             return (item.host_id == '');
         };
 
-        var dataview = new vis.DataView(evaluations.dataset, {
+        var dataview = new timeline.DataView(evaluations.dataset, {
             filter: filter,
             fields: {
                 id: 'id',
@@ -219,21 +219,11 @@ var listChecks = Vue.component('list-checks', {
             groupTemplate: groupTemplate
         };
 
-        // When vis.js loads it's data, it will create lots of reflows. This
-        // trick allows us to avoid all these reflows during initial rendering
-        // with the price of some occasional jiggering when adding the timeline
-        // to the DOM. I think it's worth it. For my tests with ~5000 entries
-        // the load time went from over 30 seconds to under 900ms.
-        var fragment = new DocumentFragment();
-
-        var timeline = new vis.Timeline(
-            fragment,
+        var timeline_ = new timeline.Timeline(
+            this.$refs.timeline_,
             dataview,
             checks.dataset, // group by checks.
             options);
-
-        // Insert the graph into the main DOM.
-        this.$refs.timeline.replaceWith(fragment);
     },
 
     template: '#template-checks'
@@ -440,7 +430,7 @@ var viewCheck = Vue.component('view-check', {
         // start in the past.
         var first = now;
 
-        var groups = new vis.DataSet();
+        var groups = new timeline.DataSet();
 
         groups.add({
             id: '',
@@ -477,7 +467,7 @@ var viewCheck = Vue.component('view-check', {
             return false;
         };
 
-        var dataview = new vis.DataView(evaluations.dataset, {
+        var dataview = new timeline.DataView(evaluations.dataset, {
             filter: filter,
             fields: {
                 id: 'id',
@@ -502,8 +492,8 @@ var viewCheck = Vue.component('view-check', {
             type: 'background'
         };
 
-        var timeline = new vis.Timeline(
-            this.$refs.timeline,
+        var timeline_ = new timeline.Timeline(
+            this.$refs.timeline_,
             dataview,
             groups.get(),
             options);
