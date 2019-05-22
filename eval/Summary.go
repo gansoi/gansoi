@@ -73,15 +73,15 @@ func (s *Summary) PostApply(leader bool, command database.Command, data interfac
 	_ = s.db.Save(s)
 }
 
-// RemoveCheck will remove the check identifier by ID from summary.
-func (s *Summary) RemoveCheck(ID string) {
-	delete(s.checks, ID)
+// RemoveCheck will remove the check identifier by id from summary.
+func (s *Summary) RemoveCheck(id string) {
+	delete(s.checks, id)
 }
 
 // AddCheck adds a check to the internal list of check IDs.
-func (s *Summary) AddCheck(ID string) {
-	state := s.checks[ID]
-	s.checks[ID] = state
+func (s *Summary) AddCheck(id string) {
+	state := s.checks[id]
+	s.checks[id] = state
 }
 
 // summarize will count and summarize all known and unknown check

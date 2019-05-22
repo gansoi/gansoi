@@ -177,8 +177,7 @@ func (i *ICMPService) gotReply(id uint16, payload []byte) {
 func (i *ICMPService) processPacket4(bytes []byte) {
 	m, _ := icmp.ParseMessage(1, bytes)
 
-	switch packet := m.Body.(type) {
-	case *icmp.Echo:
+	if packet, ok := m.Body.(*icmp.Echo); ok {
 		i.gotReply(uint16(packet.ID), packet.Data)
 	}
 }
@@ -187,8 +186,7 @@ func (i *ICMPService) processPacket6(bytes []byte) {
 	// Protocol 58 is IPv6-ICMP as described in rfc 2460.
 	m, _ := icmp.ParseMessage(58, bytes)
 
-	switch packet := m.Body.(type) {
-	case *icmp.Echo:
+	if packet, ok := m.Body.(*icmp.Echo); ok {
 		i.gotReply(uint16(packet.ID), packet.Data)
 	}
 }

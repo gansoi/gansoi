@@ -184,7 +184,7 @@ func (c *Core) Join(address string, hash string, token string, bindPrivate strin
 	resp.Body.Close()
 
 	if fmt.Sprintf("%x", sha256.Sum256(c.info.CACert)) != hash {
-		return errors.New("Remote certifcate hash doesn't match")
+		return errors.New("remote certifcate hash doesn't match")
 	}
 
 	_, err = ca.DecodeCert(c.info.CACert)
@@ -279,7 +279,7 @@ func (c *Core) handleCert(context *gin.Context) {
 func (c *Core) handleKey(context *gin.Context) {
 	token := context.Request.Header.Get("X-Gansoi-Token")
 
-	if token != string(c.info.ClusterToken) {
+	if token != c.info.ClusterToken {
 		context.Data(401, "text/plain", []byte("token mismatch"))
 		return
 	}

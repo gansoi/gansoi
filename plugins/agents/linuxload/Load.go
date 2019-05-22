@@ -15,7 +15,7 @@ type (
 
 var (
 	// ErrSyntax will be returned, if we don't understand the format of /proc/loadavg.
-	ErrSyntax = errors.New("Unknown format of /proc/loadavg")
+	ErrSyntax = errors.New("unknown format of /proc/loadavg")
 )
 
 func init() {

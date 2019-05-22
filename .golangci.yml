@@ -1,0 +1,18 @@
+run:
+  tests: false
+
+linters:
+  enable-all: true
+  disable:
+    - errcheck
+    - gochecknoglobals
+    - gochecknoinits
+    - lll
+    - gosec
+    - unparam
+
+issues:
+  exclude-rules:
+    - text: "captLocal: `URL' should not be capitalized"
+      linters:
+        - gocritic

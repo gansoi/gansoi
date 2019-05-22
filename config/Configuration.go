@@ -38,25 +38,6 @@ const (
 	DefaultPath = "/etc/gansoi.yml"
 )
 
-var (
-	exampleConfig = `# Example configuration for gansoi.
-bind: ":4934"
-datadir: "/var/lib/gansoi"
-
-http:
-  bind: ":443"
-  tls: true
-  hostnames:
-    - "gansoi.example.com"
-  cert: "/etc/gansoi/me-cert.pem"
-  key: "/etc/gansoi/me-key.pem"
-
-redirect:
-  bind: ":80"
-  target: "https://gansoi.example.com/"
-`
-)
-
 // NewConfiguration returns a new configuration with sane defaults.
 func NewConfiguration() *Configuration {
 	c := &Configuration{
@@ -145,6 +126,8 @@ func (c *Configuration) SaveChecks(w database.Writer) error {
 // database.Writer.
 func (c *Configuration) SaveHosts(w database.Writer) error {
 	for id, h := range c.Hosts {
+		h := h // pin
+
 		if h.ID == "" {
 			h.ID = id
 		}

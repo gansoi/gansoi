@@ -40,11 +40,10 @@ func (n *Notifier) PostApply(leader bool, command database.Command, data interfa
 		return
 	}
 
-	switch data.(type) {
-	case *eval.Evaluation:
-		e := n.gotEvaluation(data.(*eval.Evaluation))
-		if e != nil {
-			logger.Debug("notify", "%s", e.Error())
+	if e, ok := data.(*eval.Evaluation); ok {
+		err := n.gotEvaluation(e)
+		if err != nil {
+			logger.Debug("notify", "%s", err.Error())
 		}
 	}
 }

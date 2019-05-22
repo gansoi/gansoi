@@ -21,10 +21,10 @@ type (
 )
 
 // LoadContact will read a contact from db.
-func LoadContact(db database.Reader, ID string) (*Contact, error) {
+func LoadContact(db database.Reader, id string) (*Contact, error) {
 	var contact Contact
 
-	err := db.One("ID", ID, &contact)
+	err := db.One("ID", id, &contact)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func LoadContact(db database.Reader, ID string) (*Contact, error) {
 func (c *Contact) Notify(text string) error {
 	notifier := plugins.GetNotifier(c.Notifier)
 	if notifier == nil {
-		return fmt.Errorf("Unknown notifier: %s", c.Notifier)
+		return fmt.Errorf("unknown notifier: %s", c.Notifier)
 	}
 
 	err := json.Unmarshal(c.Arguments, notifier)
