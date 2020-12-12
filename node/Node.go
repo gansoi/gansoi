@@ -95,9 +95,9 @@ func NewNode(stream raft.StreamLayer, datadir string, db database.Reader, fsm ra
 	conf.LocalID = raft.ServerID(n.self)
 	conf.ProtocolVersion = 3
 
-	transport := raft.NewNetworkTransportWithLogger(stream, 1, 0, logger.DebugLogger("raft-transport"))
+	transport := raft.NewNetworkTransportWithLogger(stream, 1, 0, nil)
 
-	ss, err := raft.NewFileSnapshotStoreWithLogger(datadir, 2, logger.DebugLogger("raft-store"))
+	ss, err := raft.NewFileSnapshotStoreWithLogger(datadir, 2, nil)
 	if err != nil {
 		return nil, nil, err
 	}
