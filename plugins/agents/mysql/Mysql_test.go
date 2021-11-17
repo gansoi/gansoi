@@ -5,8 +5,8 @@ import (
 	"net"
 	"testing"
 
-	"github.com/siddontang/go-mysql/mysql"
-	"github.com/siddontang/go-mysql/server"
+	"github.com/go-mysql-org/go-mysql/mysql"
+	"github.com/go-mysql-org/go-mysql/server"
 
 	"github.com/gansoi/gansoi/plugins"
 )

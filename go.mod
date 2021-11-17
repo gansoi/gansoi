@@ -3,15 +3,20 @@ module github.com/gansoi/gansoi
 go 1.15
 
 require (
+	github.com/DataDog/zstd v1.4.8 // indirect
 	github.com/Knetic/govaluate v3.0.0+incompatible
+	github.com/Sereal/Sereal v0.0.0-20210713121911-8c71d8dbe594 // indirect
 	github.com/asdine/storm v2.1.2+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/gin-contrib/expvar v0.0.1
 	github.com/gin-gonic/contrib v0.0.0-20201101042839-6a891bf89f19
 	github.com/gin-gonic/gin v1.7.4
+	github.com/go-mysql-org/go-mysql v1.3.0
 	github.com/go-playground/validator/v10 v10.9.0 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/gopacket v1.1.19
 	github.com/hashicorp/go-hclog v0.15.0
 	github.com/hashicorp/raft v1.2.0
 	github.com/hashicorp/raft-boltdb v0.0.0-20191021154308-4207f1bf0617
@@ -20,6 +25,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.1.1
 	github.com/ugorji/go v1.2.6 // indirect
+	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	go.etcd.io/bbolt v1.3.5
 	golang.org/x/crypto v0.0.0-20211115234514-b4de73f9ece8
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
