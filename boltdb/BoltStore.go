@@ -13,8 +13,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/asdine/storm"
-	"github.com/asdine/storm/index"
+	"github.com/asdine/storm/v3"
+	"github.com/asdine/storm/v3/index"
 	"github.com/hashicorp/raft"
 	"go.etcd.io/bbolt"
 

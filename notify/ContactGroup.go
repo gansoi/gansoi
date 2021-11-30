@@ -3,7 +3,7 @@ package notify
 import (
 	"fmt"
 
-	"gopkg.in/go-playground/validator.v9"
+	"github.com/go-playground/validator/v10"
 
 	"github.com/gansoi/gansoi/database"
 )

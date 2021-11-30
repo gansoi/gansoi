@@ -17,7 +17,7 @@ import (
 	"github.com/gin-gonic/gin"
 	hclog "github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/raft"
-	raftboltdb "github.com/hashicorp/raft-boltdb"
+	raftboltdb "github.com/hashicorp/raft-boltdb/v2"
 
 	"github.com/gansoi/gansoi/ca"
 	"github.com/gansoi/gansoi/database"
