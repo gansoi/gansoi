@@ -1,6 +1,6 @@
 module github.com/gansoi/gansoi
 
-go 1.15
+go 1.16
 
 require (
 	github.com/Knetic/govaluate v3.0.0+incompatible
