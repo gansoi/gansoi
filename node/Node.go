@@ -76,7 +76,6 @@ func NewNode(stream raft.StreamLayer, datadir string, db database.Reader, fsm ra
 		},
 	}
 
-	var err error
 	n := &Node{
 		db:     db,
 		client: &http.Client{Transport: tr},
@@ -103,6 +102,7 @@ func NewNode(stream raft.StreamLayer, datadir string, db database.Reader, fsm ra
 	}
 
 	raftDBPath := path.Join(datadir, "/raft.db")
+
 	store, err := raftboltdb.NewBoltStore(raftDBPath)
 	if err != nil {
 		return nil, nil, err
@@ -213,6 +213,7 @@ func (n *Node) applyHandler(c *gin.Context) {
 	}
 
 	defer c.Request.Body.Close()
+
 	b, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)

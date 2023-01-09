@@ -50,6 +50,7 @@ func (n *Notifier) PostApply(leader bool, command database.Command, data interfa
 
 func (n *Notifier) gotEvaluation(e *eval.Evaluation) error {
 	var check checks.Check
+
 	err := n.db.One("ID", e.CheckID, &check)
 	if err != nil {
 		return err
@@ -80,6 +81,7 @@ func (n *Notifier) gotEvaluation(e *eval.Evaluation) error {
 	// is caused by a check "coming online".
 	if lastState == eval.StateUnknown {
 		logger.Info("notify", "[%s] Ignoring %s when previous state is %s %v", e.CheckHostID, e.State, lastState, e.History.ColorString())
+
 		return nil
 	}
 
@@ -92,6 +94,7 @@ func (n *Notifier) gotEvaluation(e *eval.Evaluation) error {
 		group, err := LoadContactGroup(n.db, groupID)
 		if err != nil {
 			logger.Info("notify", "[%s] ContactGroup not found (%s)", e.CheckHostID, groupID)
+
 			continue
 		}
 

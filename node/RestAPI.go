@@ -50,6 +50,7 @@ func (r *RestAPI) list(c *gin.Context) {
 
 func (r *RestAPI) create(c *gin.Context) {
 	record := r.new()
+
 	err := c.BindJSON(record)
 	if err != nil {
 		reply(c, http.StatusBadRequest, err.Error())
@@ -89,6 +90,7 @@ func (r *RestAPI) replace(c *gin.Context) {
 
 func (r *RestAPI) delete(c *gin.Context) {
 	record := r.new()
+
 	err := r.db.One("ID", c.Param("id"), record)
 	if err != nil {
 		reply(c, http.StatusNotFound, err.Error())

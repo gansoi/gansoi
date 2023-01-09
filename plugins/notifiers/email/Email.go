@@ -53,13 +53,13 @@ func (e *Email) Notify(text string) error {
 	}
 	defer conn.Close()
 
-	c, err := smtp.NewClient(conn, e.SMTP)
+	client, err := smtp.NewClient(conn, e.SMTP)
 	if err != nil {
 		return err
 	}
-	defer c.Close()
+	defer client.Close()
 
-	err = c.Hello("test.gansoi-dev.com")
+	err = client.Hello("test.gansoi-dev.com")
 	if err != nil {
 		return err
 	}
@@ -71,28 +71,30 @@ func (e *Email) Notify(text string) error {
 			e.Password,
 			e.SMTP,
 		)}
-		err = c.Auth(auth)
+
+		err = client.Auth(auth)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = c.Mail(e.From)
+	err = client.Mail(e.From)
 	if err != nil {
 		return err
 	}
 
-	err = c.Rcpt(e.To)
+	err = client.Rcpt(e.To)
 	if err != nil {
 		return err
 	}
 
-	w, err := c.Data()
+	w, err := client.Data()
 	if err != nil {
 		return err
 	}
 
 	w.Write(newEmail2(e, text))
 	w.Close()
-	return c.Quit()
+
+	return client.Quit()
 }

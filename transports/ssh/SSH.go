@@ -127,6 +127,7 @@ func (s *SSH) connect() (*ssh.Client, error) {
 	signerLock.Lock()
 	if signer == nil {
 		signerLock.Unlock()
+
 		return nil, ErrNotReady
 	}
 

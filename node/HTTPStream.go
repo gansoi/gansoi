@@ -84,7 +84,9 @@ func (h *HTTPStream) Dial(address raft.ServerAddress, timeout time.Duration) (ne
 
 	if err != nil {
 		failed.Add(1)
-		fmt.Printf("ERRRRRROR %s\n", err.Error())
+
+		fmt.Printf("node dial error: %s\n", err.Error())
+
 		return nil, err
 	}
 
@@ -96,6 +98,7 @@ func (h *HTTPStream) Dial(address raft.ServerAddress, timeout time.Duration) (ne
 		conn.Close()
 
 		failed.Add(1)
+
 		return nil, err
 	}
 

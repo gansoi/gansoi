@@ -32,5 +32,6 @@ func (m *Process) RemoteCheck(transport transports.Transport, result plugins.Age
 	}
 
 	result.AddValue("Running", len(bytes.Fields(resultAsBytes)))
+
 	return nil
 }

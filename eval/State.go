@@ -2,6 +2,8 @@ package eval
 
 import (
 	"fmt"
+
+	"github.com/gansoi/gansoi/logger"
 )
 
 type (
@@ -22,13 +24,6 @@ const (
 	// stateMax can be used like 'if state >= stateMax' to check for a valid
 	// state.
 	stateMax State = iota
-)
-
-const (
-	red   = "\033[31m"
-	green = "\033[32m"
-	blue  = "\033[34m"
-	reset = "\033[0m"
 )
 
 var (
@@ -65,9 +60,9 @@ var (
 	}
 
 	stateToColor = map[State]string{
-		StateUnknown: blue,
-		StateUp:      green,
-		StateDown:    red,
+		StateUnknown: logger.Blue,
+		StateUp:      logger.Green,
+		StateDown:    logger.Red,
 	}
 )
 
@@ -79,7 +74,7 @@ func (s State) String() string {
 // ColorString will return a colorized string representing the state. It will
 // be suitable for printing in an ANSI terminal.
 func (s State) ColorString() string {
-	return stateToColor[s] + s.String() + reset
+	return stateToColor[s] + s.String() + logger.Reset
 }
 
 // Valid returns true if s is a valid state.

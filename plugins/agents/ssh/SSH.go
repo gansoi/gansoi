@@ -45,12 +45,14 @@ func (s *SSH) Check(result plugins.AgentResult) error {
 		result.AddValue("KeyType", key.Type())
 		result.AddValue("FingerprintMD5", ssh.FingerprintLegacyMD5(key))
 		result.AddValue("FingerprintSHA256", ssh.FingerprintSHA256(key))
+
 		return nil
 	}
 
 	// We also save the banner if available.
 	conf.BannerCallback = func(message string) error {
 		result.AddValue("Banner", message)
+
 		return nil
 	}
 

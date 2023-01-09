@@ -3,6 +3,8 @@ package eval
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/gansoi/gansoi/logger"
 )
 
 func TestValid(t *testing.T) {
@@ -53,10 +55,10 @@ func TestColorString(t *testing.T) {
 		input  State
 		output string
 	}{
-		{StateUnknown, blue + "Unknown" + reset},
-		{StateUp, green + "Up" + reset},
-		{StateDown, red + "Down" + reset},
-		{State(39), "" + reset},
+		{StateUnknown, logger.Blue + "Unknown" + logger.Reset},
+		{StateUp, logger.Green + "Up" + logger.Reset},
+		{StateDown, logger.Red + "Down" + logger.Reset},
+		{State(39), "" + logger.Reset},
 	}
 
 	for _, dat := range cases {

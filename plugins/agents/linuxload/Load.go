@@ -37,7 +37,6 @@ func (l *Load) RemoteCheck(transport transports.Transport, result plugins.AgentR
 	var lastPid int
 
 	_, err = fmt.Sscanf(string(contents), "%f %f %f %d/%d %d", &load1, &load5, &load15, &running, &total, &lastPid)
-
 	if err != nil {
 		return ErrSyntax
 	}

@@ -48,6 +48,7 @@ func RunCheck(transport transports.Transport, check *Check) (checkResult *CheckR
 	err := json.Unmarshal(check.Arguments, &agent)
 	if err != nil {
 		checkResult.Error = err.Error()
+
 		return checkResult
 	}
 
@@ -55,6 +56,7 @@ func RunCheck(transport transports.Transport, check *Check) (checkResult *CheckR
 	case plugins.RemoteAgent:
 		if transport == nil {
 			checkResult.Error = "no host"
+
 			return checkResult
 		}
 
@@ -65,6 +67,7 @@ func RunCheck(transport transports.Transport, check *Check) (checkResult *CheckR
 
 	if err != nil {
 		checkResult.Error = err.Error()
+
 		return checkResult
 	}
 
@@ -110,5 +113,6 @@ func (c *Check) Evaluate(result plugins.AgentResult) error {
 // Validate implements database.Validator.
 func (c *Check) Validate(_ database.Reader) error {
 	v := validator.New()
+
 	return v.Struct(c)
 }

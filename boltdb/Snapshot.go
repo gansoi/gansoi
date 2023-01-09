@@ -23,6 +23,7 @@ func (s *Snapshot) Persist(sink raft.SnapshotSink) error {
 
 	if err != nil {
 		sink.Cancel()
+
 		return err
 	}
 

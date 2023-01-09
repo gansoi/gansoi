@@ -50,5 +50,6 @@ func (c *Contact) Notify(text string) error {
 // Validate implements database.Validator.
 func (c *Contact) Validate(db database.Reader) error {
 	v := validator.New()
+
 	return v.Struct(c)
 }

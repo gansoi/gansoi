@@ -1,6 +1,8 @@
 package database
 
-import "errors"
+import (
+	"errors"
+)
 
 type (
 	// Reader defines the interface that database reader types must implement.

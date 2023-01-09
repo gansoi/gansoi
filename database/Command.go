@@ -19,8 +19,10 @@ func (c Command) String() string {
 	switch c {
 	case CommandSave:
 		return "save"
+
 	case CommandDelete:
 		return "delete"
+
 	default:
 		return "n/a"
 	}

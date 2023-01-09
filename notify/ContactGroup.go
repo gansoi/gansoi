@@ -48,6 +48,7 @@ func (g *ContactGroup) GetContacts(db database.Reader) ([]*Contact, error) {
 // Validate implements database.Validator.
 func (g *ContactGroup) Validate(db database.Reader) error {
 	v := validator.New()
+
 	err := v.Struct(g)
 	if err != nil {
 		return err

@@ -61,6 +61,7 @@ func (s *Scheduler) loop() {
 		select {
 		case t := <-ticker.C:
 			s.spin(t)
+
 		case <-s.stop:
 			ticker.Stop()
 			return
@@ -70,8 +71,8 @@ func (s *Scheduler) loop() {
 
 func (s *Scheduler) spin(clock time.Time) {
 	for meta := s.store.next(clock); meta != nil; meta = s.store.next(clock) {
-
 		inflight.Add(1)
+
 		go s.runCheck(clock, meta)
 	}
 }
@@ -86,6 +87,7 @@ func (s *Scheduler) runCheck(clock time.Time, meta *checkMeta) *CheckResult {
 
 	if meta.key.hostID != "" {
 		remote := ssh.SSH{}
+
 		err := s.db.One("ID", meta.key.hostID, &remote)
 		if err == nil {
 			transport = &remote

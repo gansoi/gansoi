@@ -88,17 +88,21 @@ func RandomString(length int) string {
 	vlen := byte(len(vocabulary))
 	maxrb := byte(256 - (256 % len(vocabulary)))
 	i := 0
+
 	for {
 		if _, err := io.ReadFull(randSource, r); err != nil {
 			panic("error reading from random source: " + err.Error())
 		}
+
 		for _, c := range r {
 			if c >= maxrb {
 				// Skip to avoid modulo bias.
 				continue
 			}
+
 			b[i] = vocabulary[c%vlen]
 			i++
+
 			if i == length {
 				return string(b)
 			}

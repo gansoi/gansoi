@@ -92,6 +92,7 @@ func nodeInit(info *Info, coreCA *ca.CA) ([]tls.Certificate, error) {
 
 func nodeSetup(info *Info, coreCA *ca.CA) ([]tls.Certificate, error) {
 	var err error
+
 	info.CAKey, err = coreCA.CertificatePEM()
 	if err != nil {
 		return nil, err
@@ -225,7 +226,11 @@ func (c *Core) Join(address string, hash string, token string, bindPrivate strin
 
 	// Request to join cluster.
 	logger.Info("join", "Requesting raft join")
-	req, _ = http.NewRequest("GET", "https://"+DefaultPort(address)+CorePrefix+"/join", nil)
+	req, err = http.NewRequest("GET", "https://"+DefaultPort(address)+CorePrefix+"/join", nil)
+	if err != nil {
+		return err
+	}
+
 	if bindPrivate != "" {
 		req.Header.Add("X-Gansoi-Announce", DefaultPort(bindPrivate))
 	}
@@ -259,13 +264,6 @@ func (c *Core) Start() ([]tls.Certificate, error) {
 	return nodeSetup(c.info, c.ca)
 }
 
-// ClientCertificatePair provides a certificates used to identify this core
-// node to other nodes.
-func (c *Core) ClientCertificatePair() []tls.Certificate {
-	// FIXME: stub
-	return nil
-}
-
 func (c *Core) handleCert(context *gin.Context) {
 	cert, err := c.CA().CertificatePEM()
 	if err != nil {
@@ -281,6 +279,7 @@ func (c *Core) handleKey(context *gin.Context) {
 
 	if token != c.info.ClusterToken {
 		context.Data(401, "text/plain", []byte("token mismatch"))
+
 		return
 	}
 
@@ -292,12 +291,14 @@ func (c *Core) handleJoin(context *gin.Context) {
 	name, err := c.CA().VerifyHTTPRequest(context.Request)
 	if err != nil {
 		context.Data(http.StatusUnauthorized, "text/plain", []byte(err.Error()))
+
 		return
 	}
 
 	announce := context.Request.Header.Get("X-Gansoi-Announce")
 	if announce == "" {
 		context.Data(http.StatusBadRequest, "text/plain", []byte("Set X-Gansoi-Announce header"))
+
 		return
 	}
 

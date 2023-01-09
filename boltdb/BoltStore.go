@@ -61,6 +61,7 @@ func NewBoltStore(path string) (*BoltStore, error) {
 // result in a deadlock.
 func (d *BoltStore) Close() error {
 	d.dbMutex.RLock()
+
 	return d.db.Close()
 }
 
@@ -147,6 +148,7 @@ func (d *BoltStore) BroadcastFrom(index uint64) {
 // Snapshot implements raft.FSM.
 func (d *BoltStore) Snapshot() (raft.FSMSnapshot, error) {
 	snapshot.Add(1)
+
 	return &Snapshot{db: d}, nil
 }
 

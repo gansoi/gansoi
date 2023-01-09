@@ -29,6 +29,7 @@ func NewEvaluator(db database.ReadWriter) *Evaluator {
 
 func statesFromHistory(history []checks.CheckResult) States {
 	var states States
+
 	for _, result := range history {
 		state := StateDown
 
@@ -52,6 +53,7 @@ func (e *Evaluator) Evaluate(checkResult *checks.CheckResult) (*Evaluation, erro
 	if eval == nil {
 		eval = NewEvaluation(clock, checkResult)
 	}
+
 	eval.End = clock
 
 	if len(eval.Results) >= e.historyLength {
@@ -99,9 +101,11 @@ func (e *Evaluator) evaluteHost(hostEval *Evaluation) (*Evaluation, error) {
 		eval = NewEvaluation(hostEval.Start, result)
 		eval.History = States{StateUnknown}
 	}
+
 	eval.End = hostEval.End
 
 	var check checks.Check
+
 	err := e.db.One("ID", eval.CheckID, &check)
 	if err != nil {
 		return nil, err
@@ -109,11 +113,13 @@ func (e *Evaluator) evaluteHost(hostEval *Evaluation) (*Evaluation, error) {
 
 	eval.Hosts[hostEval.HostID] = hostEval.State
 
-	var state State
 	states := make(map[State]int)
+
 	for _, key := range check.Hosts {
 		states[eval.Hosts[key]]++
 	}
+
+	var state State
 
 	switch {
 	case states[StateUnknown] > 0:
