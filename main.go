@@ -453,19 +453,19 @@ func runCore(_ *cobra.Command, _ []string) {
 		}))
 	}
 
-	restChecks := node.NewRestAPI(checks.Check{}, n)
+	restChecks := node.NewRestAPI[checks.Check](n)
 	restChecks.Router(api.Group("/checks"))
 
-	restEvaluations := node.NewRestAPI(eval.Evaluation{}, n)
+	restEvaluations := node.NewRestAPI[eval.Evaluation](n)
 	restEvaluations.Router(api.Group("/evaluations"))
 
-	restContacts := node.NewRestAPI(notify.Contact{}, n)
+	restContacts := node.NewRestAPI[notify.Contact](n)
 	restContacts.Router(api.Group("/contacts"))
 
-	restContactGroups := node.NewRestAPI(notify.ContactGroup{}, n)
+	restContactGroups := node.NewRestAPI[notify.ContactGroup](n)
 	restContactGroups.Router(api.Group("/contactgroups"))
 
-	restHosts := node.NewRestAPI(ssh.SSH{}, n)
+	restHosts := node.NewRestAPI[ssh.SSH](n)
 	restHosts.Router(api.Group("/hosts"))
 
 	// Endpoint for running a check on the cluster node.

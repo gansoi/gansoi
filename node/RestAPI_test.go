@@ -91,7 +91,7 @@ func init() {
 func TestNewRestAPI(t *testing.T) {
 	db := boltdb.NewTestStore()
 
-	r := NewRestAPI(data{}, db)
+	r := NewRestAPI[data](db)
 
 	if r == nil {
 		t.Fatalf("NewRestAPI() returned nil")
@@ -99,7 +99,7 @@ func TestNewRestAPI(t *testing.T) {
 }
 
 func request(db database.ReadWriter, method string, URI string, body []byte) *httptest.ResponseRecorder {
-	r := NewRestAPI(data{}, db)
+	r := NewRestAPI[data](db)
 	router := gin.New()
 	router.Use(gin.ErrorLogger())
 	r.Router(router.Group("/"))

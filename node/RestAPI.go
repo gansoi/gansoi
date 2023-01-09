@@ -2,7 +2,6 @@ package node
 
 import (
 	"net/http"
-	"reflect"
 
 	"github.com/gansoi/gansoi/database"
 	"github.com/gin-gonic/gin"
@@ -11,35 +10,32 @@ import (
 type (
 	// RestAPI is a generic way to build a REST-based API for the cluster
 	// database.
-	RestAPI struct {
-		db  database.ReadWriter
-		typ reflect.Type
+	RestAPI[T any] struct {
+		db database.ReadWriter
 	}
 )
 
 // NewRestAPI will instantiate a new RestAPI.
-func NewRestAPI(typ interface{}, db database.ReadWriter) *RestAPI {
-	return &RestAPI{
-		db:  db,
-		typ: reflect.TypeOf(typ),
+func NewRestAPI[T any](db database.ReadWriter) *RestAPI[T] {
+	return &RestAPI[T]{
+		db: db,
 	}
 }
 
-func (r *RestAPI) new() interface{} {
-	return reflect.New(r.typ).Interface()
+func (r *RestAPI[T]) new() *T {
+	var zero T
+
+	return &zero
 }
 
 func reply(c *gin.Context, code int, data string) {
 	c.Data(code, "text/plain", []byte(data))
 }
 
-func (r *RestAPI) list(c *gin.Context) {
+func (r *RestAPI[T]) list(c *gin.Context) {
+	list := make([]T, 0)
 
-	// Reflect is so beautiful. This will create a pointer to a slice of typ's.
-	// Please see: http://stackoverflow.com/a/25386460/1156537
-	list := reflect.New(reflect.MakeSlice(reflect.SliceOf(r.typ), 0, 0).Type()).Interface()
-
-	err := r.db.All(list, -1, 0, false)
+	err := r.db.All(&list, -1, 0, false)
 	if err != nil {
 		reply(c, http.StatusInternalServerError, err.Error())
 		return
@@ -48,7 +44,7 @@ func (r *RestAPI) list(c *gin.Context) {
 	c.JSON(http.StatusOK, list)
 }
 
-func (r *RestAPI) create(c *gin.Context) {
+func (r *RestAPI[T]) create(c *gin.Context) {
 	record := r.new()
 
 	err := c.BindJSON(record)
@@ -57,7 +53,7 @@ func (r *RestAPI) create(c *gin.Context) {
 		return
 	}
 
-	validator, ok := record.(database.Validator)
+	validator, ok := any(record).(database.Validator)
 	if ok {
 		err = validator.Validate(r.db)
 		if err != nil {
@@ -75,7 +71,7 @@ func (r *RestAPI) create(c *gin.Context) {
 	data := "got it, thanks"
 
 	// If the type is an IDSetter, we should return the new ID.
-	obj, valid := record.(database.IDSetter)
+	obj, valid := any(record).(database.IDSetter)
 	if valid {
 		data = obj.GetID()
 	}
@@ -83,12 +79,12 @@ func (r *RestAPI) create(c *gin.Context) {
 	reply(c, http.StatusAccepted, data)
 }
 
-func (r *RestAPI) replace(c *gin.Context) {
+func (r *RestAPI[T]) replace(c *gin.Context) {
 	// For now we simply treat this as a create. Should be safe.
 	r.create(c)
 }
 
-func (r *RestAPI) delete(c *gin.Context) {
+func (r *RestAPI[T]) delete(c *gin.Context) {
 	record := r.new()
 
 	err := r.db.One("ID", c.Param("id"), record)
@@ -107,7 +103,7 @@ func (r *RestAPI) delete(c *gin.Context) {
 }
 
 // Router can be used to assign a Gin routergroup.
-func (r *RestAPI) Router(router *gin.RouterGroup) {
+func (r *RestAPI[T]) Router(router *gin.RouterGroup) {
 	router.GET("/", r.list)
 	router.POST("", r.create)
 	router.PUT("/:id", r.replace)
