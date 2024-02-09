@@ -8,7 +8,7 @@ type (
 
 const (
 	// CommandSave will save an object in the local database.
-	CommandSave = iota
+	CommandSave Command = iota
 
 	// CommandDelete will delete an object in the local database.
 	CommandDelete
